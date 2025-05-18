@@ -1,125 +1,253 @@
-# App Store Build and Submission Guide for Scheduled
+# Step-by-Step iOS App Store Build Guide
 
-This guide will walk you through the process of building and submitting your Scheduled app to the Apple App Store.
+This guide provides detailed instructions for building the Scheduled app for App Store submission once you're on your Mac.
 
 ## Prerequisites
 
-1. **Apple Developer Account**: Register at [developer.apple.com](https://developer.apple.com) ($99/year)
-2. **Xcode**: Install on a Mac computer (required for iOS app development)
-3. **Certificates & Identifiers**: Set up in Apple Developer Portal
+- Mac computer with macOS Monterey (12.0) or later
+- Xcode 14.0 or later installed
+- Apple Developer Program membership ($99/year)
+- Node.js and npm installed
+- Scheduled project files downloaded from Replit
 
-## Step 1: Prepare Your Web App
+## Step 1: Project Setup
 
-You've already completed most of this step! Your web app has:
-- Progressive Web App features
-- Mobile-optimized interface
-- Privacy policy and terms of service
+1. **Install Capacitor CLI globally**
+   ```bash
+   npm install -g @capacitor/cli
+   ```
 
-## Step 2: Build With Capacitor
+2. **Navigate to project directory**
+   ```bash
+   cd /path/to/scheduled-app
+   ```
 
-```bash
-# Install capacitor (already done)
-npm install @capacitor/core @capacitor/cli @capacitor/ios
+3. **Install project dependencies**
+   ```bash
+   npm install
+   ```
 
-# Build the web app for production
-npm run build
+4. **Modify capacitor.config.ts**
 
-# Initialize capacitor (already done)
-npx cap init "Scheduled" "com.scheduled.app" --web-dir=dist
+   Ensure your configuration looks similar to this:
+   ```typescript
+   import { CapacitorConfig } from '@capacitor/cli';
 
-# Add iOS platform
-npx cap add ios
+   const config: CapacitorConfig = {
+     appId: 'com.scheduled.app',
+     appName: 'Scheduled',
+     webDir: 'dist',
+     server: {
+       androidScheme: 'https'
+     },
+     plugins: {
+       SplashScreen: {
+         launchShowDuration: 3000,
+         launchAutoHide: true,
+         backgroundColor: "#3b5ac2",
+         androidSplashResourceName: "splash",
+         androidScaleType: "CENTER_CROP",
+         showSpinner: true,
+         androidSpinnerStyle: "large",
+         iosSpinnerStyle: "small",
+         spinnerColor: "#ffffff",
+         splashFullScreen: true,
+         splashImmersive: true
+       }
+     },
+     ios: {
+       contentInset: "always"
+     }
+   };
 
-# Copy web assets to iOS platform
-npx cap copy ios
+   export default config;
+   ```
 
-# Sync native plugins
-npx cap sync ios
-```
+## Step 2: Build the Web App
 
-## Step 3: Open in Xcode
+1. **Build your web application**
+   ```bash
+   npm run build
+   ```
 
-```bash
-# Open the iOS project in Xcode
-npx cap open ios
-```
+2. **Check the build output**
+   - Ensure the `dist` directory contains all necessary files
+   - Verify that all static assets are included
 
-## Step 4: Configure iOS App in Xcode
+## Step 3: Add iOS Platform
 
-1. **Set Bundle Identifier**: Ensure it matches "com.scheduled.app"
-2. **Set App Display Name**: "Scheduled"
-3. **Configure Signing & Capabilities**:
-   - Select your Apple Developer account
-   - Choose a Team
-   - Manage signing certificates
-4. **Add App Icons**: Use the AppIcon.svg provided in ios-assets
-5. **Configure Info.plist**:
-   - Add necessary permissions (Camera, Photo Library, etc.)
-   - Configure URL schemes if needed
+1. **Add iOS platform to your project**
+   ```bash
+   npx cap add ios
+   ```
 
-## Step 5: Build & Test
+2. **Copy web assets to iOS platform**
+   ```bash
+   npx cap copy ios
+   ```
 
-1. **Select a Simulator or Device**
-2. **Click the Run button in Xcode**
-3. **Test all functionality thoroughly**:
-   - Account creation/login
-   - Appointment scheduling
-   - Payment processing
-   - Push notifications (if implemented)
-   - Offline capabilities
+3. **Update native plugins**
+   ```bash
+   npx cap update ios
+   ```
 
-## Step 6: TestFlight Testing
+## Step 4: Setup App Icon and Splash Screen
 
-1. **Archive the App**: Product > Archive in Xcode
-2. **Upload to App Store Connect**
-3. **Add Internal Testers**: Invite team members
-4. **Add External Testers**: Invite up to 10,000 users
-5. **Gather Feedback & Fix Issues**
+1. **Create an iOS app icon set**
+   - Use the provided AppIcon.svg as a base
+   - Generate all required sizes using [App Icon Generator](https://appicon.co/)
+   - Place the generated icons in `ios/App/App/Assets.xcassets/AppIcon.appiconset/`
 
-## Step 7: App Store Submission
+2. **Create splash screen assets**
+   - Use the provided splash.svg as a base
+   - Generate splash screen images for various device sizes
+   - Place in `ios/App/App/Assets.xcassets/Splash.imageset/`
 
-1. **Prepare Metadata** (use app-store-info.md as a guide):
-   - App description
-   - Keywords
-   - Screenshots
-   - App Icon
-   - Support URL
-   - Privacy Policy URL
-2. **Configure In-App Purchases**:
-   - Set up subscription products
-   - Create subscription groups
-   - Provide promotional images
-3. **Complete App Review Information**:
-   - Contact details
-   - Demo account credentials
-   - Notes for reviewers
-4. **Submit for Review**:
-   - Answer export compliance questions
-   - Verify content rights
-   - Submit the app
+3. **Configure splash screen in `Info.plist`**
+   - Open `ios/App/App/Info.plist`
+   - Ensure there's a reference to `Splash` for the launch screen
 
-## Step 8: Respond to App Review Feedback
+## Step 5: Configure iOS Project in Xcode
 
-1. **Monitor Status**: Check App Store Connect regularly
-2. **Respond Quickly**: Address any questions or concerns
-3. **Fix Rejections**: Update the app if rejected and resubmit
+1. **Open the iOS project in Xcode**
+   ```bash
+   npx cap open ios
+   ```
 
-## Step 9: Release
+2. **Update project settings**
+   - Click on the project name in the left sidebar
+   - Select the "App" target
+   - Go to the "General" tab
+   - Update "Display Name" to "Scheduled"
+   - Set appropriate version and build numbers
+   - Select your team for signing
 
-1. **Set Availability Date**: Choose when the app goes live
-2. **Phased Release**: Consider gradual rollout
-3. **Monitor Analytics**: Track installs and usage
+3. **Configure capabilities (if needed)**
+   - Go to the "Signing & Capabilities" tab
+   - Click "+ Capability" to add features like:
+     - Push Notifications
+     - Background Modes (if needed)
+     - App Groups (if needed)
 
-## App Maintenance
+4. **Configure Info.plist**
+   - Add necessary permissions with usage descriptions:
+     - NSCameraUsageDescription (if using camera)
+     - NSPhotoLibraryUsageDescription (if accessing photos)
+     - NSCalendarsUsageDescription (if accessing calendar)
+     - NSContactsUsageDescription (if accessing contacts)
+     - NSLocationWhenInUseUsageDescription (if using location)
 
-1. **Regular Updates**: Plan a schedule for new features
-2. **Bug Fixes**: Address issues promptly
-3. **iOS Version Compatibility**: Test with new iOS releases
-4. **Certificate Renewal**: Keep developer certificates current
+## Step 6: In-App Purchases Setup
 
-## Helpful Resources
+1. **Configure StoreKit in Xcode**
+   - Go to "Signing & Capabilities"
+   - Add the "In-App Purchase" capability
 
-- [Apple App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
+2. **Create products in App Store Connect**
+   - Sign in to [App Store Connect](https://appstoreconnect.apple.com)
+   - Create your subscription products with the IDs specified in the app-store-info.md document
+   
+3. **Test in-app purchases using StoreKit Testing**
+   - In Xcode, go to Product > Scheme > Edit Scheme
+   - Under Run > Options, enable "StoreKit Configuration"
+   - Create a new StoreKit configuration file with your products
+
+## Step 7: Test on Simulator and Device
+
+1. **Run on simulator**
+   - Select an iOS simulator from the device menu in Xcode
+   - Click the "Play" button to build and run
+   - Test core functionality
+   - Verify that the app icon and splash screen work correctly
+
+2. **Run on physical device (recommended)**
+   - Connect your iOS device to your Mac
+   - Select your device from the device menu
+   - Click the "Play" button to build and run
+   - Test all features thoroughly
+   - Verify performance and user experience
+
+## Step 8: Prepare for Submission
+
+1. **Capture screenshots**
+   - Use the Screenshot tool (Xcode > Window > Devices and Simulators)
+   - Take screenshots for all required device sizes
+   - Ensure each screenshot showcases different features
+
+2. **Create an App Store archive**
+   - Select "Any iOS Device (arm64)" from the device menu
+   - Choose Product > Archive from the menu bar
+   - Wait for the archive process to complete
+
+3. **Validate the archive**
+   - In the Archives window, select your archive
+   - Click "Validate App"
+   - Fix any issues that appear
+
+## Step 9: Submit to App Store
+
+1. **Distribute the app**
+   - In the Archives window, select your archive
+   - Click "Distribute App"
+   - Select "App Store Connect" as the distribution method
+   - Follow the prompts to upload
+
+2. **Complete App Store Connect information**
+   - Log in to App Store Connect
+   - Complete any missing metadata (refer to app-store-info.md)
+   - Upload screenshots and promotional text
+   - Submit for review
+
+## Step 10: Post-Submission
+
+1. **Monitor submission status**
+   - Check App Store Connect for status updates
+   - Be prepared to respond to any reviewer questions
+
+2. **Prepare for app release**
+   - Decide between automatic or manual release
+   - Prepare marketing materials
+   - Update your website with App Store link
+
+## Troubleshooting Common Issues
+
+### Build Errors
+
+1. **Code signing issues**
+   - Ensure your Apple Developer account is active
+   - Verify team selection in project settings
+   - Try refreshing certificates (Xcode > Preferences > Accounts)
+
+2. **Missing capabilities**
+   - Add required capabilities in the "Signing & Capabilities" tab
+   - Ensure entitlements match your App ID configuration
+
+3. **Missing framework errors**
+   - Try cleaning the build folder (Product > Clean Build Folder)
+   - Verify Capacitor plugins are properly installed
+
+### Submission Rejections
+
+1. **Metadata issues**
+   - Update screenshots to comply with guidelines
+   - Ensure app description matches functionality
+   - Verify privacy policy is comprehensive
+
+2. **Functionality issues**
+   - Fix any crashes or bugs
+   - Ensure all features work as described
+   - Verify in-app purchases function correctly
+
+3. **Design issues**
+   - Fix any UI elements that don't match iOS guidelines
+   - Ensure text is readable and UI is responsive
+   - Fix any accessibility issues
+
+## Additional Resources
+
+- [App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
+- [Capacitor iOS Documentation](https://capacitorjs.com/docs/ios)
 - [TestFlight Beta Testing](https://developer.apple.com/testflight/)
 - [App Store Connect Help](https://help.apple.com/app-store-connect/)
-- [Capacitor Documentation](https://capacitorjs.com/docs)
+
+Remember to refer to the mac-preparation-guide.md and app-store-info.md documents for more specific information about your app's configuration and metadata requirements.
