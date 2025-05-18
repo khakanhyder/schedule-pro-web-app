@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="2732" height="2732" fill="#3b5ac2"/>
+  
+  <!-- App Logo -->
+  <g transform="translate(1016, 1016) scale(1.4)">
+    <!-- Calendar Base -->
+    <rect x="-150" y="-150" width="500" height="500" rx="40" fill="white" />
+    
+    <!-- Calendar Top Bar -->
+    <rect x="-150" y="-150" width="500" height="80" rx="40" fill="#e5b452" />
+    
+    <!-- Calendar Tabs -->
+    <rect x="-110" y="-110" width="25" height="40" rx="6" fill="white" />
+    <rect x="-70" y="-110" width="25" height="40" rx="6" fill="white" />
+    <rect x="-30" y="-110" width="25" height="40" rx="6" fill="white" />
+    <rect x="10" y="-110" width="25" height="40" rx="6" fill="white" />
+    <rect x="50" y="-110" width="25" height="40" rx="6" fill="white" />
+    <rect x="90" y="-110" width="25" height="40" rx="6" fill="white" />
+    <rect x="130" y="-110" width="25" height="40" rx="6" fill="white" />
+    
+    <!-- Calendar Grid -->
+    <line x1="-150" y1="-30" x2="350" y2="-30" stroke="#e5e7eb" stroke-width="4" />
+    <line x1="-150" y1="70" x2="350" y2="70" stroke="#e5e7eb" stroke-width="4" />
+    <line x1="-150" y1="170" x2="350" y2="170" stroke="#e5e7eb" stroke-width="4" />
+    <line x1="-80" y1="-70" x2="-80" y2="350" stroke="#e5e7eb" stroke-width="4" />
+    <line x1="0" y1="-70" x2="0" y2="350" stroke="#e5e7eb" stroke-width="4" />
+    <line x1="80" y1="-70" x2="80" y2="350" stroke="#e5e7eb" stroke-width="4" />
+    <line x1="160" y1="-70" x2="160" y2="350" stroke="#e5e7eb" stroke-width="4" />
+    <line x1="240" y1="-70" x2="240" y2="350" stroke="#e5e7eb" stroke-width="4" />
+    
+    <!-- Calendar Highlights -->
+    <rect x="0" y="-30" width="80" height="100" rx="12" fill="#eef1fb" />
+    <rect x="-80" y="70" width="80" height="100" rx="12" fill="#3b5ac2" fill-opacity="0.1" />
+    <rect x="80" y="70" width="80" height="100" rx="12" fill="#e5b452" fill-opacity="0.2" />
+    <rect x="160" y="170" width="80" height="100" rx="12" fill="#3b5ac2" fill-opacity="0.1" />
+    
+    <!-- Check Mark for Completed -->
+    <circle cx="40" cy="20" r="20" fill="#3b5ac2" />
+    <path d="M30 20L38 28L50 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+  
+  <!-- App Name -->
+  <text x="1366" y="1850" font-family="'Helvetica Neue', Arial, sans-serif" font-size="120" font-weight="700" fill="white" text-anchor="middle">Scheduled</text>
+  <text x="1366" y="1950" font-family="'Helvetica Neue', Arial, sans-serif" font-size="60" font-weight="400" fill="white" text-anchor="middle">Professional Scheduling for All Industries</text>
+</svg>

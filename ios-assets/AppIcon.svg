@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="512" cy="512" r="496" fill="#3b5ac2" />
+  <circle cx="512" cy="512" r="448" fill="#4b69d0" />
+  
+  <!-- Calendar Base -->
+  <rect x="256" y="288" width="512" height="480" rx="48" fill="white" />
+  
+  <!-- Calendar Top Bar -->
+  <rect x="256" y="288" width="512" height="96" rx="48" fill="#e5b452" />
+  
+  <!-- Calendar Tabs -->
+  <rect x="304" y="336" width="32" height="48" rx="8" fill="white" />
+  <rect x="368" y="336" width="32" height="48" rx="8" fill="white" />
+  <rect x="432" y="336" width="32" height="48" rx="8" fill="white" />
+  <rect x="496" y="336" width="32" height="48" rx="8" fill="white" />
+  <rect x="560" y="336" width="32" height="48" rx="8" fill="white" />
+  <rect x="624" y="336" width="32" height="48" rx="8" fill="white" />
+  <rect x="688" y="336" width="32" height="48" rx="8" fill="white" />
+  
+  <!-- Calendar Grid -->
+  <line x1="256" y1="432" x2="768" y2="432" stroke="#e5e7eb" stroke-width="4" />
+  <line x1="256" y1="528" x2="768" y2="528" stroke="#e5e7eb" stroke-width="4" />
+  <line x1="256" y1="624" x2="768" y2="624" stroke="#e5e7eb" stroke-width="4" />
+  <line x1="344" y1="384" x2="344" y2="768" stroke="#e5e7eb" stroke-width="4" />
+  <line x1="432" y1="384" x2="432" y2="768" stroke="#e5e7eb" stroke-width="4" />
+  <line x1="520" y1="384" x2="520" y2="768" stroke="#e5e7eb" stroke-width="4" />
+  <line x1="608" y1="384" x2="608" y2="768" stroke="#e5e7eb" stroke-width="4" />
+  <line x1="696" y1="384" x2="696" y2="768" stroke="#e5e7eb" stroke-width="4" />
+  
+  <!-- Calendar Highlights -->
+  <rect x="432" y="432" width="88" height="96" rx="12" fill="#eef1fb" />
+  <rect x="344" y="528" width="88" height="96" rx="12" fill="#3b5ac2" fill-opacity="0.1" />
+  <rect x="520" y="528" width="88" height="96" rx="12" fill="#e5b452" fill-opacity="0.2" />
+  <rect x="608" y="624" width="88" height="96" rx="12" fill="#3b5ac2" fill-opacity="0.1" />
+  
+  <!-- Check Mark for Completed -->
+  <circle cx="476" cy="480" r="24" fill="#3b5ac2" />
+  <path d="M464 480L472 488L488 472" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Industry Icons Scattered -->
+  <circle cx="388" cy="576" r="20" fill="#3b5ac2" />
+  <path d="M388 568V584M380 576H396" stroke="white" stroke-width="3" stroke-linecap="round" />
+  
+  <circle cx="564" cy="576" r="20" fill="#e5b452" />
+  <path d="M556 576H572M564 568V584" stroke="white" stroke-width="3" stroke-linecap="round" />
+  
+  <circle cx="652" cy="672" r="20" fill="#3b5ac2" />
+  <path d="M644 672H660" stroke="white" stroke-width="3" stroke-linecap="round" />
+  
+  <!-- Outer Ring Gradient -->
+  <circle cx="512" cy="512" r="496" fill="url(#paint0_radial)" fill-opacity="0.2" />
+  
+  <!-- Definitions -->
+  <defs>
+    <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 512) rotate(90) scale(496)">
+      <stop stop-color="white" stop-opacity="0.2" />
+      <stop offset="1" stop-color="white" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+</svg>
