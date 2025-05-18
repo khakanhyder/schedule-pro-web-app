@@ -36,8 +36,8 @@ export default function Reviews() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {reviews?.map((review) => (
-              <ReviewCard key={review.id} review={review} />
+            {reviews?.filter(r => r.published).map((review) => (
+              <ReviewCard key={review.id || `review-${review.name}-${review.date}`} review={review} />
             ))}
           </div>
         )}
