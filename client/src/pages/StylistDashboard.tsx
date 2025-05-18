@@ -171,7 +171,6 @@ export default function StylistDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
-          </TabsContent>
           
           {/* Clients Tab */}
           <TabsContent value="clients">
@@ -183,7 +182,7 @@ export default function StylistDashboard() {
               <CardContent>
                 <div className="h-96 flex items-center justify-center">
                   <p className="text-muted-foreground">Client management feature will be implemented soon.</p>
-                </CardContent>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

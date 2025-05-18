@@ -10,7 +10,8 @@ export default function Navbar() {
     { name: "Services", href: "/#services" },
     { name: "Book Now", href: "/booking" },
     { name: "Reviews", href: "/#reviews" },
-    { name: "Contact", href: "/#contact" }
+    { name: "Contact", href: "/#contact" },
+    { name: "Stylist Portal", href: "/dashboard" }
   ];
 
   return (
