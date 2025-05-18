@@ -3,6 +3,8 @@ import Home from "@/pages/Home";
 import Booking from "@/pages/Booking";
 import StylistDashboard from "@/pages/StylistDashboard";
 import Setup from "@/pages/Setup";
+import Pricing from "@/pages/Pricing";
+import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -10,20 +12,23 @@ import Footer from "@/components/layout/Footer";
 function App() {
   const [location] = useLocation();
   const isSetupPage = location === "/setup";
+  const isAdminPage = location === "/admin";
 
   return (
     <div className="flex flex-col min-h-screen">
-      {!isSetupPage && <Navbar />}
+      {!isSetupPage && !isAdminPage && <Navbar />}
       <main className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/booking" component={Booking} />
           <Route path="/dashboard" component={StylistDashboard} />
           <Route path="/setup" component={Setup} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/admin" component={AdminDashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>
-      {!isSetupPage && <Footer />}
+      {!isSetupPage && !isAdminPage && <Footer />}
     </div>
   );
 }
