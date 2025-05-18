@@ -5,6 +5,7 @@ import StylistDashboard from "@/pages/StylistDashboard";
 import Setup from "@/pages/Setup";
 import Pricing from "@/pages/Pricing";
 import AdminDashboard from "@/pages/AdminDashboard";
+import IOSTest from "@/pages/IOSTest";
 import NotFound from "@/pages/not-found";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -25,6 +26,7 @@ function App() {
           <Route path="/setup" component={Setup} />
           <Route path="/pricing" component={Pricing} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/ios-test" component={IOSTest} />
           <Route component={NotFound} />
         </Switch>
       </main>
