@@ -12,6 +12,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import ReviewRequestModal from "./ReviewRequestModal";
 
 // Sample client data (in a real app, this would come from your backend)
 const mockClients = [
@@ -22,7 +23,8 @@ const mockClients = [
     phone: "555-123-4567", 
     lastVisit: "2023-04-15", 
     preferredService: "Women's Haircut",
-    notes: "Prefers organic products" 
+    notes: "Prefers organic products",
+    reviewStatus: "None" // None, Requested, Completed
   },
   { 
     id: 2, 
@@ -31,7 +33,8 @@ const mockClients = [
     phone: "555-987-6543", 
     lastVisit: "2023-05-02", 
     preferredService: "Men's Haircut & Beard Trim",
-    notes: "Allergic to certain dyes" 
+    notes: "Allergic to certain dyes",
+    reviewStatus: "Completed"
   },
   { 
     id: 3, 
@@ -40,7 +43,8 @@ const mockClients = [
     phone: "555-567-8901", 
     lastVisit: "2023-04-28", 
     preferredService: "Highlights",
-    notes: "Likes to be early" 
+    notes: "Likes to be early",
+    reviewStatus: "Requested"
   },
   { 
     id: 4, 
@@ -49,7 +53,8 @@ const mockClients = [
     phone: "555-345-6789", 
     lastVisit: "2023-03-20", 
     preferredService: "Men's Haircut",
-    notes: "" 
+    notes: "",
+    reviewStatus: "None"
   },
 ];
 
@@ -64,6 +69,8 @@ export default function ClientManagement() {
     notes: ""
   });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<typeof mockClients[0] | null>(null);
   const { toast } = useToast();
 
   const filteredClients = clients.filter(client => 
@@ -90,7 +97,8 @@ export default function ClientManagement() {
     const newClientWithId = {
       ...newClient,
       id: clients.length + 1,
-      lastVisit: "Never"
+      lastVisit: "Never",
+      reviewStatus: "None"
     };
 
     setClients([...clients, newClientWithId]);
@@ -112,11 +120,22 @@ export default function ClientManagement() {
   const handleSendReviewRequest = (clientId: number) => {
     const client = clients.find(c => c.id === clientId);
     if (!client) return;
-
-    toast({
-      title: "Review Request Sent",
-      description: `A request to leave a Google Review has been sent to ${client.name}.`
-    });
+    
+    setSelectedClient(client);
+    setReviewModalOpen(true);
+  };
+  
+  const handleReviewRequestSent = () => {
+    if (!selectedClient) return;
+    
+    // Update the client's review status
+    setClients(clients.map(client => 
+      client.id === selectedClient.id 
+        ? { ...client, reviewStatus: "Requested" } 
+        : client
+    ));
+    
+    setReviewModalOpen(false);
   };
 
   return (
@@ -125,7 +144,7 @@ export default function ClientManagement() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Your Clients</CardTitle>
-            <CardDescription>Manage your client list and information</CardDescription>
+            <CardDescription>Manage your client list and request Google reviews</CardDescription>
           </div>
           <div className="flex space-x-2">
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -228,6 +247,7 @@ export default function ClientManagement() {
                   <TableHead>Contact</TableHead>
                   <TableHead>Last Visit</TableHead>
                   <TableHead>Preferred Service</TableHead>
+                  <TableHead>Review Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -243,14 +263,35 @@ export default function ClientManagement() {
                       <TableCell>{client.lastVisit}</TableCell>
                       <TableCell>{client.preferredService}</TableCell>
                       <TableCell>
+                        {client.reviewStatus === "None" && (
+                          <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-neutral-100 text-neutral-800">
+                            Not requested
+                          </span>
+                        )}
+                        {client.reviewStatus === "Requested" && (
+                          <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800">
+                            Requested
+                          </span>
+                        )}
+                        {client.reviewStatus === "Completed" && (
+                          <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-800">
+                            <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            Posted
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <div className="flex space-x-2">
                           <Button variant="outline" size="sm">View</Button>
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => handleSendReviewRequest(client.id)}
+                            disabled={client.reviewStatus === "Completed"}
                           >
-                            Ask for Review
+                            {client.reviewStatus === "Requested" ? "Resend Request" : "Ask for Review"}
                           </Button>
                         </div>
                       </TableCell>
@@ -258,7 +299,7 @@ export default function ClientManagement() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                       No clients found.
                     </TableCell>
                   </TableRow>
@@ -268,6 +309,15 @@ export default function ClientManagement() {
           </div>
         </CardContent>
       </Card>
+      
+      {selectedClient && (
+        <ReviewRequestModal
+          isOpen={reviewModalOpen}
+          onClose={() => setReviewModalOpen(false)}
+          clientName={selectedClient.name}
+          clientEmail={selectedClient.email}
+        />
+      )}
     </div>
   );
 }
