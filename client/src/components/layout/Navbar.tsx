@@ -11,7 +11,8 @@ export default function Navbar() {
     { name: "Book Now", href: "/booking" },
     { name: "Reviews", href: "/#reviews" },
     { name: "Contact", href: "/#contact" },
-    { name: "Stylist Portal", href: "/dashboard" }
+    { name: "Stylist Portal", href: "/dashboard" },
+    { name: "Get Started", href: "/setup" }
   ];
 
   return (
