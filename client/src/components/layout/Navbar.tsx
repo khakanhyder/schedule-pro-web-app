@@ -20,7 +20,7 @@ export default function Navbar() {
         <div className="flex items-center">
           <Link href="/">
             <a className="text-2xl font-display font-bold text-primary">
-              StrandStudio
+              Scheduled
             </a>
           </Link>
         </div>
