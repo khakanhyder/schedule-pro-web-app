@@ -8,9 +8,9 @@ export default function Hero() {
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-4">Your Perfect Hair Awaits</h1>
         <p className="text-xl text-white mb-8 max-w-2xl">Professional styling services tailored to your unique look</p>
         <Link href="/booking">
-          <a className="bg-primary hover:bg-secondary text-white font-semibold py-3 px-8 rounded-full transition duration-300 text-lg">
+          <div className="bg-primary hover:bg-secondary text-white font-semibold py-3 px-8 rounded-full transition duration-300 text-lg cursor-pointer">
             Book Appointment
-          </a>
+          </div>
         </Link>
       </div>
     </section>
