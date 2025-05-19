@@ -31,6 +31,7 @@ const formSchema = insertAppointmentSchema.extend({
   date: z.date(),
   hour: z.number().min(0).max(23),
   minute: z.number().min(0).max(59),
+  durationMinutes: z.number().min(15).max(240).default(60),
   notes: z.string().optional(),
   professionalNotes: z.string().optional(),
 });
@@ -67,6 +68,7 @@ export default function AppointmentForm({
       date: initialValues?.date || new Date(),
       hour: initialValues?.hour || 9,
       minute: initialValues?.minute || 0,
+      durationMinutes: initialValues?.durationMinutes || 60,
       notes: initialValues?.notes || "",
       professionalNotes: initialValues?.professionalNotes || "",
       emailConfirmation: initialValues?.emailConfirmation || true,
@@ -376,6 +378,37 @@ export default function AppointmentForm({
                     )}
                   />
                 </div>
+                
+                <FormField
+                  control={form.control}
+                  name="durationMinutes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duration (minutes)</FormLabel>
+                      <Select 
+                        onValueChange={(value) => field.onChange(Number(value))}
+                        value={field.value.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select duration" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="15">15 minutes</SelectItem>
+                          <SelectItem value="30">30 minutes</SelectItem>
+                          <SelectItem value="45">45 minutes</SelectItem>
+                          <SelectItem value="60">1 hour</SelectItem>
+                          <SelectItem value="90">1 hour 30 minutes</SelectItem>
+                          <SelectItem value="120">2 hours</SelectItem>
+                          <SelectItem value="180">3 hours</SelectItem>
+                          <SelectItem value="240">4 hours</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <div className="flex justify-between">
                   <Button type="button" variant="outline" onClick={() => setActiveTab("client")}>
