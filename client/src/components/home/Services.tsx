@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -87,12 +88,11 @@ const defaultServiceImages = [
 ];
 
 export default function Services() {
+  const { selectedIndustry } = useIndustry();
+  const terms = getTerminology(selectedIndustry);
   const { data: services, isLoading, error } = useQuery<Service[]>({
     queryKey: ["/api/services"],
   });
-
-  const { selectedIndustry } = useIndustry();
-  const terms = getTerminology(selectedIndustry);
 
   // Create industry-specific title based on the current industry
   const sectionTitle = selectedIndustry.id === 'creative' && terms.service === 'service'
