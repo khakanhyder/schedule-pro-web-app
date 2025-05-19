@@ -196,6 +196,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateParam = req.query.date as string;
       const stylistId = parseInt(req.query.stylistId as string) || 0;
       
+      console.log("Timeslots request:", { dateParam, stylistId });
+      
       if (!dateParam) {
         return res.status(400).json({ message: "Date parameter is required" });
       }
@@ -204,6 +206,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(date.getTime())) {
         return res.status(400).json({ message: "Invalid date format" });
       }
+      
+      console.log("Processing date:", date);
       
       // Generate time slots from 9 AM to 7 PM at 30-minute intervals
       const timeSlots = [];
