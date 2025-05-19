@@ -58,22 +58,20 @@ export class MemStorage implements IStorage {
   private reviewCurrentId = 1;
   private contactMessageCurrentId = 1;
   
-  // Track the current industry
   private currentIndustryId = "beauty";
 
   constructor() {
-    // Initialize with some sample data
     this.initializeServices();
     this.initializeStylists();
     this.initializeReviews();
   }
-  
-  // Implement setIndustry method
+
+  // Industry-specific methods
   setIndustry(industryId: string): void {
     if (industryDatabase[industryId]) {
       this.currentIndustryId = industryId;
       
-      // Reset services and professionals for the new industry
+      // Reinitialize services and professionals
       this.services.clear();
       this.stylists.clear();
       this.serviceCurrentId = 1;
@@ -84,12 +82,11 @@ export class MemStorage implements IStorage {
     }
   }
   
-  // Implement getCurrentIndustry method
   getCurrentIndustry(): IndustryData {
     return industryDatabase[this.currentIndustryId];
   }
 
-  private initializeServices(): void {
+  private initializeServices() {
     const industry = industryDatabase[this.currentIndustryId];
     
     if (!industry) {
@@ -97,7 +94,7 @@ export class MemStorage implements IStorage {
       return;
     }
     
-    // Create services based on current industry
+    // Create services based on the current industry
     for (let i = 0; i < industry.services.length; i++) {
       const name = industry.services[i];
       const description = industry.serviceDescriptions[i] || `Professional ${name}`;
@@ -121,7 +118,7 @@ export class MemStorage implements IStorage {
     }
   }
   
-  private initializeStylists(): void {
+  private initializeStylists() {
     const industry = industryDatabase[this.currentIndustryId];
     
     if (!industry) {
@@ -129,7 +126,7 @@ export class MemStorage implements IStorage {
       return;
     }
     
-    // Create professionals based on current industry
+    // Create professionals based on the current industry
     for (let i = 0; i < industry.professionalNames.length; i++) {
       const name = industry.professionalNames[i];
       const bio = industry.professionalBios[i] || `${name} is an experienced ${industry.professionalName}`;
@@ -144,13 +141,14 @@ export class MemStorage implements IStorage {
     }
   }
 
-  private initializeReviews(): void {
-    const sampleReviews = [
+  private initializeReviews() {
+    const sampleReviews: InsertReview[] = [
       {
         name: "Emma Johnson",
         email: "emma@example.com",
         rating: 5,
         text: "Absolutely amazing service! So happy with my experience and will definitely be coming back.",
+        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
         publishConsent: true,
         published: true
       },
@@ -159,6 +157,7 @@ export class MemStorage implements IStorage {
         email: "michael@example.com",
         rating: 4,
         text: "Great service, very professional and attentive to my needs. Highly recommended!",
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
         publishConsent: true,
         published: true
       },
@@ -167,26 +166,22 @@ export class MemStorage implements IStorage {
         email: "sophia@example.com",
         rating: 5,
         text: "Excellent experience from start to finish. The attention to detail was impressive!",
+        date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
         publishConsent: true,
         published: true
       }
     ];
 
-    sampleReviews.forEach(review => {
-      const insertReview: InsertReview = {
-        ...review,
-        date: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000) // Random date in the last 30 days
-      };
-      this.createReview(insertReview);
-    });
+    sampleReviews.forEach(review => this.createReview(review));
   }
 
+  // User methods
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    for (const user of Array.from(this.users.values())) {
+    for (const user of this.users.values()) {
       if (user.username === username) {
         return user;
       }
@@ -201,6 +196,7 @@ export class MemStorage implements IStorage {
     return user;
   }
 
+  // Service methods
   async getServices(): Promise<Service[]> {
     return Array.from(this.services.values());
   }
@@ -216,6 +212,7 @@ export class MemStorage implements IStorage {
     return service;
   }
 
+  // Stylist methods
   async getStylists(): Promise<Stylist[]> {
     return Array.from(this.stylists.values());
   }
@@ -236,6 +233,7 @@ export class MemStorage implements IStorage {
     return stylist;
   }
 
+  // Appointment methods
   async getAppointments(): Promise<Appointment[]> {
     return Array.from(this.appointments.values());
   }
@@ -274,6 +272,7 @@ export class MemStorage implements IStorage {
     return appointment;
   }
 
+  // Review methods
   async getReviews(): Promise<Review[]> {
     return Array.from(this.reviews.values());
   }
@@ -298,6 +297,7 @@ export class MemStorage implements IStorage {
     return review;
   }
 
+  // Contact message methods
   async createContactMessage(insertMessage: InsertContactMessage): Promise<ContactMessage> {
     const id = this.contactMessageCurrentId++;
     const message: ContactMessage = {
@@ -306,8 +306,7 @@ export class MemStorage implements IStorage {
       email: insertMessage.email,
       subject: insertMessage.subject,
       message: insertMessage.message,
-      date: new Date(),
-      read: null
+      date: new Date()
     };
     this.contactMessages.set(id, message);
     return message;

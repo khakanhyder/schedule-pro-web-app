@@ -89,7 +89,8 @@ export class MemStorage implements IStorage {
     return industryDatabase[this.currentIndustryId];
   }
 
-  private initializeServices(): void {
+  private initializeServices() {
+    // Get current industry data
     const industry = industryDatabase[this.currentIndustryId];
     
     if (!industry) {
@@ -102,11 +103,9 @@ export class MemStorage implements IStorage {
       const name = industry.services[i];
       const description = industry.serviceDescriptions[i] || `Professional ${name}`;
       
-      // Generate price based on service index
+      // Generate price and duration based on service
       const basePrice = 45 + (i * 10);
       const price = `${basePrice}${i % 2 === 0 ? '' : '+'}`;
-      
-      // Generate duration based on service index
       const durations = [30, 45, 60, 90, 120];
       const durationMinutes = durations[i % durations.length];
       
@@ -121,7 +120,8 @@ export class MemStorage implements IStorage {
     }
   }
   
-  private initializeStylists(): void {
+  private initializeStylists() {
+    // Get current industry data
     const industry = industryDatabase[this.currentIndustryId];
     
     if (!industry) {
@@ -144,13 +144,14 @@ export class MemStorage implements IStorage {
     }
   }
 
-  private initializeReviews(): void {
-    const sampleReviews = [
+  private initializeReviews() {
+    const sampleReviews: InsertReview[] = [
       {
         name: "Emma Johnson",
         email: "emma@example.com",
         rating: 5,
         text: "Absolutely amazing service! So happy with my experience and will definitely be coming back.",
+        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
         publishConsent: true,
         published: true
       },
@@ -159,6 +160,7 @@ export class MemStorage implements IStorage {
         email: "michael@example.com",
         rating: 4,
         text: "Great service, very professional and attentive to my needs. Highly recommended!",
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
         publishConsent: true,
         published: true
       },
@@ -167,18 +169,13 @@ export class MemStorage implements IStorage {
         email: "sophia@example.com",
         rating: 5,
         text: "Excellent experience from start to finish. The attention to detail was impressive!",
+        date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
         publishConsent: true,
         published: true
       }
     ];
 
-    sampleReviews.forEach(review => {
-      const insertReview: InsertReview = {
-        ...review,
-        date: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000) // Random date in the last 30 days
-      };
-      this.createReview(insertReview);
-    });
+    sampleReviews.forEach(review => this.createReview(review));
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -186,7 +183,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    for (const user of Array.from(this.users.values())) {
+    for (const user of this.users.values()) {
       if (user.username === username) {
         return user;
       }
@@ -306,8 +303,7 @@ export class MemStorage implements IStorage {
       email: insertMessage.email,
       subject: insertMessage.subject,
       message: insertMessage.message,
-      date: new Date(),
-      read: null
+      date: new Date()
     };
     this.contactMessages.set(id, message);
     return message;

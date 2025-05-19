@@ -117,7 +117,7 @@ export default function Services() {
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto text-lg">
             Premium {terms.service} options designed to meet your highest expectations. 
-            Each {terms.service} includes personalized attention from our experienced {terms.professionalPlural}.
+            Each {terms.service} includes personalized attention from our experienced {terms.professionals}.
           </p>
         </div>
         

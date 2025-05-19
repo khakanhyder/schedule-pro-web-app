@@ -1,0 +1,603 @@
+import { 
+  users, type User, type InsertUser,
+  services, type Service, type InsertService,
+  stylists, type Stylist, type InsertStylist,
+  appointments, type Appointment, type InsertAppointment,
+  reviews, type Review, type InsertReview,
+  contactMessages, type ContactMessage, type InsertContactMessage
+} from "@shared/schema";
+import { IndustryData, industryDatabase } from "./industryData";
+
+export interface IStorage {
+  // Users
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  
+  // Services
+  getServices(): Promise<Service[]>;
+  getService(id: number): Promise<Service | undefined>;
+  createService(service: InsertService): Promise<Service>;
+  
+  // Stylists
+  getStylists(): Promise<Stylist[]>;
+  getStylist(id: number): Promise<Stylist | undefined>;
+  createStylist(stylist: InsertStylist): Promise<Stylist>;
+  
+  // Appointments
+  getAppointments(): Promise<Appointment[]>;
+  getAppointment(id: number): Promise<Appointment | undefined>;
+  getAppointmentsByDate(date: Date): Promise<Appointment[]>;
+  createAppointment(appointment: InsertAppointment): Promise<Appointment>;
+  
+  // Reviews
+  getReviews(): Promise<Review[]>;
+  getPublishedReviews(): Promise<Review[]>;
+  createReview(review: InsertReview): Promise<Review>;
+  
+  // Contact Messages
+  createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
+  
+  // Industry management
+  setIndustry(industryId: string): void;
+  getCurrentIndustry(): IndustryData;
+}
+
+// Define industry data for each profession
+export type IndustryData = {
+  id: string;
+  name: string;
+  professionalName: string;
+  professionalTitle: string;
+  services: string[];
+  serviceDescriptions: string[];
+  professionalNames: string[];
+  professionalBios: string[];
+}
+
+// Industry data mapping
+const industryData: Record<string, IndustryData> = {
+  "hairstylist": {
+    id: "hairstylist",
+    name: "Hairstylist",
+    professionalName: "stylist",
+    professionalTitle: "Stylist",
+    services: ["Women's Haircut", "Men's Haircut", "Color Treatment", "Highlights", "Blowout"],
+    serviceDescriptions: [
+      "Full service haircut includes consultation, shampoo, cut and style.",
+      "Precision cut with attention to detail, includes shampoo and style.",
+      "Custom color application for beautiful, long-lasting results.",
+      "Dimensional color technique for subtle or dramatic color effect.",
+      "Professional styling to add volume and shine to your hair."
+    ],
+    professionalNames: ["Sarah Johnson", "Michael Chen", "Amy Rodriguez"],
+    professionalBios: [
+      "Master stylist with 10+ years experience specializing in precision cuts and color.",
+      "Color specialist trained in the latest techniques for natural and fashion colors.",
+      "Styling expert who loves creating beautiful updos and special occasion styles."
+    ]
+  },
+  "carpenter": {
+    id: "carpenter",
+    name: "Carpenter",
+    professionalName: "carpenter",
+    professionalTitle: "Carpenter",
+    services: ["Custom Furniture", "Kitchen Cabinets", "Deck Building", "Repairs", "Installations"],
+    serviceDescriptions: [
+      "Handcrafted furniture made to your specifications with premium materials.",
+      "Custom designed cabinets to maximize your kitchen's functionality and style.",
+      "Professional deck construction using high-quality, weather-resistant materials.",
+      "Expert repairs to fix damaged furniture and woodwork throughout your home.",
+      "Professional installation of doors, trim, molding and other wooden elements."
+    ],
+    professionalNames: ["Robert Miller", "David Thompson", "Anna Martinez"],
+    professionalBios: [
+      "Master carpenter with 15+ years creating custom furniture and cabinetry.",
+      "Specializing in deck building and outdoor structures with sustainable materials.",
+      "Fine woodworking expert with attention to detail for premium results."
+    ]
+  },
+  "massage": {
+    id: "massage",
+    name: "Massage Therapist",
+    professionalName: "therapist",
+    professionalTitle: "Therapist",
+    services: ["Deep Tissue", "Swedish Massage", "Hot Stone", "Sports Massage", "Reflexology"],
+    serviceDescriptions: [
+      "Targets the deeper layers of muscle and connective tissue for tension relief.",
+      "Gentle, relaxing massage using long strokes to improve circulation and reduce stress.",
+      "Heated smooth stones placed on the body to ease muscle tension and promote relaxation.",
+      "Focuses on areas of tension from athletic activity to improve performance and recovery.",
+      "Pressure point massage on the feet to promote wellness throughout the body."
+    ],
+    professionalNames: ["Lisa Williams", "Jason Taylor", "Maria Garcia"],
+    professionalBios: [
+      "Licensed massage therapist specializing in deep tissue and therapeutic techniques.",
+      "Holistic practitioner combining massage and aromatherapy for a healing experience.",
+      "Sports massage specialist working with athletes for performance and recovery."
+    ]
+  },
+  "influencer": {
+    id: "influencer",
+    name: "Influencer",
+    professionalName: "influencer",
+    professionalTitle: "Creator",
+    services: ["Content Creation", "Sponsored Posts", "Fan Meetups", "Coaching", "Merchandise"],
+    serviceDescriptions: [
+      "Custom content creation tailored to your brand's voice and audience.",
+      "Authentic brand partnerships with detailed analytics and engagement reports.",
+      "Organized fan events to connect with your audience in person.",
+      "One-on-one coaching to help you grow your social media presence.",
+      "Custom merchandise design and sales management for your brand."
+    ],
+    professionalNames: ["Alex Morgan", "Jordan Lee", "Taylor Kim"],
+    professionalBios: [
+      "Lifestyle content creator with 500K+ followers across platforms.",
+      "Tech and gaming influencer specializing in product reviews and tutorials.",
+      "Wellness influencer focusing on sustainable living and mental health."
+    ]
+  },
+  "custom": {
+    id: "custom",
+    name: "Custom Business",
+    professionalName: "professional",
+    professionalTitle: "Professional",
+    services: ["Service 1", "Service 2", "Service 3", "Service 4", "Service 5"],
+    serviceDescriptions: [
+      "Description for Service 1",
+      "Description for Service 2",
+      "Description for Service 3",
+      "Description for Service 4",
+      "Description for Service 5"
+    ],
+    professionalNames: ["Professional 1", "Professional 2", "Professional 3"],
+    professionalBios: [
+      "Bio for Professional 1",
+      "Bio for Professional 2",
+      "Bio for Professional 3"
+    ]
+  }
+};
+
+export class MemStorage implements IStorage {
+  private users: Map<number, User>;
+  private services: Map<number, Service>;
+  private stylists: Map<number, Stylist>;
+  private appointments: Map<number, Appointment>;
+  private reviews: Map<number, Review>;
+  private contactMessages: Map<number, ContactMessage>;
+  
+  private userCurrentId: number;
+  private serviceCurrentId: number;
+  private stylistCurrentId: number;
+  private appointmentCurrentId: number;
+  private reviewCurrentId: number;
+  private contactMessageCurrentId: number;
+  
+  // Track the current industry
+  private currentIndustryId: string = "beauty";
+  
+  // Implement the required interface methods
+  setIndustry(industryId: string): void {
+    if (industryDatabase[industryId]) {
+      this.currentIndustryId = industryId;
+      
+      // Update services and professionals for the new industry
+      this.services.clear();
+      this.stylists.clear();
+      this.serviceCurrentId = 1;
+      this.stylistCurrentId = 1;
+      
+      this.initializeServices();
+      this.initializeStylists();
+    }
+  }
+  
+  getCurrentIndustry(): IndustryData {
+    return industryDatabase[this.currentIndustryId];
+  }
+  
+  // Use the imported industryDatabase
+    beauty: {
+      id: "beauty",
+      name: "Beauty Professional",
+      professionalName: "specialist",
+      professionalTitle: "Beauty Specialist",
+      services: ["Haircut & Styling", "Color Treatment", "Manicure & Pedicure", "Facial Treatment", "Waxing Services", "Lash Extensions"],
+      serviceDescriptions: [
+        "Full service haircut, wash, and blow dry styling",
+        "Professional hair coloring with quality products",
+        "Nail care for hands and feet with polish application",
+        "Deep cleansing facial with customized treatments",
+        "Hair removal services for various body areas",
+        "Application of semi-permanent lash extensions"
+      ],
+      professionalNames: [
+        "Sarah Johnson", 
+        "Michael Chen", 
+        "Anna Rodriguez", 
+        "David Smith"
+      ],
+      professionalBios: [
+        "Sarah specializes in color techniques and precision cuts with 8 years of experience.",
+        "Michael is known for his creative styling and formal updos for special occasions.",
+        "Anna brings expertise in nail art and skin care with advanced certification.",
+        "David focuses on classic cuts with modern influences from international trends."
+      ]
+    },
+    wellness: {
+      id: "wellness",
+      name: "Wellness Provider",
+      professionalName: "practitioner",
+      professionalTitle: "Wellness Practitioner",
+      services: ["Massage Therapy", "Personal Training", "Yoga Class", "Nutrition Consultation", "Physical Therapy", "Meditation Session"],
+      serviceDescriptions: [
+        "Therapeutic massage to relieve tension and promote relaxation",
+        "One-on-one fitness training customized to your goals",
+        "Guided yoga practice for all experience levels",
+        "Personalized nutrition planning and dietary guidance",
+        "Targeted therapy to address physical injuries and limitations",
+        "Guided meditation and mindfulness practices"
+      ],
+      professionalNames: [
+        "Lisa Thompson", 
+        "James Wilson", 
+        "Maria Garcia", 
+        "Robert Taylor"
+      ],
+      professionalBios: [
+        "Lisa is a certified massage therapist specializing in deep tissue and sports recovery.",
+        "James combines strength training with mobility work for a balanced fitness approach.",
+        "Maria is a registered dietitian with focus on holistic nutrition and wellness.",
+        "Robert brings 10 years of experience in yoga and meditation instruction."
+      ]
+    },
+    home_services: {
+      id: "home_services",
+      name: "Home Service Provider",
+      professionalName: "technician",
+      professionalTitle: "Home Service Technician",
+      services: ["Bathroom Remodel", "Built-in Cabinets", "Electrical Panel Upgrade", "Kitchen Renovation", "Plumbing Repair", "Deck Construction"],
+      serviceDescriptions: [
+        "Complete bathroom renovation including fixtures and finishes",
+        "Custom cabinet design and installation for any room",
+        "Professional electrical panel replacement and upgrading",
+        "Full kitchen remodeling with modern appliances and finishes",
+        "Expert plumbing repairs and fixture installations",
+        "Custom outdoor deck design and construction"
+      ],
+      professionalNames: [
+        "Thomas Brown", 
+        "Jennifer Martinez", 
+        "William Davis", 
+        "Jessica Wilson"
+      ],
+      professionalBios: [
+        "Thomas specializes in custom carpentry with 15 years of woodworking experience.",
+        "Jennifer is a licensed electrician focused on residential safety upgrades.",
+        "William brings expertise in kitchen and bathroom renovation projects.",
+        "Jessica is a master plumber specializing in complex plumbing systems."
+      ]
+    },
+    pet_care: {
+      id: "pet_care",
+      name: "Pet Care Professional",
+      professionalName: "caretaker",
+      professionalTitle: "Pet Care Specialist",
+      services: ["Pet Grooming", "Dog Training", "Pet Sitting", "Dog Walking", "Basic Veterinary Care", "Pet Photography"],
+      serviceDescriptions: [
+        "Complete grooming package including bath, haircut, and nail trimming",
+        "Behavior training for puppies and adult dogs",
+        "In-home pet sitting while you're away",
+        "Scheduled dog walking with exercise and potty breaks",
+        "Routine health checks and preventative care",
+        "Professional pet photography sessions"
+      ],
+      professionalNames: [
+        "Emma Clark", 
+        "Daniel Rodriguez", 
+        "Olivia Lee", 
+        "Nathan Parker"
+      ],
+      professionalBios: [
+        "Emma is a certified dog groomer with specialized training for all breed types.",
+        "Daniel uses positive reinforcement techniques for effective dog training.",
+        "Olivia is a veterinary assistant providing basic health services for pets.",
+        "Nathan combines pet care with professional photography for memorable portraits."
+      ]
+    },
+    creative: {
+      id: "creative",
+      name: "Creative Professional",
+      professionalName: "artist",
+      professionalTitle: "Creative Artist",
+      services: ["Photo Session", "Design Consultation", "Custom Artwork", "Portfolio Review", "Creative Direction", "Wedding Photography"],
+      serviceDescriptions: [
+        "Professional photography session in studio or on location",
+        "Consultation for branding, web, or print design projects",
+        "Commission custom artwork tailored to your preferences",
+        "Expert review and feedback on your creative portfolio",
+        "Creative direction for brands and marketing campaigns",
+        "Complete wedding photography package with editing"
+      ],
+      professionalNames: [
+        "Christopher Adams", 
+        "Sophia Chen", 
+        "Marcus Johnson", 
+        "Isabella Martinez"
+      ],
+      professionalBios: [
+        "Christopher is an award-winning photographer specializing in portraits and events.",
+        "Sophia brings expertise in graphic design with focus on brand identity.",
+        "Marcus creates custom illustrations and fine art for residential and commercial spaces.",
+        "Isabella specializes in wedding and special event photography with a journalistic style."
+      ]
+    },
+    custom: {
+      id: "custom",
+      name: "Custom Business",
+      professionalName: "professional",
+      professionalTitle: "Service Professional",
+      services: ["Service 1", "Service 2", "Service 3", "Service 4", "Service 5"],
+      serviceDescriptions: [
+        "Description for Service 1",
+        "Description for Service 2",
+        "Description for Service 3",
+        "Description for Service 4",
+        "Description for Service 5"
+      ],
+      professionalNames: [
+        "Professional 1", 
+        "Professional 2", 
+        "Professional 3", 
+        "Professional 4"
+      ],
+      professionalBios: [
+        "Bio for Professional 1",
+        "Bio for Professional 2",
+        "Bio for Professional 3",
+        "Bio for Professional 4"
+      ]
+    }
+  };
+
+  constructor() {
+    this.users = new Map();
+    this.services = new Map();
+    this.stylists = new Map();
+    this.appointments = new Map();
+    this.reviews = new Map();
+    this.contactMessages = new Map();
+    
+    this.userCurrentId = 1;
+    this.serviceCurrentId = 1;
+    this.stylistCurrentId = 1;
+    this.appointmentCurrentId = 1;
+    this.reviewCurrentId = 1;
+    this.contactMessageCurrentId = 1;
+    
+    // Initialize with some sample data
+    this.initializeServices();
+    this.initializeStylists();
+    this.initializeReviews();
+  }
+
+  private initializeServices() {
+    const sampleServices: InsertService[] = [
+      {
+        name: "Women's Haircut",
+        description: "Full service haircut including consultation, shampoo, and style.",
+        price: "$65",
+        durationMinutes: 45
+      },
+      {
+        name: "Men's Haircut",
+        description: "Precision cut with clipper or scissor work.",
+        price: "$45",
+        durationMinutes: 30
+      },
+      {
+        name: "Color & Highlights",
+        description: "Full or partial highlights, balayage, or single-process color.",
+        price: "$120+",
+        durationMinutes: 120
+      },
+      {
+        name: "Blowout & Style",
+        description: "Professional blow dry and styling for any occasion.",
+        price: "$45",
+        durationMinutes: 30
+      },
+      {
+        name: "Hair Treatments",
+        description: "Deep conditioning, keratin treatments, and hair masks.",
+        price: "$85+",
+        durationMinutes: 60
+      },
+      {
+        name: "Special Occasion",
+        description: "Updos, formal styling, and wedding hair services.",
+        price: "$85+",
+        durationMinutes: 60
+      }
+    ];
+
+    sampleServices.forEach(service => this.createService(service));
+  }
+
+  private initializeStylists() {
+    const sampleStylists: InsertStylist[] = [
+      {
+        name: "Sarah Johnson",
+        bio: "Master stylist with 10+ years of experience specializing in color and cuts.",
+        imageUrl: ""
+      },
+      {
+        name: "Michael Chen",
+        bio: "Precision cutting specialist with training from Vidal Sassoon.",
+        imageUrl: ""
+      },
+      {
+        name: "Jessica Rodriguez",
+        bio: "Color expert specializing in balayage and creative coloring techniques.",
+        imageUrl: ""
+      }
+    ];
+
+    sampleStylists.forEach(stylist => this.createStylist(stylist));
+  }
+
+  private initializeReviews() {
+    const sampleReviews: InsertReview[] = [
+      {
+        name: "Jennifer K.",
+        email: "jennifer@example.com",
+        rating: 5,
+        text: "Sarah is amazing! She listened to exactly what I wanted and delivered the perfect cut and color. The salon is beautiful and so relaxing. Highly recommend!",
+        publishConsent: true,
+      },
+      {
+        name: "Robert T.",
+        email: "robert@example.com",
+        rating: 4,
+        text: "Fantastic experience from start to finish. Michael gave me the best men's cut I've had in years. The online booking system was so convenient, and I appreciated the text reminders.",
+        publishConsent: true,
+      },
+      {
+        name: "Amanda L.",
+        email: "amanda@example.com",
+        rating: 5,
+        text: "Jessica did an amazing job with my highlights! The salon is clean and modern, and everyone was so friendly. I've already booked my next appointment.",
+        publishConsent: true,
+      }
+    ];
+
+    sampleReviews.forEach(review => {
+      const savedReview = this.createReview(review);
+      // Mark these initial reviews as published
+      const publishedReview = {...savedReview, published: true};
+      this.reviews.set(savedReview.id, publishedReview);
+    });
+  }
+
+  // Users
+  async getUser(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username,
+    );
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const id = this.userCurrentId++;
+    const user: User = { ...insertUser, id };
+    this.users.set(id, user);
+    return user;
+  }
+  
+  // Services
+  async getServices(): Promise<Service[]> {
+    return Array.from(this.services.values());
+  }
+  
+  async getService(id: number): Promise<Service | undefined> {
+    return this.services.get(id);
+  }
+  
+  async createService(insertService: InsertService): Promise<Service> {
+    const id = this.serviceCurrentId++;
+    const service: Service = { ...insertService, id };
+    this.services.set(id, service);
+    return service;
+  }
+  
+  // Stylists
+  async getStylists(): Promise<Stylist[]> {
+    return Array.from(this.stylists.values());
+  }
+  
+  async getStylist(id: number): Promise<Stylist | undefined> {
+    return this.stylists.get(id);
+  }
+  
+  async createStylist(insertStylist: InsertStylist): Promise<Stylist> {
+    const id = this.stylistCurrentId++;
+    const stylist: Stylist = { ...insertStylist, id };
+    this.stylists.set(id, stylist);
+    return stylist;
+  }
+  
+  // Appointments
+  async getAppointments(): Promise<Appointment[]> {
+    return Array.from(this.appointments.values());
+  }
+  
+  async getAppointment(id: number): Promise<Appointment | undefined> {
+    return this.appointments.get(id);
+  }
+  
+  async getAppointmentsByDate(date: Date): Promise<Appointment[]> {
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+    
+    return Array.from(this.appointments.values()).filter(
+      appointment => {
+        const appointmentDate = new Date(appointment.date);
+        return appointmentDate >= startDate && appointmentDate <= endDate;
+      }
+    );
+  }
+  
+  async createAppointment(insertAppointment: InsertAppointment): Promise<Appointment> {
+    const id = this.appointmentCurrentId++;
+    const appointment: Appointment = { 
+      ...insertAppointment, 
+      id, 
+      confirmed: true 
+    };
+    this.appointments.set(id, appointment);
+    return appointment;
+  }
+  
+  // Reviews
+  async getReviews(): Promise<Review[]> {
+    return Array.from(this.reviews.values());
+  }
+  
+  async getPublishedReviews(): Promise<Review[]> {
+    return Array.from(this.reviews.values()).filter(review => review.published);
+  }
+  
+  async createReview(insertReview: InsertReview): Promise<Review> {
+    const id = this.reviewCurrentId++;
+    const review: Review = { 
+      ...insertReview, 
+      id, 
+      date: new Date(),
+      published: false
+    };
+    this.reviews.set(id, review);
+    return review;
+  }
+  
+  // Contact Messages
+  async createContactMessage(insertMessage: InsertContactMessage): Promise<ContactMessage> {
+    const id = this.contactMessageCurrentId++;
+    const message: ContactMessage = { 
+      ...insertMessage, 
+      id, 
+      date: new Date(),
+      read: false
+    };
+    this.contactMessages.set(id, message);
+    return message;
+  }
+}
+
+export const storage = new MemStorage();
