@@ -248,6 +248,10 @@ export const IndustryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         body: JSON.stringify({ industryId: id }),
       })
       .then(response => response.json())
+      .then(() => {
+        // Force reload services after industry change
+        window.location.reload();
+      })
       .catch(error => {
         console.error('Error setting industry on server:', error);
       });
