@@ -25,30 +25,31 @@ export interface Industry {
 // Default industry templates
 export const industryTemplates: Industry[] = [
   {
-    id: "hairstylist",
-    name: "Hairstylist",
-    description: "Elevate your salon business with a beautiful, client-focused scheduling system",
-    services: ["Women's Haircut", "Men's Haircut", "Color Treatment", "Highlights", "Blowout"],
-    icon: "✂️",
-    primaryColor: "#9d5da2", // Lavender
-    accentColor: "#7a3f7e",
+    id: "beauty",
+    name: "Beauty Professional",
+    description: "Premium template for hair stylists, nail techs, aestheticians and beauty salons",
+    services: ["Haircut", "Color Treatment", "Manicure", "Pedicure", "Facial", "Waxing", "Styling"],
+    icon: "✨",
+    primaryColor: "#d16ba5", // Gradient pink/purple
+    accentColor: "#b76e79",
     benefits: [
       "Track client style preferences and color formulas",
       "Send before & after photos to clients",
-      "Automated appointment reminders & confirmations"
+      "Automated appointment reminders & confirmations",
+      "Build client loyalty with personalized experiences"
     ],
-    features: ["Client history tracking", "Color formula records", "Service & retail inventory"],
-    professionalName: "stylist",
-    professionalPlural: "stylists",
+    features: ["Client history tracking", "Product preferences", "Service gallery", "Digital portfolio"],
+    professionalName: "specialist",
+    professionalPlural: "specialists",
     clientName: "client",
     appointmentTerm: "appointment",
     serviceTerm: "service",
-    heroImage: "/images/salon-hero.jpg",
+    heroImage: "https://images.unsplash.com/photo-1562322140-8b2e83e36768?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
     galleryImages: [
-      "/images/salon-1.jpg",
-      "/images/salon-2.jpg",
-      "/images/salon-3.jpg",
-      "/images/salon-4.jpg"
+      "https://images.unsplash.com/photo-1560869713-7d0a29430803?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1600948836101-f9ffda59d250?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1604654894610-df63bc536371?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
     ]
   },
   {
