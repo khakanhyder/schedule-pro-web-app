@@ -52,13 +52,19 @@ const industryServiceImages = {
     "https://images.unsplash.com/photo-1556909114-44e3e9699e2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
-  // Creative Professionals
+  // Creative Professionals (in exact order of services in server/industryData.ts)
   creative: [
+    // Photo Session
     "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Design Consultation
     "https://images.unsplash.com/photo-1532372576444-dda954194ad0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Custom Artwork
     "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1507499739999-097f9693f783?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Portfolio Review
+    "https://images.unsplash.com/photo-1551135049-8a33b5883817?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Creative Direction
     "https://images.unsplash.com/photo-1489993360877-883320ae5b91?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Wedding Photography
     "https://images.unsplash.com/photo-1468956398224-6d6f66e22c35?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
