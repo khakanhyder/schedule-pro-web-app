@@ -20,12 +20,17 @@ import AppointmentDetails from "@/components/dashboard/AppointmentDetails";
 import WeeklySchedule from "@/components/dashboard/WeeklySchedule";
 import ClientManagement from "@/components/dashboard/ClientManagement";
 import PaymentOptions from "@/components/dashboard/PaymentOptions";
+import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function StylistDashboard() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTab, setSelectedTab] = useState("appointments");
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isAppointmentDetailsOpen, setIsAppointmentDetailsOpen] = useState(false);
+  
+  // Get industry context
+  const { selectedIndustry } = useIndustry();
+  const terms = getTerminology(selectedIndustry);
   
   // Format date for API request
   const formattedDate = selectedDate ? selectedDate.toISOString() : new Date().toISOString();
@@ -100,7 +105,9 @@ export default function StylistDashboard() {
   return (
     <section className="py-8 bg-neutral">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-display font-bold mb-8">Hairstylist Dashboard</h2>
+        <h2 className="text-3xl md:text-4xl font-display font-bold mb-8">
+          {selectedIndustry.name} Dashboard
+        </h2>
         
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -110,13 +117,17 @@ export default function StylistDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${calculateDailyRevenue().toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">From {todayAppointmentsCount} appointments</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                From {todayAppointmentsCount} {todayAppointmentsCount === 1 ? terms.appointment : terms.appointment + 's'}
+              </p>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Appointments</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}s
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{todayAppointmentsCount}</div>
@@ -131,7 +142,7 @@ export default function StylistDashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="flex gap-2">
-              <Button size="sm">New Appointment</Button>
+              <Button size="sm">New {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}</Button>
               <Button size="sm" variant="outline">Request Review</Button>
             </CardContent>
           </Card>
@@ -139,9 +150,9 @@ export default function StylistDashboard() {
         
         <Tabs defaultValue="appointments" onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
           <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="appointments">Today's Appointments</TabsTrigger>
+            <TabsTrigger value="appointments">Today's {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}s</TabsTrigger>
             <TabsTrigger value="schedule">Weekly Schedule</TabsTrigger>
-            <TabsTrigger value="clients">Client Management</TabsTrigger>
+            <TabsTrigger value="clients">{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Management</TabsTrigger>
             <TabsTrigger value="payments">Process Payment</TabsTrigger>
           </TabsList>
           

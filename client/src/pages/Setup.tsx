@@ -4,12 +4,14 @@ import IndustryTemplates from "@/components/setup/IndustryTemplates";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useIndustry } from "@/lib/industryContext";
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
+  const { selectIndustryById } = useIndustry();
   
   const handleTemplateSelection = (templateId: string) => {
     setSelectedTemplate(templateId);
@@ -25,11 +27,10 @@ export default function Setup() {
       return;
     }
     
-    // In a real application, we would save the template selection
-    // to the user's profile or settings
+    // Update the selected industry in our context
+    selectIndustryById(selectedTemplate);
     
-    // Here, we're just navigating to the dashboard
-    // In a production app, we would customize the dashboard based on the template
+    // Navigate to the dashboard
     setLocation("/dashboard");
     
     toast({

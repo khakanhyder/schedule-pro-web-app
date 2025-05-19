@@ -9,6 +9,7 @@ import IOSTest from "@/pages/IOSTest";
 import NotFound from "@/pages/not-found";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { IndustryProvider } from "@/lib/industryContext";
 
 function App() {
   const [location] = useLocation();
@@ -16,22 +17,24 @@ function App() {
   const isAdminPage = location === "/admin";
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {!isSetupPage && !isAdminPage && <Navbar />}
-      <main className="flex-grow">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/booking" component={Booking} />
-          <Route path="/dashboard" component={StylistDashboard} />
-          <Route path="/setup" component={Setup} />
-          <Route path="/pricing" component={Pricing} />
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/ios-test" component={IOSTest} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      {!isSetupPage && !isAdminPage && <Footer />}
-    </div>
+    <IndustryProvider>
+      <div className="flex flex-col min-h-screen">
+        {!isSetupPage && !isAdminPage && <Navbar />}
+        <main className="flex-grow">
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/booking" component={Booking} />
+            <Route path="/dashboard" component={StylistDashboard} />
+            <Route path="/setup" component={Setup} />
+            <Route path="/pricing" component={Pricing} />
+            <Route path="/admin" component={AdminDashboard} />
+            <Route path="/ios-test" component={IOSTest} />
+            <Route component={NotFound} />
+          </Switch>
+        </main>
+        {!isSetupPage && !isAdminPage && <Footer />}
+      </div>
+    </IndustryProvider>
   );
 }
 
