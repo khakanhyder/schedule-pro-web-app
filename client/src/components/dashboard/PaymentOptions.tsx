@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Copy, DollarSign, CreditCard, AlertCircle } from "lucide-react";
+import { Check, Copy, DollarSign, CreditCard, AlertCircle, CheckCircle } from "lucide-react";
 
 interface PaymentOptionsProps {
   appointmentId: number;
@@ -271,7 +271,7 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
               {invoiceViews.length > 0 && (
                 <div className="mt-4 p-4 border rounded-md bg-green-50">
                   <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-                    <CheckIcon />
+                    <CheckCircle className="h-4 w-4 text-green-500" />
                     Invoice Views
                   </h3>
                   <div className="text-sm">
