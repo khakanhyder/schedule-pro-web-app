@@ -187,6 +187,33 @@ export const industryTemplates: Industry[] = [
     ]
   },
   {
+    id: "influencer",
+    name: "Influencer",
+    description: "Organize your content creation, sponsorships, and fan interactions",
+    services: ["Content Creation", "Sponsored Posts", "Fan Meetups", "Coaching", "Merchandise"],
+    icon: "📱",
+    primaryColor: "#e74c3c", // Vibrant red
+    accentColor: "#c0392b",
+    benefits: [
+      "Track content schedules and posting timelines",
+      "Manage brand partnerships and sponsorships",
+      "Organize fan interactions and events"
+    ],
+    features: ["Content calendar", "Sponsorship tracking", "Audience analytics"],
+    professionalName: "influencer",
+    professionalPlural: "influencers",
+    clientName: "follower",
+    appointmentTerm: "session",
+    serviceTerm: "content",
+    heroImage: "/images/influencer-hero.jpg",
+    galleryImages: [
+      "/images/influencer-1.jpg",
+      "/images/influencer-2.jpg",
+      "/images/influencer-3.jpg",
+      "/images/influencer-4.jpg"
+    ]
+  },
+  {
     id: "custom",
     name: "Custom Template",
     description: "Build your unique business template with our powerful customization tools",
