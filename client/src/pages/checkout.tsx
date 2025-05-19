@@ -109,10 +109,12 @@ export default function Checkout() {
   const [searchParams] = useState(() => new URLSearchParams(window.location.search));
   const [clientSecret, setClientSecret] = useState("");
   const [amount, setAmount] = useState<number>(0);
+  const [totalWithTip, setTotalWithTip] = useState<number>(0);
   const [clientName, setClientName] = useState<string>("");
   const [appointmentId, setAppointmentId] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tipsEnabled, setTipsEnabled] = useState(false);
   const [, navigate] = useLocation();
 
   useEffect(() => {
@@ -120,6 +122,7 @@ export default function Checkout() {
     const amountParam = searchParams.get('amount');
     const clientNameParam = searchParams.get('clientName');
     const appointmentIdParam = searchParams.get('appointmentId');
+    const tipsParam = searchParams.get('enableTips');
     
     if (!amountParam || !clientNameParam || !appointmentIdParam) {
       setError("Missing required payment information");
@@ -137,8 +140,10 @@ export default function Checkout() {
     }
     
     setAmount(parsedAmount);
+    setTotalWithTip(parsedAmount); // Initialize total with base amount
     setClientName(clientNameParam);
     setAppointmentId(parsedAppointmentId);
+    setTipsEnabled(tipsParam === 'true');
     
     // Create PaymentIntent on the server
     const createPayment = async () => {
@@ -258,7 +263,9 @@ export default function Checkout() {
           }}>
             <CheckoutForm 
               clientName={clientName} 
-              appointmentId={appointmentId} 
+              appointmentId={appointmentId}
+              amount={amount}
+              onTipChange={setTotalWithTip}
             />
           </Elements>
         </CardContent>

@@ -36,6 +36,8 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
   const [manualReference, setManualReference] = useState("");
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [paymentLink, setPaymentLink] = useState<string>("");
+  const [invoiceViews, setInvoiceViews] = useState<{timestamp: string, count: number}[]>([]);
+  const [clientEmail, setClientEmail] = useState<string>("");
   const { toast } = useToast();
   
   // Digital payment details - in production this would come from the professional's profile
@@ -47,7 +49,8 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
 
   const handleCardPayment = () => {
     // Redirect to our Stripe checkout page
-    const checkoutUrl = `/checkout?amount=${amount}&appointmentId=${appointmentId}&clientName=${encodeURIComponent(clientName)}`;
+    const enableTips = ['beauty', 'wellness'].includes(localStorage.getItem('industryId') || '');
+    const checkoutUrl = `/checkout?amount=${amount}&appointmentId=${appointmentId}&clientName=${encodeURIComponent(clientName)}&enableTips=${enableTips}`;
     window.location.href = checkoutUrl;
   };
 
@@ -240,6 +243,8 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
                 <Input 
                   id="client-email" 
                   placeholder="Enter client's email address"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
                   disabled={invoiceSent || paymentStatus === "completed"}
                 />
               </div>
@@ -262,6 +267,29 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
                   disabled={invoiceSent || paymentStatus === "completed"}
                 />
               </div>
+              
+              {invoiceViews.length > 0 && (
+                <div className="mt-4 p-4 border rounded-md bg-green-50">
+                  <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <CheckIcon />
+                    Invoice Views
+                  </h3>
+                  <div className="text-sm">
+                    <p>Client has viewed this invoice {invoiceViews.length} times.</p>
+                    <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                      {invoiceViews.map((view, index) => (
+                        <li key={index} className="flex justify-between">
+                          <span>Viewed on:</span>
+                          <span>
+                            {new Date(view.timestamp).toLocaleDateString()} at{' '}
+                            {new Date(view.timestamp).toLocaleTimeString()}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
               
               {paymentLink && (
                 <div className="p-4 border rounded-md bg-neutral mt-4">
@@ -295,6 +323,15 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
               
               <Button 
                 onClick={() => {
+                  if (!clientEmail) {
+                    toast({
+                      title: "Client Email Required",
+                      description: "Please enter the client's email address to create an invoice.",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  
                   // Generate a unique payment link
                   const uniqueId = Math.random().toString(36).substring(2, 10);
                   const link = `${window.location.origin}/pay/${appointmentId}/${uniqueId}`;
@@ -305,6 +342,22 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
                     description: `Invoice for ${clientName} has been created with a payment link.`,
                   });
                   setInvoiceSent(true);
+                  
+                  // Simulate view tracking with a demo view
+                  setTimeout(() => {
+                    setInvoiceViews(prev => [
+                      ...prev, 
+                      { 
+                        timestamp: new Date().toISOString(),
+                        count: 1
+                      }
+                    ]);
+                    
+                    toast({
+                      title: "Invoice Viewed!",
+                      description: `${clientName} just viewed the invoice.`,
+                    });
+                  }, 5000);
                 }}
                 disabled={invoiceSent || paymentStatus === "completed"}
                 className="w-full mt-4"
