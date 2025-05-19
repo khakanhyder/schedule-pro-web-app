@@ -28,7 +28,7 @@ export const industryTemplates: Industry[] = [
     id: "beauty",
     name: "Beauty Professional",
     description: "Premium template for hair stylists, nail techs, aestheticians and beauty salons",
-    services: ["Haircut", "Color Treatment", "Manicure", "Pedicure", "Facial", "Waxing", "Styling"],
+    services: ["Haircut & Styling", "Color Treatment", "Manicure & Pedicure", "Facial Treatment", "Waxing Services", "Lash Extensions"],
     icon: "✨",
     primaryColor: "#d16ba5", // Gradient pink/purple
     accentColor: "#b76e79",
@@ -53,192 +53,143 @@ export const industryTemplates: Industry[] = [
     ]
   },
   {
-    id: "carpenter",
-    name: "Carpenter",
-    description: "Streamline your woodworking business with project tracking and client management",
-    services: ["Custom Furniture", "Kitchen Cabinets", "Deck Building", "Repairs", "Installations"],
-    icon: "🔨",
-    primaryColor: "#976535", // Rich wood
-    accentColor: "#6a4624",
+    id: "wellness",
+    name: "Wellness Provider",
+    description: "Elegant scheduling for massage therapists, fitness trainers and wellness professionals",
+    services: ["Massage Therapy", "Personal Training", "Yoga Class", "Nutrition Consultation", "Physical Therapy", "Meditation Session"],
+    icon: "🧘",
+    primaryColor: "#5e8b7e", 
+    accentColor: "#2C7873",
     benefits: [
-      "Manage project timelines and material costs",
-      "Send project photos and updates to clients",
-      "Track your tools and materials inventory"
+      "Maintain client health records securely",
+      "Track progress and preferences",
+      "Send gentle appointment reminders",
+      "Build wellness programs for regular clients"
     ],
-    features: ["Project estimates", "Materials calculator", "Visual project gallery"],
-    professionalName: "carpenter",
-    professionalPlural: "carpenters",
-    clientName: "customer",
-    appointmentTerm: "job",
-    serviceTerm: "project",
-    heroImage: "/images/carpentry-hero.jpg",
-    galleryImages: [
-      "/images/carpentry-1.jpg",
-      "/images/carpentry-2.jpg",
-      "/images/carpentry-3.jpg",
-      "/images/carpentry-4.jpg"
-    ]
-  },
-  {
-    id: "massage",
-    name: "Massage Therapist",
-    description: "Create a peaceful booking experience that reflects your wellness practice",
-    services: ["Deep Tissue", "Swedish Massage", "Hot Stone", "Sports Massage", "Reflexology"],
-    icon: "💆",
-    primaryColor: "#5e8b7e", // Sage
-    accentColor: "#3e6d5e",
-    benefits: [
-      "Track client preferences and health notes",
-      "Manage session packages and gift cards",
-      "Schedule breaks between sessions for recovery"
-    ],
-    features: ["Client health records", "SOAP notes", "Wellness packages"],
-    professionalName: "therapist",
-    professionalPlural: "therapists",
+    features: ["Health intake forms", "Session notes", "Treatment plans", "Progress tracking"],
+    professionalName: "practitioner",
+    professionalPlural: "practitioners",
     clientName: "client",
     appointmentTerm: "session",
     serviceTerm: "treatment",
-    heroImage: "/images/massage-hero.jpg",
+    heroImage: "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
     galleryImages: [
-      "/images/massage-1.jpg",
-      "/images/massage-2.jpg",
-      "/images/massage-3.jpg",
-      "/images/massage-4.jpg"
+      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1588680382665-cd934bb0452c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
     ]
   },
   {
-    id: "nails",
-    name: "Nail Technician",
-    description: "Showcase your nail art and make booking a breeze for your clients",
-    services: ["Manicure", "Pedicure", "Gel Polish", "Nail Art", "Acrylic Sets"],
-    icon: "💅",
-    primaryColor: "#c43c6e", // Rose
-    accentColor: "#a12a56",
+    id: "home_services",
+    name: "Home Service Provider",
+    description: "Professional system for carpenters, plumbers, electricians and home improvement specialists",
+    services: ["Bathroom Remodel", "Built-in Cabinets", "Replace Electrical Panel", "Kitchen Renovation", "Leak Repair", "Deck Construction"],
+    icon: "🔧",
+    primaryColor: "#3a86ff",
+    accentColor: "#0077b6",
     benefits: [
-      "Maintain a gallery of your nail designs",
-      "Track popular styles and seasonal trends",
-      "Schedule efficiently to maximize your day"
+      "Organize service calls efficiently by location",
+      "Manage customer property details",
+      "Track job history and recurring maintenance",
+      "Provide professional quotes and invoices"
     ],
-    features: ["Design gallery", "Product inventory", "Client favorites tracking"],
+    features: ["Service area mapping", "Parts inventory", "Job history records", "Quote generator"],
     professionalName: "technician",
     professionalPlural: "technicians",
+    clientName: "customer",
+    appointmentTerm: "service call",
+    serviceTerm: "job",
+    heroImage: "https://images.unsplash.com/photo-1581612129334-559ed4229c9e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
+    galleryImages: [
+      "https://images.unsplash.com/photo-1558618666-c397890ae041?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1558520871-9c508f147e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+    ]
+  },
+  {
+    id: "pet_care",
+    name: "Pet Care Professional",
+    description: "Premium booking system for dog groomers, trainers, sitters and veterinary services",
+    services: ["Pet Grooming", "Dog Training", "Pet Sitting", "Dog Walking", "Basic Veterinary Care", "Pet Photography"],
+    icon: "🐾",
+    primaryColor: "#4daa57",
+    accentColor: "#2a9d8f",
+    benefits: [
+      "Track pet details and breed-specific needs",
+      "Maintain health and behavior records",
+      "Send appointment reminders to pet owners",
+      "Share photos of pets during and after services"
+    ],
+    features: ["Pet profiles", "Breed database", "Service history", "Photo sharing"],
+    professionalName: "caretaker",
+    professionalPlural: "caretakers",
+    clientName: "pet owner",
+    appointmentTerm: "visit",
+    serviceTerm: "service",
+    heroImage: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
+    galleryImages: [
+      "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1541599468348-e96984315921?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+    ]
+  },
+  {
+    id: "creative",
+    name: "Creative Professional",
+    description: "Modern booking system for photographers, designers, artists and creative professionals",
+    services: ["Photo Session", "Design Consultation", "Custom Artwork", "Portfolio Review", "Creative Direction", "Wedding Photography"],
+    icon: "🎨",
+    primaryColor: "#fb5607",
+    accentColor: "#ff8811",
+    benefits: [
+      "Showcase your portfolio to potential clients",
+      "Manage creative project schedules efficiently",
+      "Track project deliverables and milestones",
+      "Collect payments for creative services"
+    ],
+    features: ["Portfolio showcase", "Project timeline", "Client collaboration tools", "Digital delivery"],
+    professionalName: "artist",
+    professionalPlural: "artists",
     clientName: "client",
-    appointmentTerm: "appointment",
-    serviceTerm: "service",
-    heroImage: "/images/nails-hero.jpg",
+    appointmentTerm: "booking",
+    serviceTerm: "project",
+    heroImage: "https://images.unsplash.com/photo-1496347646636-ea47f7d6b37b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
     galleryImages: [
-      "/images/nails-1.jpg",
-      "/images/nails-2.jpg",
-      "/images/nails-3.jpg",
-      "/images/nails-4.jpg"
-    ]
-  },
-  {
-    id: "plumber",
-    name: "Plumber",
-    description: "Organize service calls, track parts, and grow your plumbing business",
-    services: ["Leak Repairs", "Installation", "Drain Cleaning", "Inspections", "Emergency Services"],
-    icon: "🔧",
-    primaryColor: "#3d6d9b", // Navy blue
-    accentColor: "#2a5078",
-    benefits: [
-      "Schedule and dispatch technicians efficiently",
-      "Track parts and estimate material costs",
-      "Handle emergency calls with priority scheduling"
-    ],
-    features: ["Job estimates", "Parts inventory", "Emergency dispatch"],
-    professionalName: "plumber",
-    professionalPlural: "plumbers",
-    clientName: "customer",
-    appointmentTerm: "job",
-    serviceTerm: "service",
-    heroImage: "/images/plumbing-hero.jpg",
-    galleryImages: [
-      "/images/plumbing-1.jpg",
-      "/images/plumbing-2.jpg",
-      "/images/plumbing-3.jpg",
-      "/images/plumbing-4.jpg"
-    ]
-  },
-  {
-    id: "electrician",
-    name: "Electrician",
-    description: "Power up your electrical business with smart scheduling and job tracking",
-    services: ["Installations", "Repairs", "Inspections", "Upgrades", "Emergency Services"],
-    icon: "⚡",
-    primaryColor: "#ffc045", // Bright yellow
-    accentColor: "#e0a012",
-    benefits: [
-      "Organize permits and inspection documents",
-      "Schedule and prioritize emergency calls",
-      "Track materials and labor for accurate billing"
-    ],
-    features: ["Permit tracking", "Job documentation", "Emergency scheduling"],
-    professionalName: "electrician",
-    professionalPlural: "electricians",
-    clientName: "customer",
-    appointmentTerm: "job",
-    serviceTerm: "service",
-    heroImage: "/images/electrical-hero.jpg",
-    galleryImages: [
-      "/images/electrical-1.jpg",
-      "/images/electrical-2.jpg",
-      "/images/electrical-3.jpg",
-      "/images/electrical-4.jpg"
-    ]
-  },
-  {
-    id: "influencer",
-    name: "Influencer",
-    description: "Organize your content creation, sponsorships, and fan interactions",
-    services: ["Content Creation", "Sponsored Posts", "Fan Meetups", "Coaching", "Merchandise"],
-    icon: "📱",
-    primaryColor: "#e74c3c", // Vibrant red
-    accentColor: "#c0392b",
-    benefits: [
-      "Track content schedules and posting timelines",
-      "Manage brand partnerships and sponsorships",
-      "Organize fan interactions and events"
-    ],
-    features: ["Content calendar", "Sponsorship tracking", "Audience analytics"],
-    professionalName: "influencer",
-    professionalPlural: "influencers",
-    clientName: "follower",
-    appointmentTerm: "session",
-    serviceTerm: "content",
-    heroImage: "/images/influencer-hero.jpg",
-    galleryImages: [
-      "/images/influencer-1.jpg",
-      "/images/influencer-2.jpg",
-      "/images/influencer-3.jpg",
-      "/images/influencer-4.jpg"
+      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1532372576444-dda954194ad0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1507499739999-097f9693f783?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
     ]
   },
   {
     id: "custom",
-    name: "Custom Template",
-    description: "Build your unique business template with our powerful customization tools",
-    services: [],
-    icon: "✨",
-    primaryColor: "#a855f7", // Purple
-    accentColor: "#7e22ce",
+    name: "Custom Business",
+    description: "Fully customizable premium booking system for any professional service business",
+    services: ["Custom Service 1", "Custom Service 2", "Custom Service 3", "Custom Service 4", "Custom Service 5"],
+    icon: "💼",
+    primaryColor: "#3d405b",
+    accentColor: "#81b29a",
     benefits: [
-      "Design your dashboard exactly how you want it",
-      "Create custom service categories and pricing",
-      "Build the perfect workflow for your business"
+      "Create a completely customized booking experience",
+      "Design your own service offerings and pricing",
+      "Build client relationships with personalized communications",
+      "Track business metrics that matter to you"
     ],
-    features: ["Full customization", "Personalized branding", "Custom business logic"],
+    features: ["Customizable calendar", "Flexible service menu", "Client database", "Business analytics"],
     professionalName: "professional",
     professionalPlural: "professionals",
     clientName: "client",
     appointmentTerm: "appointment",
     serviceTerm: "service",
-    heroImage: "/images/custom-hero.jpg",
+    heroImage: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
     galleryImages: [
-      "/images/custom-1.jpg",
-      "/images/custom-2.jpg",
-      "/images/custom-3.jpg",
-      "/images/custom-4.jpg"
+      "https://images.unsplash.com/photo-1565106430482-8f6e74349ca1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
     ]
   }
 ];
