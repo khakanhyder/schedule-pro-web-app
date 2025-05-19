@@ -72,9 +72,9 @@ export default function WeeklySchedule() {
     };
   });
 
-  // Time slots from 9 AM to 7 PM
-  const timeSlots = Array.from({ length: 21 }, (_, i) => {
-    const hour = Math.floor(i / 2) + 9;
+  // Time slots from 7 AM to 9 PM (all hours with half-hour increments)
+  const timeSlots = Array.from({ length: 29 }, (_, i) => {
+    const hour = Math.floor(i / 2) + 7;
     const minutes = (i % 2) * 30;
     return `${hour > 12 ? hour - 12 : hour}:${minutes === 0 ? '00' : minutes} ${hour >= 12 ? 'PM' : 'AM'}`;
   });
