@@ -62,6 +62,7 @@ export const appointments = pgTable("appointments", {
   clientPhone: text("client_phone").notNull(),
   date: timestamp("date").notNull(),
   notes: text("notes"),
+  professionalNotes: text("professional_notes"),
   confirmed: boolean("confirmed").default(false),
   emailConfirmation: boolean("email_confirmation").default(true),
   smsConfirmation: boolean("sms_confirmation").default(false),
@@ -75,6 +76,7 @@ export const insertAppointmentSchema = createInsertSchema(appointments).pick({
   clientPhone: true,
   date: true,
   notes: true,
+  professionalNotes: true,
   emailConfirmation: true,
   smsConfirmation: true,
 });

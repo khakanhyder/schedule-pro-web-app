@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { 
   Tabs, 
@@ -12,11 +12,22 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { 
+  PlusCircle,
+  AlertCircle
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { 
   type Service, 
   type Stylist, 
   type Appointment 
 } from "@shared/schema";
 import AppointmentDetails from "@/components/dashboard/AppointmentDetails";
+import AppointmentForm from "@/components/dashboard/AppointmentForm";
 import WeeklySchedule from "@/components/dashboard/WeeklySchedule";
 import ClientManagement from "@/components/dashboard/ClientManagement";
 import PaymentOptions from "@/components/dashboard/PaymentOptions";
