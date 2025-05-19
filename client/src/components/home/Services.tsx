@@ -9,54 +9,53 @@ import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 // Industry-specific service images
 const industryServiceImages = {
-  hairstylist: [
+  // Beauty Professionals (combined hair, nails, etc.)
+  beauty: [
     "https://images.unsplash.com/photo-1560869713-7d0a29430803?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     "https://images.unsplash.com/photo-1620331311520-246422fd82f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1522336572468-97b06e8ef143?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
-  ],
-  carpenter: [
-    "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1594717527389-a590b56e331d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1530503814641-c82989586b16?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1529316738131-4d0c0aea25a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1565329921943-7e537b7a2ea9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
-  ],
-  massage: [
-    "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1620733723572-11c53fc1d424?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1604881988758-f76ad2f7aac1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1610301111550-20263e128451?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
-  ],
-  nails: [
     "https://images.unsplash.com/photo-1604654894610-df63bc536371?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     "https://images.unsplash.com/photo-1610992564677-962b8a3d2b4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1631204376073-e135793c70b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1577130740896-9a4f6d48c6c8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1587247549118-65d4b96cf82f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1601050690117-94f5f3ca6d28?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+    "https://images.unsplash.com/photo-1632345031435-8727f6897d53?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
-  plumber: [
+  
+  // Wellness Providers (massage, fitness, etc.)
+  wellness: [
+    "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1588680382665-cd934bb0452c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  
+  // Home Services (combining carpenter, plumber, electrician)
+  home_services: [
+    // Carpentry
+    "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Plumbing
     "https://images.unsplash.com/photo-1580398562556-d33864b1ad5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1638575995072-16a4730500a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1615870122928-f3b63c0a8845?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1615866245475-81567c6cf3b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
-  ],
-  electrician: [
+    // Electrical
     "https://images.unsplash.com/photo-1558520871-9c508f147e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1639756533033-e5b8bd696f74?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1588814497566-58d2fe6343f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1647427060118-4911c9821b82?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1647427059392-eac8a8f5deb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+    // Carpentry
+    "https://images.unsplash.com/photo-1594717527389-a590b56e331d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Plumbing
+    "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Kitchen remodel
+    "https://images.unsplash.com/photo-1556909114-44e3e9699e2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
+  
+  // Creative Professionals
+  creative: [
+    "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1532372576444-dda954194ad0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1507499739999-097f9693f783?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1489993360877-883320ae5b91?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1468956398224-6d6f66e22c35?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  
+  // Influencers
   influencer: [
     "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     "https://images.unsplash.com/photo-1598449356475-b9f71db7d847?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
@@ -65,6 +64,8 @@ const industryServiceImages = {
     "https://images.unsplash.com/photo-1560523159-6b681a1e1852?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     "https://images.unsplash.com/photo-1521302200778-33500795e128?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
+  
+  // Custom Business
   custom: [
     "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     "https://images.unsplash.com/photo-1565106430482-8f6e74349ca1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
