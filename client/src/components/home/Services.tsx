@@ -39,17 +39,17 @@ const industryServiceImages = {
   // Home Services (in exact order of services in server/industryData.ts)
   home_services: [
     // Bathroom Remodel
-    "https://images.unsplash.com/photo-1565453006698-a17d83b9e2a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     // Built-in Cabinets
-    "https://images.unsplash.com/photo-1594717527389-a590b56e331d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1556909212-d5b604d0c90d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     // Electrical Panel Upgrade
-    "https://images.unsplash.com/photo-1558520871-9c508f147e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     // Kitchen Renovation
-    "https://images.unsplash.com/photo-1556909114-44e3e9699e2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     // Plumbing Repair
-    "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     // Deck Construction
-    "https://images.unsplash.com/photo-1591628206877-53156549460d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+    "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
   // Creative Professionals (in exact order of services in server/industryData.ts)
