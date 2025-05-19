@@ -151,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Appointment booked successfully",
         confirmations: confirmations 
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === "ZodError") {
         return res.status(400).json({ message: "Invalid appointment data", details: error.errors });
       }
@@ -171,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         review, 
         message: "Review submitted successfully. It will be published after moderation." 
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === "ZodError") {
         return res.status(400).json({ message: "Invalid review data", details: error.errors });
       }
@@ -188,7 +188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json({ 
         message: "Your message has been sent successfully. We'll get back to you soon." 
       });
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === "ZodError") {
         return res.status(400).json({ message: "Invalid message data", details: error.errors });
       }
