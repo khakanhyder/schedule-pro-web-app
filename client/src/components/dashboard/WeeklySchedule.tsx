@@ -72,11 +72,13 @@ export default function WeeklySchedule() {
     };
   });
 
-  // Time slots from 7 AM to 9 PM (all hours with half-hour increments)
-  const timeSlots = Array.from({ length: 29 }, (_, i) => {
-    const hour = Math.floor(i / 2) + 7;
+  // All 24 hours with half-hour increments
+  const timeSlots = Array.from({ length: 48 }, (_, i) => {
+    const hour = Math.floor(i / 2);
     const minutes = (i % 2) * 30;
-    return `${hour > 12 ? hour - 12 : hour}:${minutes === 0 ? '00' : minutes} ${hour >= 12 ? 'PM' : 'AM'}`;
+    const hourDisplay = hour === 0 || hour === 12 ? 12 : hour % 12;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    return `${hourDisplay}:${minutes === 0 ? '00' : minutes} ${period}`;
   });
 
   // Function to find appointments for a specific day and time slot
