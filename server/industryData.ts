@@ -43,14 +43,14 @@ export const industryDatabase: Record<string, IndustryData> = {
     name: "Wellness Provider",
     professionalName: "practitioner",
     professionalTitle: "Wellness Practitioner",
-    services: ["Massage Therapy", "Personal Training", "Yoga Class", "Nutrition Consultation", "Physical Therapy", "Meditation Session"],
+    services: ["Massage Therapy", "Nutrition Coaching", "Yoga Class", "Breath Work Clinic", "Physical Therapy", "Advanced Meditation"],
     serviceDescriptions: [
       "Therapeutic massage to relieve tension and promote relaxation",
-      "One-on-one fitness training customized to your goals",
+      "Personalized nutrition planning with ongoing support",
       "Guided yoga practice for all experience levels",
-      "Personalized nutrition planning and dietary guidance",
+      "Expert-led breathwork sessions for stress reduction",
       "Targeted therapy to address physical injuries and limitations",
-      "Guided meditation and mindfulness practices"
+      "Advanced meditation techniques for mental clarity"
     ],
     professionalNames: [
       "Lisa Thompson", 
