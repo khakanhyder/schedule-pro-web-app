@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { MenuIcon, XIcon } from "@/assets/icons";
+import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [location] = useLocation();
-
+  
+  // Get industry context
+  const { selectedIndustry } = useIndustry();
+  const terms = getTerminology(selectedIndustry);
+  
   // Track scrolling for enhanced mobile UX
   useEffect(() => {
     const handleScroll = () => {
@@ -22,12 +27,15 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   }, [location]);
 
+  // Create dynamic portal name based on industry (e.g., "Carpenter Portal" instead of "Stylist Portal")
+  const portalName = `${selectedIndustry.name} Portal`;
+
   const links = [
     { name: "Services", href: "/#services" },
     { name: "Book Now", href: "/booking" },
     { name: "Reviews", href: "/#reviews" },
     { name: "Contact", href: "/#contact" },
-    { name: "Stylist Portal", href: "/dashboard" },
+    { name: portalName, href: "/dashboard" },
     { name: "Get Started", href: "/setup" }
   ];
 
