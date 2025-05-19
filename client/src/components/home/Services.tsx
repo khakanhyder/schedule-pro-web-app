@@ -94,9 +94,9 @@ export default function Services() {
   const { selectedIndustry } = useIndustry();
   const terms = getTerminology(selectedIndustry);
 
-  // Create industry-specific title
-  const sectionTitle = selectedIndustry.id === 'influencer' 
-    ? 'Premium Content Packages' 
+  // Create industry-specific title based on the current industry
+  const sectionTitle = selectedIndustry.id === 'creative' && terms.service === 'service'
+    ? 'Premium Creative Services'
     : `Premium ${selectedIndustry.name} ${terms.service.charAt(0).toUpperCase() + terms.service.slice(1)}s`;
 
   return (
@@ -176,8 +176,9 @@ function ServiceCard({
   accentColor: string,
   terms: ReturnType<typeof getTerminology>
 }) {
-  // Get the appropriate service images for this industry
-  const serviceImages = industryServiceImages[industryId as keyof typeof industryServiceImages] || defaultServiceImages;
+  // Get the appropriate service images for this industry - ensure we're using the correct industry
+  const currentIndustryId = industryId || 'beauty';
+  const serviceImages = industryServiceImages[currentIndustryId as keyof typeof industryServiceImages] || defaultServiceImages;
   const imageIndex = index % serviceImages.length;
   
   // Determine if this is a featured service (usually the middle one)
