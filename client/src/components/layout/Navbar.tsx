@@ -53,8 +53,8 @@ export default function Navbar() {
         <div className="flex items-center">
           <Link href="/">
             <div className="flex items-center cursor-pointer text-2xl font-bold text-primary">
-              <img src="/favicon.svg" alt="Booked Up" className="h-8 w-8 mr-2" />
-              <span className="font-display">Booked Up</span>
+              <img src="/favicon.svg" alt="Scheduled" className="h-8 w-8 mr-2" />
+              <span className="font-display">Scheduled</span>
             </div>
           </Link>
         </div>

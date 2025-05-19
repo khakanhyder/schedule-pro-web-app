@@ -44,7 +44,7 @@ export default function Setup() {
       <div className="container mx-auto px-4">
         <Card className="max-w-5xl mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold">Set Up Your Booked Up Dashboard</CardTitle>
+            <CardTitle className="text-3xl font-bold">Set Up Your Scheduled Dashboard</CardTitle>
             <CardDescription>
               Let's personalize your scheduling experience for your business
             </CardDescription>
