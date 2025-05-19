@@ -12,7 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { Check, Copy, DollarSign, CreditCard, AlertCircle } from "lucide-react";
 
 interface PaymentOptionsProps {
   appointmentId: number;
@@ -25,7 +28,15 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
   const [receiptSent, setReceiptSent] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<"pending" | "completed" | "failed">("pending");
   const [manualReference, setManualReference] = useState("");
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Digital payment details - in production this would come from the professional's profile
+  const digitalPayments = {
+    venmo: "@your-business-venmo",
+    zelle: "payments@yourbusiness.com",
+    paypal: "payments@yourbusiness.com"
+  };
 
   const handleCardPayment = () => {
     // Redirect to our Stripe checkout page
@@ -121,34 +132,78 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2 col-span-3">
                   <Label htmlFor="payment-method">Payment Method</Label>
-                  <select 
-                    id="payment-method"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={paymentStatus === "completed"}
-                  >
-                    <option value="venmo">Venmo</option>
-                    <option value="zelle">Zelle</option>
-                    <option value="paypal">PayPal</option>
-                    <option value="cash">Cash</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <div className="grid grid-cols-4 gap-2">
+                    {["venmo", "zelle", "paypal", "cash"].map((method) => (
+                      <Button
+                        key={method}
+                        type="button"
+                        variant={paymentMethod === method ? "default" : "outline"}
+                        onClick={() => setPaymentMethod(method)}
+                        disabled={paymentStatus === "completed"}
+                        className="flex flex-col items-center gap-1 h-auto py-3"
+                      >
+                        {method === "venmo" && <div className="text-[#3D95CE] text-lg">V</div>}
+                        {method === "zelle" && <div className="text-[#6D1ED4] text-lg">Z</div>}
+                        {method === "paypal" && <div className="text-[#003087] text-lg">P</div>}
+                        {method === "cash" && <DollarSign className="h-5 w-5" />}
+                        <span className="text-xs capitalize">{method}</span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
                 
                 {paymentMethod !== "cash" && (
-                  <div className="space-y-2 col-span-3">
-                    <Label htmlFor="reference">Reference/Transaction ID</Label>
-                    <Input 
-                      id="reference" 
-                      value={manualReference}
-                      onChange={(e) => setManualReference(e.target.value)}
-                      placeholder="Enter reference number or description"
-                      disabled={paymentStatus === "completed"}
-                    />
-                  </div>
+                  <>
+                    <div className="space-y-2 col-span-3 p-4 border rounded-md bg-neutral">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-semibold">
+                          Your {paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} Details:
+                        </Label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 gap-1"
+                          onClick={() => {
+                            navigator.clipboard.writeText(digitalPayments[paymentMethod as keyof typeof digitalPayments]);
+                            setCopySuccess(paymentMethod);
+                            setTimeout(() => setCopySuccess(null), 2000);
+                          }}
+                        >
+                          {copySuccess === paymentMethod ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                          <span className="text-xs">{copySuccess === paymentMethod ? "Copied!" : "Copy"}</span>
+                        </Button>
+                      </div>
+                      <div className="font-mono mt-1 text-sm p-2 bg-background border rounded">
+                        {digitalPayments[paymentMethod as keyof typeof digitalPayments]}
+                      </div>
+                      
+                      <div className="flex items-start gap-2 mt-3 text-sm text-muted-foreground">
+                        <AlertCircle className="h-4 w-4 mt-0.5 text-orange-500" />
+                        <span>
+                          Share these details with your client to receive payment directly. You'll save on processing fees!
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 col-span-3 mt-2">
+                      <Label htmlFor="reference">Reference/Transaction ID</Label>
+                      <Input 
+                        id="reference" 
+                        value={manualReference}
+                        onChange={(e) => setManualReference(e.target.value)}
+                        placeholder="Enter confirmation code/ID from the payment"
+                        disabled={paymentStatus === "completed"}
+                      />
+                    </div>
+                  </>
                 )}
               </div>
+              
+              <Separator className="my-2" />
               
               <Button 
                 onClick={handleManualPayment}
