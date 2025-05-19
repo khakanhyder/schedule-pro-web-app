@@ -361,6 +361,8 @@ export default function StylistDashboard() {
       {/* Add New Appointment Dialog */}
       <Dialog open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen}>
         <DialogContent className="max-w-4xl p-0">
+          <DialogTitle className="sr-only">Add New Appointment</DialogTitle>
+          <DialogDescription className="sr-only">Form to add a new client appointment</DialogDescription>
           <AppointmentForm
             services={services || []}
             stylists={stylists || []}

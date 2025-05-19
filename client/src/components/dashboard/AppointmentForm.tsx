@@ -31,7 +31,7 @@ const formSchema = insertAppointmentSchema.extend({
   date: z.date(),
   hour: z.number().min(0).max(23),
   minute: z.number().min(0).max(59),
-  durationMinutes: z.number().min(15).max(240).default(60),
+  durationMinutes: z.number().min(15).max(480).default(60),
   notes: z.string().optional(),
   professionalNotes: z.string().optional(),
 });
@@ -403,6 +403,10 @@ export default function AppointmentForm({
                           <SelectItem value="120">2 hours</SelectItem>
                           <SelectItem value="180">3 hours</SelectItem>
                           <SelectItem value="240">4 hours</SelectItem>
+                          <SelectItem value="300">5 hours</SelectItem>
+                          <SelectItem value="360">6 hours</SelectItem>
+                          <SelectItem value="420">7 hours</SelectItem>
+                          <SelectItem value="480">8 hours</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
