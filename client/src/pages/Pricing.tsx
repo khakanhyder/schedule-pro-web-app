@@ -217,8 +217,6 @@ export default function Pricing() {
       {/* Payment Modal */}
       <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
-          <DialogTitle>Subscribe to {selectedPlan?.name} Plan</DialogTitle>
-          <DialogDescription>Enter your payment details to start your subscription</DialogDescription>
           <DialogHeader>
             <DialogTitle>Subscribe to {selectedPlan?.name} Plan</DialogTitle>
             <DialogDescription>

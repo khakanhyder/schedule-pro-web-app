@@ -95,7 +95,7 @@ function CheckoutForm({ clientName, appointmentId }: { clientName: string, appoi
 }
 
 export default function Checkout() {
-  const [searchParams] = useState(new URLSearchParams(window.location.search));
+  const [searchParams] = useState(() => new URLSearchParams(window.location.search));
   const [clientSecret, setClientSecret] = useState("");
   const [amount, setAmount] = useState<number>(0);
   const [clientName, setClientName] = useState<string>("");
