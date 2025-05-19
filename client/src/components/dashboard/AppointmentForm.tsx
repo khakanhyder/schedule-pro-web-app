@@ -100,9 +100,13 @@ export default function AppointmentForm({
       console.log("Submitting appointment data:", appointmentData);
       
       // Send the data to the API
+      const endpoint = mode === "create" 
+        ? "/api/appointments" 
+        : `/api/appointments/${(initialValues as any)?.id}`;
+        
       const response = await apiRequest(
         mode === "create" ? "POST" : "PATCH",
-        mode === "create" ? "/api/appointments" : `/api/appointments/${initialValues?.id}`, 
+        endpoint, 
         appointmentData
       );
       
