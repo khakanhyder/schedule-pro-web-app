@@ -20,14 +20,20 @@ const industryServiceImages = {
     "https://images.unsplash.com/photo-1632345031435-8727f6897d53?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
-  // Wellness Providers (massage, fitness, etc.)
+  // Wellness Providers (images in the exact order of services in server/industryData.ts)
   wellness: [
-    "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Massage Therapy
     "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1588680382665-cd934bb0452c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    "https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+    // Nutrition Coaching
+    "https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Yoga Class
+    "https://images.unsplash.com/photo-1599447292376-d3d5900ffd50?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Breath Work Clinic
+    "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Physical Therapy
+    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Advanced Meditation
+    "https://images.unsplash.com/photo-1506126279646-a697353d3166?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
   // Home Services (combining carpenter, plumber, electrician)
