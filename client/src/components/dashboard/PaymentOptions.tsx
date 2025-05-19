@@ -12,7 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip } from "@/components/ui/tooltip";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Copy, DollarSign, CreditCard, AlertCircle } from "lucide-react";
@@ -133,22 +138,32 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
                 <div className="space-y-2 col-span-3">
                   <Label htmlFor="payment-method">Payment Method</Label>
                   <div className="grid grid-cols-4 gap-2">
-                    {["venmo", "zelle", "paypal", "cash"].map((method) => (
-                      <Button
-                        key={method}
-                        type="button"
-                        variant={paymentMethod === method ? "default" : "outline"}
-                        onClick={() => setPaymentMethod(method)}
-                        disabled={paymentStatus === "completed"}
-                        className="flex flex-col items-center gap-1 h-auto py-3"
-                      >
-                        {method === "venmo" && <div className="text-[#3D95CE] text-lg">V</div>}
-                        {method === "zelle" && <div className="text-[#6D1ED4] text-lg">Z</div>}
-                        {method === "paypal" && <div className="text-[#003087] text-lg">P</div>}
-                        {method === "cash" && <DollarSign className="h-5 w-5" />}
-                        <span className="text-xs capitalize">{method}</span>
-                      </Button>
-                    ))}
+                    <TooltipProvider>
+                      {["venmo", "zelle", "paypal", "cash"].map((method) => (
+                        <Tooltip key={method}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant={paymentMethod === method ? "default" : "outline"}
+                              onClick={() => setPaymentMethod(method)}
+                              disabled={paymentStatus === "completed"}
+                              className="flex flex-col items-center gap-1 h-auto py-3"
+                            >
+                              {method === "venmo" && <div className="text-[#3D95CE] text-lg">V</div>}
+                              {method === "zelle" && <div className="text-[#6D1ED4] text-lg">Z</div>}
+                              {method === "paypal" && <div className="text-[#003087] text-lg">P</div>}
+                              {method === "cash" && <DollarSign className="h-5 w-5" />}
+                              <span className="text-xs capitalize">{method}</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {method === "venmo" || method === "zelle" || method === "paypal" ? 
+                              `Accept ${method} payments to avoid credit card fees` : 
+                              "Record cash payments"}
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </TooltipProvider>
                   </div>
                 </div>
                 

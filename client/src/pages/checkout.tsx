@@ -1,243 +1,257 @@
 import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, type Appearance } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
+import { useLocation } from 'wouter';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link, useLocation } from "wouter";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
-// Make sure to call `loadStripe` outside of a component's render to avoid
-// recreating the `Stripe` object on every render.
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  console.warn('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
-}
-const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY ? 
-  loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY) : 
-  Promise.resolve(null);
+// Initialize Stripe outside component render
+const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY 
+  ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY) 
+  : null;
 
-const CheckoutForm = ({ amount, appointmentId, clientName }: { amount: number, appointmentId: number, clientName: string }) => {
+function CheckoutForm({ clientName, appointmentId }: { clientName: string, appointmentId: number }) {
   const stripe = useStripe();
   const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-  const [processing, setProcessing] = useState(false);
-  const [location, setLocation] = useLocation();
+  const [, navigate] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!stripe || !elements) {
+      toast({
+        title: "Payment Error",
+        description: "Stripe has not been properly initialized",
+        variant: "destructive",
+      });
       return;
     }
 
-    setProcessing(true);
+    setIsProcessing(true);
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: window.location.origin + '/dashboard',
-        payment_intent_data: {
-          metadata: {
-            appointmentId: appointmentId.toString(),
-            clientName
-          }
-        }
-      },
-    });
+    try {
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.origin + '/dashboard',
+        },
+      });
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Payment Failed",
+          description: error.message || "An unknown error occurred",
+          variant: "destructive",
+        });
+      } else {
+        // Payment succeeded, but we won't get here because of the redirect
+        toast({
+          title: "Payment Successful",
+          description: "Thank you for your payment!",
+        });
+        
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
       toast({
-        title: "Payment Failed",
-        description: error.message || "An unexpected error occurred.",
+        title: "Payment Error",
+        description: error.message || "An unknown error occurred",
         variant: "destructive",
       });
-      setProcessing(false);
-    } else {
-      // Success is handled by the return_url redirect
-      toast({
-        title: "Payment Successful",
-        description: "Thank you for your payment!",
-      });
+    } finally {
+      setIsProcessing(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement />
-      
-      <div className="flex justify-between mt-8">
-        <Button variant="outline" onClick={() => setLocation('/dashboard')} type="button">
-          Cancel
-        </Button>
-        
-        <Button 
-          type="submit" 
-          disabled={!stripe || processing}
-          className="bg-primary hover:bg-secondary text-white"
-        >
-          {processing ? "Processing..." : `Pay $${amount.toFixed(2)}`}
-        </Button>
+      <div className="space-y-4">
+        <PaymentElement />
       </div>
+      
+      <Button 
+        type="submit" 
+        disabled={!stripe || isProcessing} 
+        className="w-full"
+      >
+        {isProcessing ? "Processing..." : "Complete Payment"}
+      </Button>
+      
+      <Button 
+        type="button" 
+        variant="outline"
+        onClick={() => navigate('/dashboard')}
+        className="w-full mt-2"
+      >
+        Cancel
+      </Button>
     </form>
   );
-};
+}
 
 export default function Checkout() {
+  const [searchParams] = useState(new URLSearchParams(window.location.search));
   const [clientSecret, setClientSecret] = useState("");
+  const [amount, setAmount] = useState<number>(0);
+  const [clientName, setClientName] = useState<string>("");
+  const [appointmentId, setAppointmentId] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [location] = useLocation();
-  const { toast } = useToast();
-  
-  // Parse query parameters
-  const params = new URLSearchParams(location.split('?')[1]);
-  const amount = parseFloat(params.get('amount') || '0');
-  const appointmentId = parseInt(params.get('appointmentId') || '0');
-  const clientName = params.get('clientName') || 'Customer';
+  const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (!amount || amount <= 0) {
-      setError("Invalid payment amount.");
+    // Get parameters from URL
+    const amountParam = searchParams.get('amount');
+    const clientNameParam = searchParams.get('clientName');
+    const appointmentIdParam = searchParams.get('appointmentId');
+    
+    if (!amountParam || !clientNameParam || !appointmentIdParam) {
+      setError("Missing required payment information");
       setLoading(false);
       return;
     }
     
-    if (!appointmentId) {
-      setError("Missing appointment information.");
+    const parsedAmount = parseFloat(amountParam);
+    const parsedAppointmentId = parseInt(appointmentIdParam, 10);
+    
+    if (isNaN(parsedAmount) || parsedAmount <= 0 || isNaN(parsedAppointmentId)) {
+      setError("Invalid payment information");
       setLoading(false);
       return;
     }
-
-    // Create PaymentIntent as soon as the page loads
-    const createPaymentIntent = async () => {
+    
+    setAmount(parsedAmount);
+    setClientName(clientNameParam);
+    setAppointmentId(parsedAppointmentId);
+    
+    // Create PaymentIntent on the server
+    const createPayment = async () => {
       try {
-        setLoading(true);
         const response = await apiRequest("POST", "/api/create-payment-intent", { 
-          amount, 
-          appointmentId,
-          clientName
+          amount: parsedAmount,
+          appointmentId: parsedAppointmentId,
+          clientName: clientNameParam
         });
-
+        
         const data = await response.json();
         
-        if (data.error) {
-          throw new Error(data.error.message || "Something went wrong with payment setup.");
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        } else {
+          setError("Couldn't create payment. Please try again.");
         }
-        
-        setClientSecret(data.clientSecret);
-      } catch (err: any) {
-        setError(err.message || "Failed to initialize payment.");
-        toast({
-          title: "Payment Setup Failed",
-          description: err.message || "There was a problem setting up the payment.",
-          variant: "destructive",
-        });
+      } catch (err) {
+        setError("Server error. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
-
-    createPaymentIntent();
-  }, [amount, appointmentId, clientName, toast]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen py-16 bg-neutral">
-        <div className="container mx-auto px-4">
-          <Card className="max-w-2xl mx-auto shadow-md">
-            <CardHeader>
-              <Skeleton className="h-8 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-1/2" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[200px] w-full mb-4" />
-              <Skeleton className="h-10 w-full" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+    
+    // Only attempt to create payment if Stripe is available
+    if (stripePromise) {
+      createPayment();
+    } else {
+      setError("Stripe is not configured. Please set up your API keys.");
+      setLoading(false);
+    }
+  }, [searchParams]);
 
   if (error) {
     return (
-      <div className="min-h-screen py-16 bg-neutral">
-        <div className="container mx-auto px-4">
-          <Card className="max-w-2xl mx-auto shadow-md">
-            <CardHeader>
-              <CardTitle>Payment Error</CardTitle>
-              <CardDescription>We encountered a problem with your payment</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-destructive mb-4">
-                {error}
-              </div>
-              <p className="text-muted-foreground">
-                Please try again or contact support if the issue persists.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={() => window.history.back()}>Go Back</Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  if (!clientSecret) {
-    return (
-      <div className="min-h-screen py-16 bg-neutral">
-        <div className="container mx-auto px-4">
-          <Card className="max-w-2xl mx-auto shadow-md">
-            <CardHeader>
-              <CardTitle>Payment Setup</CardTitle>
-              <CardDescription>Waiting for payment system to initialize</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" aria-label="Loading"/>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  const options = {
-    clientSecret,
-    appearance: {
-      theme: 'stripe',
-      variables: {
-        colorPrimary: '#3b5ac2',
-        colorBackground: '#ffffff',
-        colorText: '#1a1a1a',
-      },
-    },
-  };
-
-  return (
-    <div className="min-h-screen py-16 bg-neutral">
-      <div className="container mx-auto px-4">
-        <Card className="max-w-2xl mx-auto shadow-md">
+      <div className="container max-w-md mx-auto py-12">
+        <Card>
           <CardHeader>
-            <CardTitle>Secure Payment</CardTitle>
-            <CardDescription>Complete your payment for {clientName}'s appointment</CardDescription>
+            <CardTitle>Payment Error</CardTitle>
+            <CardDescription>We encountered a problem with your payment</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-6">
-              <p className="text-lg font-semibold">Amount: ${amount.toFixed(2)}</p>
-              <p className="text-sm text-muted-foreground">Appointment ID: #{appointmentId}</p>
-            </div>
-            
-            <Elements stripe={stripePromise} options={options}>
-              <CheckoutForm amount={amount} appointmentId={appointmentId} clientName={clientName} />
-            </Elements>
+            <p className="text-destructive">{error}</p>
           </CardContent>
+          <CardFooter>
+            <Button onClick={() => navigate('/dashboard')} className="w-full">
+              Return to Dashboard
+            </Button>
+          </CardFooter>
         </Card>
       </div>
+    );
+  }
+
+  if (loading || !clientSecret) {
+    return (
+      <div className="container flex items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-10 w-10 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+          <p>Preparing payment...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Return early if Stripe is not initialized
+  if (!stripePromise) {
+    return (
+      <div className="container max-w-md mx-auto py-12">
+        <Card>
+          <CardHeader>
+            <CardTitle>Stripe Not Configured</CardTitle>
+            <CardDescription>Payment processing is not available</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-destructive">
+              Stripe API keys haven't been configured. Please contact the administrator.
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={() => navigate('/dashboard')} className="w-full">
+              Return to Dashboard
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container max-w-md mx-auto py-12">
+      <Card>
+        <CardHeader>
+          <CardTitle>Complete Your Payment</CardTitle>
+          <CardDescription>
+            Payment for {clientName}'s appointment
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6 flex justify-between items-center py-3 px-4 bg-muted rounded-lg">
+            <span>Total Amount:</span>
+            <span className="text-lg font-semibold">${amount.toFixed(2)}</span>
+          </div>
+          
+          <Separator className="my-6" />
+          
+          <Elements stripe={stripePromise} options={{ 
+            clientSecret,
+            appearance: {
+              theme: 'stripe',
+              variables: {
+                colorPrimary: '#0f172a',
+                colorBackground: '#ffffff',
+                colorText: '#1e293b'
+              }
+            } as Appearance
+          }}>
+            <CheckoutForm 
+              clientName={clientName} 
+              appointmentId={appointmentId} 
+            />
+          </Elements>
+        </CardContent>
+      </Card>
     </div>
   );
 }

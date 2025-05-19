@@ -10,7 +10,7 @@ import {
 
 // Initialize Stripe with the secret key
 const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" })
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
 export async function registerRoutes(app: Express): Promise<Server> {
