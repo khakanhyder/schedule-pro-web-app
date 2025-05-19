@@ -1,51 +1,82 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import { type Service } from "@shared/schema";
+import { useIndustry, getTerminology } from "@/lib/industryContext";
 
-export default function Services() {
-  const { data: services, isLoading, error } = useQuery<Service[]>({
-    queryKey: ["/api/services"],
-  });
+// Industry-specific service images
+const industryServiceImages = {
+  hairstylist: [
+    "https://images.unsplash.com/photo-1560869713-7d0a29430803?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1620331311520-246422fd82f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1522336572468-97b06e8ef143?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  carpenter: [
+    "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1594717527389-a590b56e331d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1530503814641-c82989586b16?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1529316738131-4d0c0aea25a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1565329921943-7e537b7a2ea9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  massage: [
+    "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1620733723572-11c53fc1d424?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1604881988758-f76ad2f7aac1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1610301111550-20263e128451?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  nails: [
+    "https://images.unsplash.com/photo-1604654894610-df63bc536371?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1610992564677-962b8a3d2b4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1631204376073-e135793c70b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1577130740896-9a4f6d48c6c8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1587247549118-65d4b96cf82f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1601050690117-94f5f3ca6d28?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  plumber: [
+    "https://images.unsplash.com/photo-1580398562556-d33864b1ad5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1638575995072-16a4730500a8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1615870122928-f3b63c0a8845?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1615866245475-81567c6cf3b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  electrician: [
+    "https://images.unsplash.com/photo-1558520871-9c508f147e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1639756533033-e5b8bd696f74?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1588814497566-58d2fe6343f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1647427060118-4911c9821b82?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1647427059392-eac8a8f5deb3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  influencer: [
+    "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1598449356475-b9f71db7d847?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1505421031134-e57263cae120?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1560523159-6b681a1e1852?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1521302200778-33500795e128?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  custom: [
+    "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1565106430482-8f6e74349ca1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ]
+};
 
-  return (
-    <section id="services" className="py-16 bg-white">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-display font-bold text-center mb-12">Our Services</h2>
-        
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="bg-neutral shadow-md hover:shadow-lg transition">
-                <Skeleton className="w-full h-48" />
-                <CardContent className="p-6">
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-full mb-4" />
-                  <div className="flex justify-between items-center">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-500">
-            <p>Error loading services. Please try again later.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services?.map((service) => (
-              <ServiceCard key={service.id} service={service} />
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-const serviceImages = [
+// Fallback to default images if industry not found
+const defaultServiceImages = [
   "https://images.unsplash.com/photo-1560869713-7d0a29430803?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
   "https://images.unsplash.com/photo-1620331311520-246422fd82f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
   "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
@@ -54,21 +85,171 @@ const serviceImages = [
   "https://images.unsplash.com/photo-1522336572468-97b06e8ef143?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
 ];
 
-function ServiceCard({ service, index = 0 }: { service: Service, index?: number }) {
-  const imageIndex = index % serviceImages.length;
+export default function Services() {
+  const { data: services, isLoading, error } = useQuery<Service[]>({
+    queryKey: ["/api/services"],
+  });
+
+  const { selectedIndustry } = useIndustry();
+  const terms = getTerminology(selectedIndustry);
+
+  // Create industry-specific title
+  const sectionTitle = selectedIndustry.id === 'influencer' 
+    ? 'Premium Content Packages' 
+    : `Premium ${selectedIndustry.name} ${terms.service.charAt(0).toUpperCase() + terms.service.slice(1)}s`;
+
   return (
-    <Card className="bg-neutral rounded-lg overflow-hidden shadow-md hover:shadow-lg transition">
-      <img 
-        src={serviceImages[imageIndex]} 
-        alt={service.name} 
-        className="w-full h-48 object-cover"
-      />
+    <section 
+      id="services" 
+      className="py-20 bg-gradient-to-b from-gray-50 to-white"
+      style={{ 
+        backgroundImage: `radial-gradient(circle at 80% 50%, ${selectedIndustry.accentColor}10 0%, transparent 25%)` 
+      }}
+    >
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 
+            className="text-3xl md:text-4xl font-display font-bold mb-4"
+            style={{ color: selectedIndustry.primaryColor }}
+          >
+            {sectionTitle}
+          </h2>
+          <p className="text-gray-600 max-w-3xl mx-auto text-lg">
+            Premium {terms.service} options designed to meet your highest expectations. 
+            Each {terms.service} includes personalized attention from our experienced {terms.professionalPlural}.
+          </p>
+        </div>
+        
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="bg-neutral shadow-md hover:shadow-lg transition rounded-xl overflow-hidden">
+                <Skeleton className="w-full h-48" />
+                <CardContent className="p-6">
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full mb-4" />
+                  <div className="flex justify-between items-center">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-8 w-24 rounded-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500 p-8 bg-red-50 rounded-lg">
+            <p>Error loading {terms.service} options. Please try again later.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services?.map((service, index) => (
+              <ServiceCard 
+                key={service.id} 
+                service={service} 
+                index={index}
+                industryId={selectedIndustry.id}
+                primaryColor={selectedIndustry.primaryColor}
+                accentColor={selectedIndustry.accentColor}
+                terms={terms}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ServiceCard({ 
+  service, 
+  index = 0, 
+  industryId,
+  primaryColor,
+  accentColor,
+  terms
+}: { 
+  service: Service, 
+  index?: number,
+  industryId: string,
+  primaryColor: string,
+  accentColor: string,
+  terms: ReturnType<typeof getTerminology>
+}) {
+  // Get the appropriate service images for this industry
+  const serviceImages = industryServiceImages[industryId as keyof typeof industryServiceImages] || defaultServiceImages;
+  const imageIndex = index % serviceImages.length;
+  
+  // Determine if this is a featured service (usually the middle one)
+  const isPopular = index === 1; 
+  
+  // Format the price with currency symbol
+  const formattedPrice = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+  }).format(Number(service.price));
+  
+  return (
+    <Card 
+      className={`
+        bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition 
+        transform hover:-translate-y-1 border-2 relative
+      `}
+      style={{ 
+        borderColor: isPopular ? primaryColor : 'transparent',
+      }}
+    >
+      {isPopular && (
+        <div 
+          className="absolute top-0 right-0 left-0 text-center py-1.5 text-sm font-semibold text-white"
+          style={{ backgroundColor: primaryColor }}
+        >
+          Most Popular
+        </div>
+      )}
+      <div className={`${isPopular ? 'pt-7' : ''}`}>
+        <img 
+          src={serviceImages[imageIndex]} 
+          alt={service.name} 
+          className="w-full h-48 object-cover"
+        />
+      </div>
       <CardContent className="p-6">
-        <h3 className="text-xl font-display font-semibold mb-2">{service.name}</h3>
-        <p className="text-gray-600 mb-4">{service.description}</p>
-        <div className="flex justify-between items-center">
-          <span className="text-primary font-semibold">{service.price}</span>
-          <span className="text-gray-500">{service.durationMinutes} min</span>
+        <h3 
+          className="text-xl font-display font-semibold mb-2"
+          style={{ color: isPopular ? primaryColor : 'inherit' }}
+        >
+          {service.name}
+        </h3>
+        <p className="text-gray-600 mb-4 min-h-[3rem]">{service.description}</p>
+        
+        <div className="mb-4">
+          <Badge 
+            className="rounded-full px-3 py-1 text-xs" 
+            style={{ backgroundColor: accentColor, color: '#fff' }}
+          >
+            {service.durationMinutes} min {terms.service}
+          </Badge>
+        </div>
+        
+        <div className="flex justify-between items-center mt-6">
+          <span 
+            className="text-xl font-semibold" 
+            style={{ color: primaryColor }}
+          >
+            {formattedPrice}
+          </span>
+          <Link href="/booking">
+            <Button 
+              className="rounded-full px-5 transition-all transform hover:scale-105"
+              style={{ 
+                backgroundColor: primaryColor,
+                boxShadow: isPopular ? `0 4px 14px ${primaryColor}50` : 'none'
+              }}
+            >
+              Book Now
+            </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>
