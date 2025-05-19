@@ -105,32 +105,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to create a new appointment
   app.post("/api/appointments", async (req, res) => {
     try {
-      const validatedData = insertAppointmentSchema.parse(req.body);
+      console.log("Appointment data received:", req.body);
       
-      // Check if the provided date is valid (not in the past and during business hours)
+      // Create proper date object from ISO string
+      const appointmentData = {
+        ...req.body,
+        date: new Date(req.body.date)
+      };
+      
+      // This will validate and convert the data format
+      const validatedData = insertAppointmentSchema.parse(appointmentData);
+      
+      // Check if the provided date is valid (not in the past)
       const appointmentDate = new Date(validatedData.date);
       const now = new Date();
+      now.setHours(0, 0, 0, 0); // Compare just the date part
       
-      if (appointmentDate < now) {
+      const appointmentDay = new Date(appointmentDate);
+      appointmentDay.setHours(0, 0, 0, 0);
+      
+      if (appointmentDay < now) {
         return res.status(400).json({ message: "Cannot book appointments in the past" });
-      }
-      
-      const hours = appointmentDate.getHours();
-      if (hours < 9 || hours >= 19) {
-        return res.status(400).json({ message: "Appointments are only available between 9 AM and 7 PM" });
-      }
-      
-      // Check if the time slot is already booked
-      const existingAppointments = await storage.getAppointmentsByDate(appointmentDate);
-      const isTimeSlotTaken = existingAppointments.some(apt => {
-        const existingTime = new Date(apt.date);
-        return existingTime.getHours() === appointmentDate.getHours() && 
-               existingTime.getMinutes() === appointmentDate.getMinutes() &&
-               apt.stylistId === validatedData.stylistId;
-      });
-      
-      if (isTimeSlotTaken) {
-        return res.status(400).json({ message: "This time slot is already booked" });
       }
       
       // Create the appointment
@@ -152,6 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         confirmations: confirmations 
       });
     } catch (error: any) {
+      console.error("Appointment creation error:", error);
       if (error.name === "ZodError") {
         return res.status(400).json({ message: "Invalid appointment data", details: error.errors });
       }

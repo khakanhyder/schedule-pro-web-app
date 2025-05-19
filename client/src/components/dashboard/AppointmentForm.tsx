@@ -83,18 +83,32 @@ export default function AppointmentForm({
       appointmentDate.setHours(data.hour, data.minute, 0, 0);
       
       // Prepare the data for the API
-      const { hour, minute, ...appointmentData } = data;
-      appointmentData.date = appointmentDate;
+      const appointmentData = {
+        serviceId: data.serviceId,
+        stylistId: data.stylistId,
+        clientName: data.clientName,
+        clientEmail: data.clientEmail,
+        clientPhone: data.clientPhone,
+        date: appointmentDate.toISOString(),
+        durationMinutes: Number(data.durationMinutes),
+        notes: data.notes || "",
+        professionalNotes: data.professionalNotes || "",
+        emailConfirmation: data.emailConfirmation === undefined ? true : data.emailConfirmation,
+        smsConfirmation: data.smsConfirmation === undefined ? false : data.smsConfirmation
+      };
+      
+      console.log("Submitting appointment data:", appointmentData);
       
       // Send the data to the API
       const response = await apiRequest(
-        "POST", 
-        "/api/appointments", 
+        mode === "create" ? "POST" : "PATCH",
+        mode === "create" ? "/api/appointments" : `/api/appointments/${initialValues?.id}`, 
         appointmentData
       );
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Server error response:", errorData);
         throw new Error(errorData.message || "Failed to create appointment");
       }
       
@@ -109,6 +123,7 @@ export default function AppointmentForm({
         onSuccess();
       }
     } catch (error: any) {
+      console.error("Form submission error:", error);
       toast({
         title: "Error",
         description: error.message || "An error occurred",
