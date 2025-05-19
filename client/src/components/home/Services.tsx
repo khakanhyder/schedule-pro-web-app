@@ -208,8 +208,24 @@ function ServiceCard({
   const currentIndustryId = industryId || 'beauty';
   const serviceImages = industryServiceImages[currentIndustryId as keyof typeof industryServiceImages] || defaultServiceImages;
   
-  // Use the index to select an image, or try to match image to service by position
-  const imageIndex = index % serviceImages.length;
+  // Find the correct image based on service name
+  let imageIndex = index % serviceImages.length;
+  
+  // For services, try to match by name to ensure correct images
+  if (industryId === 'home_services') {
+    // Find if there's a matching service in the service name
+    const serviceNames = [
+      "Bathroom", "Cabinet", "Electrical", 
+      "Kitchen", "Plumbing", "Deck"
+    ];
+    
+    for (let i = 0; i < serviceNames.length; i++) {
+      if (service.name.includes(serviceNames[i])) {
+        imageIndex = i;
+        break;
+      }
+    }
+  }
   
   // Determine if this is a featured service (usually the middle one)
   const isPopular = index === 1; 

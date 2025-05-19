@@ -67,9 +67,9 @@ export const industryDatabase: Record<string, IndustryData> = {
   },
   home_services: {
     id: "home_services",
-    name: "Home Service Provider",
+    name: "Skilled-Trades",
     professionalName: "technician",
-    professionalTitle: "Home Service Technician",
+    professionalTitle: "Skilled-Trades Technician",
     services: ["Bathroom Remodel", "Built-in Cabinets", "Electrical Panel Upgrade", "Kitchen Renovation", "Plumbing Repair", "Deck Construction"],
     serviceDescriptions: [
       "Complete bathroom renovation including fixtures and finishes",

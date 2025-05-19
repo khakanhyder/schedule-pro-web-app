@@ -82,7 +82,7 @@ export const industryTemplates: Industry[] = [
   },
   {
     id: "home_services",
-    name: "Home Service Provider",
+    name: "Skilled-Trades",
     description: "Professional system for carpenters, plumbers, electricians and home improvement specialists",
     services: ["Bathroom Remodel", "Built-in Cabinets", "Replace Electrical Panel", "Kitchen Renovation", "Leak Repair", "Deck Construction"],
     icon: "🔧",
