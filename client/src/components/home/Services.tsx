@@ -36,20 +36,20 @@ const industryServiceImages = {
     "https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
-  // Home Services (combining carpenter, plumber, electrician)
+  // Home Services (in exact order of services in server/industryData.ts)
   home_services: [
-    // Carpentry
-    "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    // Plumbing
-    "https://images.unsplash.com/photo-1580398562556-d33864b1ad5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    // Electrical
-    "https://images.unsplash.com/photo-1558520871-9c508f147e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    // Carpentry
+    // Bathroom Remodel
+    "https://images.unsplash.com/photo-1565453006698-a17d83b9e2a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Built-in Cabinets
     "https://images.unsplash.com/photo-1594717527389-a590b56e331d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    // Plumbing
+    // Electrical Panel Upgrade
+    "https://images.unsplash.com/photo-1558520871-9c508f147e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Kitchen Renovation
+    "https://images.unsplash.com/photo-1556909114-44e3e9699e2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Plumbing Repair
     "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
-    // Kitchen remodel
-    "https://images.unsplash.com/photo-1556909114-44e3e9699e2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+    // Deck Construction
+    "https://images.unsplash.com/photo-1591628206877-53156549460d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
   // Creative Professionals (in exact order of services in server/industryData.ts)
