@@ -59,7 +59,7 @@ export default function Navbar() {
           </Link>
         </div>
         
-        <nav className="hidden md:flex space-x-6">
+        <nav className="hidden md:flex space-x-10">
           {links.map((link) => (
             <Link 
               key={link.name} 
