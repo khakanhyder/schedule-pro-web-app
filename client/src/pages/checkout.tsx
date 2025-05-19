@@ -27,9 +27,9 @@ function CheckoutForm({ clientName, appointmentId, amount, onTipChange }: {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [tipAmount, setTipAmount] = useState(0);
   const [tipPercentage, setTipPercentage] = useState<string>("0");
   const [customTip, setCustomTip] = useState<string>("");
+  const [tipAmount, setTipAmount] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -243,9 +243,91 @@ export default function Checkout() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-6 flex justify-between items-center py-3 px-4 bg-muted rounded-lg">
-            <span>Total Amount:</span>
-            <span className="text-lg font-semibold">${amount.toFixed(2)}</span>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center py-3 px-4 bg-muted rounded-lg">
+              <span>Service Amount:</span>
+              <span className="font-semibold">${amount.toFixed(2)}</span>
+            </div>
+            
+            {tipsEnabled && (
+              <div className="border rounded-lg p-4">
+                <h3 className="text-sm font-medium mb-3">Would you like to add a tip?</h3>
+                
+                <RadioGroup 
+                  value={tipPercentage}
+                  onValueChange={(value) => {
+                    setTipPercentage(value);
+                    
+                    if (value === "custom") {
+                      const customTipAmount = customTip ? parseFloat(customTip) : 0;
+                      setTipAmount(customTipAmount);
+                      onTipChange(amount + customTipAmount);
+                    } else {
+                      const percentage = parseInt(value) / 100;
+                      const calculatedTip = amount * percentage;
+                      setTipAmount(calculatedTip);
+                      onTipChange(amount + calculatedTip);
+                    }
+                  }}
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="0" id="tip-0" />
+                      <Label htmlFor="tip-0">No Tip</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="15" id="tip-15" />
+                      <Label htmlFor="tip-15">15%</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="18" id="tip-18" />
+                      <Label htmlFor="tip-18">18%</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="20" id="tip-20" />
+                      <Label htmlFor="tip-20">20%</Label>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 mt-2">
+                    <RadioGroupItem value="custom" id="tip-custom" />
+                    <Label htmlFor="tip-custom">Custom:</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Enter amount"
+                      className="w-24 h-8"
+                      value={customTip}
+                      onChange={(e) => {
+                        setCustomTip(e.target.value);
+                        if (tipPercentage === "custom") {
+                          const customTipAmount = e.target.value ? parseFloat(e.target.value) : 0;
+                          setTipAmount(customTipAmount);
+                          onTipChange(amount + customTipAmount);
+                        }
+                      }}
+                      onClick={() => setTipPercentage("custom")}
+                    />
+                  </div>
+                </RadioGroup>
+                
+                {tipAmount > 0 && (
+                  <div className="mt-4 text-sm text-right">
+                    <div className="flex justify-between">
+                      <span>Tip amount:</span>
+                      <span>${tipAmount.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="flex justify-between items-center py-3 px-4 bg-primary/5 rounded-lg font-medium">
+              <span>Total Amount:</span>
+              <span className="text-lg font-bold">${totalWithTip.toFixed(2)}</span>
+            </div>
           </div>
           
           <Separator className="my-6" />
