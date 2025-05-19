@@ -38,6 +38,10 @@ export default function StylistDashboard() {
   const [selectedTab, setSelectedTab] = useState("appointments");
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isAppointmentDetailsOpen, setIsAppointmentDetailsOpen] = useState(false);
+  const [isAddAppointmentOpen, setIsAddAppointmentOpen] = useState(false);
+  
+  // For data refreshing
+  const queryClient = useQueryClient();
   
   // Get industry context
   const { selectedIndustry } = useIndustry();
@@ -153,7 +157,12 @@ export default function StylistDashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="flex gap-2">
-              <Button size="sm">New {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}</Button>
+              <Button 
+                size="sm"
+                onClick={() => setIsAddAppointmentOpen(true)}
+              >
+                New {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}
+              </Button>
               <Button size="sm" variant="outline">Request Review</Button>
             </CardContent>
           </Card>
@@ -195,7 +204,9 @@ export default function StylistDashboard() {
                       {sortedAppointments?.length || 0} appointments scheduled
                     </CardDescription>
                   </div>
-                  <Button>+ Add Appointment</Button>
+                  <Button onClick={() => setIsAddAppointmentOpen(true)}>
+                    <PlusCircle className="h-4 w-4 mr-2" /> Add Appointment
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   {appointmentsLoading ? (
@@ -253,7 +264,9 @@ export default function StylistDashboard() {
                   ) : (
                     <div className="text-center py-12 border border-dashed rounded-lg">
                       <p className="text-muted-foreground mb-4">No appointments for this date</p>
-                      <Button>Add New Appointment</Button>
+                      <Button onClick={() => setIsAddAppointmentOpen(true)}>
+                        <PlusCircle className="h-4 w-4 mr-2" /> Add New Appointment
+                      </Button>
                     </div>
                   )}
                 </CardContent>
@@ -344,6 +357,28 @@ export default function StylistDashboard() {
           onClose={() => setIsAppointmentDetailsOpen(false)}
         />
       )}
+      
+      {/* Add New Appointment Dialog */}
+      <Dialog open={isAddAppointmentOpen} onOpenChange={setIsAddAppointmentOpen}>
+        <DialogContent className="max-w-4xl p-0">
+          <AppointmentForm
+            services={services || []}
+            stylists={stylists || []}
+            mode="create"
+            onSuccess={() => {
+              setIsAddAppointmentOpen(false);
+              // Refresh appointments data
+              queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+            }}
+            onCancel={() => setIsAddAppointmentOpen(false)}
+            initialValues={{ 
+              date: selectedDate || new Date(),
+              hour: 9,
+              minute: 0
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
