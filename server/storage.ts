@@ -38,6 +38,8 @@ export interface IStorage {
   // Contact Messages
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   
+
+  
   // Industry management
   setIndustry(industryId: string): void;
   getCurrentIndustry(): IndustryData;

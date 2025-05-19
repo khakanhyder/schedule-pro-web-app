@@ -7,18 +7,29 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 // Initialize Stripe outside component render
 const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY 
   ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY) 
   : null;
 
-function CheckoutForm({ clientName, appointmentId }: { clientName: string, appointmentId: number }) {
+function CheckoutForm({ clientName, appointmentId, amount, onTipChange }: { 
+  clientName: string, 
+  appointmentId: number,
+  amount: number,
+  onTipChange: (totalWithTip: number) => void
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const [, navigate] = useLocation();
+  const [tipAmount, setTipAmount] = useState(0);
+  const [tipPercentage, setTipPercentage] = useState<string>("0");
+  const [customTip, setCustomTip] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
