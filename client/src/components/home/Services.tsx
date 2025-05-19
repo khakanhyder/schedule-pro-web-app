@@ -49,7 +49,7 @@ const industryServiceImages = {
     // Plumbing Repair
     "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
     // Deck Construction
-    "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+    "https://images.unsplash.com/photo-1591128215760-6c2f5361e2a3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
   // Creative Professionals (in exact order of services in server/industryData.ts)

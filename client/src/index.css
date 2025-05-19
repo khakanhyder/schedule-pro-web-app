@@ -69,9 +69,17 @@
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
+    position: relative;
+    height: 100%;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    overscroll-behavior-y: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
