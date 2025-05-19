@@ -39,7 +39,7 @@ export interface IStorage {
   
   // Industry management
   setIndustry(industryId: string): void;
-  getCurrentIndustry(): any;
+  getCurrentIndustry(): IndustryData;
 }
 
 // Define industry data for each profession
