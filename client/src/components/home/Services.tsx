@@ -176,9 +176,11 @@ function ServiceCard({
   accentColor: string,
   terms: ReturnType<typeof getTerminology>
 }) {
-  // Get the appropriate service images for this industry - ensure we're using the correct industry
+  // Get the appropriate service images for this industry based on the service name
   const currentIndustryId = industryId || 'beauty';
   const serviceImages = industryServiceImages[currentIndustryId as keyof typeof industryServiceImages] || defaultServiceImages;
+  
+  // Use the index to select an image, or try to match image to service by position
   const imageIndex = index % serviceImages.length;
   
   // Determine if this is a featured service (usually the middle one)
