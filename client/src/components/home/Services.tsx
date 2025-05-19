@@ -62,6 +62,22 @@ const industryServiceImages = {
     "https://images.unsplash.com/photo-1468956398224-6d6f66e22c35?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
   ],
   
+  // Pet Care Professionals (in exact order of services in server/industryData.ts)
+  pet_care: [
+    // Pet Grooming
+    "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Dog Training
+    "https://images.unsplash.com/photo-1534361960057-19889db9621e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Pet Sitting
+    "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Dog Walking
+    "https://images.unsplash.com/photo-1541599540903-216a46ca1dc0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Basic Veterinary Care
+    "https://images.unsplash.com/photo-1608096299210-db7e38487075?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    // Pet Photography
+    "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400"
+  ],
+  
   // Influencers
   influencer: [
     "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
