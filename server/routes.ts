@@ -14,6 +14,44 @@ const stripe = process.env.STRIPE_SECRET_KEY
   : null;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Stripe payment processing endpoint
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { amount, appointmentId, clientName } = req.body;
+      
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: "Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable." 
+        });
+      }
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ error: "Invalid amount" });
+      }
+      
+      // Create a payment intent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+        metadata: {
+          appointmentId: appointmentId.toString(),
+          clientName
+        }
+      });
+      
+      // Send the client secret to the client
+      res.status(200).json({
+        clientSecret: paymentIntent.client_secret,
+      });
+    } catch (error: any) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ 
+        error: "Error creating payment intent", 
+        details: error.message 
+      });
+    }
+  });
+  
   // prefix all routes with /api
   
   // API endpoint to set industry

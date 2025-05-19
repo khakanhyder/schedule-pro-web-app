@@ -27,6 +27,7 @@ export default function ConfirmationModal({ isOpen, onClose, data }: Confirmatio
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-display font-bold text-primary">Booking Confirmed!</DialogTitle>
+          <DialogDescription>Your appointment has been successfully scheduled</DialogDescription>
         </DialogHeader>
         
         <div className="bg-green-50 p-4 rounded-md mb-6 border border-green-200">
