@@ -1,11 +1,17 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import Stripe from "stripe";
 import { storage } from "./storage";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
   insertContactMessageSchema 
 } from "@shared/schema";
+
+// Initialize Stripe with the secret key
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" })
+  : null;
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
@@ -246,6 +252,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(timeSlots);
     } catch (error) {
       res.status(500).json({ message: "Error generating time slots" });
+    }
+  });
+
+  // API endpoint to create a payment intent for Stripe
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: { message: "Stripe integration is not configured. Please set STRIPE_SECRET_KEY." } 
+        });
+      }
+
+      const { amount, appointmentId, clientName } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ 
+          error: { message: "Invalid payment amount." } 
+        });
+      }
+      
+      // Create a payment intent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+        metadata: {
+          appointmentId: appointmentId?.toString() || '',
+          clientName: clientName || 'Customer'
+        },
+        // Optional automatic payment methods
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        error: { 
+          message: error.message || "An error occurred while creating payment intent." 
+        } 
+      });
+    }
+  });
+
+  // API endpoint to verify and process a payment for an appointment
+  app.post("/api/verify-payment", async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: { message: "Stripe integration is not configured." } 
+        });
+      }
+
+      const { paymentIntentId, appointmentId } = req.body;
+      
+      if (!paymentIntentId) {
+        return res.status(400).json({ 
+          error: { message: "Payment intent ID is required." } 
+        });
+      }
+      
+      // Retrieve the payment intent to verify status
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({ 
+          error: { message: `Payment not successful. Status: ${paymentIntent.status}` } 
+        });
+      }
+      
+      // Here you would update the appointment record to mark payment as complete
+      // For this demo, we'll just return success
+      
+      res.json({
+        success: true,
+        paymentIntent: {
+          id: paymentIntent.id,
+          status: paymentIntent.status,
+          amount: paymentIntent.amount / 100, // Convert from cents
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        error: { 
+          message: error.message || "An error occurred during payment verification." 
+        } 
+      });
     }
   });
 

@@ -28,13 +28,9 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
   const { toast } = useToast();
 
   const handleCardPayment = () => {
-    // In a real implementation, this would integrate with Stripe
-    toast({
-      title: "Card Payment",
-      description: "Credit card payment would be processed via Stripe here.",
-    });
-    // Redirect to Stripe checkout page in a real app
-    setPaymentStatus("completed");
+    // Redirect to our Stripe checkout page
+    const checkoutUrl = `/checkout?amount=${amount}&appointmentId=${appointmentId}&clientName=${encodeURIComponent(clientName)}`;
+    window.location.href = checkoutUrl;
   };
 
   const handleCashPayment = () => {
