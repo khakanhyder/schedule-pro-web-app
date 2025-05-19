@@ -30,13 +30,17 @@ export default function Navbar() {
   // Create dynamic portal name based on industry (e.g., "Carpenter Portal" instead of "Stylist Portal")
   const portalName = `${selectedIndustry.name} Portal`;
 
+  // Generate links with service name based on industry
+  const serviceLabel = selectedIndustry.name === "Influencer" ? "Content" : 
+                      selectedIndustry.name === "Custom Business" ? "Services" : 
+                      `${selectedIndustry.name} Services`;
+  
   const links = [
-    { name: "Services", href: "/#services" },
-    { name: "Book Now", href: "/booking" },
+    { name: serviceLabel, href: "/#services" },
+    { name: "Book", href: "/booking" },
     { name: "Reviews", href: "/#reviews" },
-    { name: "Contact", href: "/#contact" },
     { name: portalName, href: "/dashboard" },
-    { name: "Get Started", href: "/setup" }
+    { name: "Setup", href: "/setup" }
   ];
 
   return (

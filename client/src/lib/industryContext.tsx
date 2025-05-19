@@ -285,6 +285,20 @@ export const IndustryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const industry = industryTemplates.find(ind => ind.id === id);
     if (industry) {
       setSelectedIndustry(industry);
+      
+      // Notify the backend about the industry change
+      // This will update services and professionals on the server side
+      fetch('/api/set-industry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ industryId: id }),
+      })
+      .then(response => response.json())
+      .catch(error => {
+        console.error('Error setting industry on server:', error);
+      });
     }
   };
 

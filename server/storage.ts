@@ -36,7 +36,127 @@ export interface IStorage {
   
   // Contact Messages
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
+  
+  // Industry management
+  setIndustry(industryId: string): void;
+  getCurrentIndustry(): any;
 }
+
+// Define industry data for each profession
+export type IndustryData = {
+  id: string;
+  name: string;
+  professionalName: string;
+  professionalTitle: string;
+  services: string[];
+  serviceDescriptions: string[];
+  professionalNames: string[];
+  professionalBios: string[];
+}
+
+// Industry data mapping
+const industryData: Record<string, IndustryData> = {
+  "hairstylist": {
+    id: "hairstylist",
+    name: "Hairstylist",
+    professionalName: "stylist",
+    professionalTitle: "Stylist",
+    services: ["Women's Haircut", "Men's Haircut", "Color Treatment", "Highlights", "Blowout"],
+    serviceDescriptions: [
+      "Full service haircut includes consultation, shampoo, cut and style.",
+      "Precision cut with attention to detail, includes shampoo and style.",
+      "Custom color application for beautiful, long-lasting results.",
+      "Dimensional color technique for subtle or dramatic color effect.",
+      "Professional styling to add volume and shine to your hair."
+    ],
+    professionalNames: ["Sarah Johnson", "Michael Chen", "Amy Rodriguez"],
+    professionalBios: [
+      "Master stylist with 10+ years experience specializing in precision cuts and color.",
+      "Color specialist trained in the latest techniques for natural and fashion colors.",
+      "Styling expert who loves creating beautiful updos and special occasion styles."
+    ]
+  },
+  "carpenter": {
+    id: "carpenter",
+    name: "Carpenter",
+    professionalName: "carpenter",
+    professionalTitle: "Carpenter",
+    services: ["Custom Furniture", "Kitchen Cabinets", "Deck Building", "Repairs", "Installations"],
+    serviceDescriptions: [
+      "Handcrafted furniture made to your specifications with premium materials.",
+      "Custom designed cabinets to maximize your kitchen's functionality and style.",
+      "Professional deck construction using high-quality, weather-resistant materials.",
+      "Expert repairs to fix damaged furniture and woodwork throughout your home.",
+      "Professional installation of doors, trim, molding and other wooden elements."
+    ],
+    professionalNames: ["Robert Miller", "David Thompson", "Anna Martinez"],
+    professionalBios: [
+      "Master carpenter with 15+ years creating custom furniture and cabinetry.",
+      "Specializing in deck building and outdoor structures with sustainable materials.",
+      "Fine woodworking expert with attention to detail for premium results."
+    ]
+  },
+  "massage": {
+    id: "massage",
+    name: "Massage Therapist",
+    professionalName: "therapist",
+    professionalTitle: "Therapist",
+    services: ["Deep Tissue", "Swedish Massage", "Hot Stone", "Sports Massage", "Reflexology"],
+    serviceDescriptions: [
+      "Targets the deeper layers of muscle and connective tissue for tension relief.",
+      "Gentle, relaxing massage using long strokes to improve circulation and reduce stress.",
+      "Heated smooth stones placed on the body to ease muscle tension and promote relaxation.",
+      "Focuses on areas of tension from athletic activity to improve performance and recovery.",
+      "Pressure point massage on the feet to promote wellness throughout the body."
+    ],
+    professionalNames: ["Lisa Williams", "Jason Taylor", "Maria Garcia"],
+    professionalBios: [
+      "Licensed massage therapist specializing in deep tissue and therapeutic techniques.",
+      "Holistic practitioner combining massage and aromatherapy for a healing experience.",
+      "Sports massage specialist working with athletes for performance and recovery."
+    ]
+  },
+  "influencer": {
+    id: "influencer",
+    name: "Influencer",
+    professionalName: "influencer",
+    professionalTitle: "Creator",
+    services: ["Content Creation", "Sponsored Posts", "Fan Meetups", "Coaching", "Merchandise"],
+    serviceDescriptions: [
+      "Custom content creation tailored to your brand's voice and audience.",
+      "Authentic brand partnerships with detailed analytics and engagement reports.",
+      "Organized fan events to connect with your audience in person.",
+      "One-on-one coaching to help you grow your social media presence.",
+      "Custom merchandise design and sales management for your brand."
+    ],
+    professionalNames: ["Alex Morgan", "Jordan Lee", "Taylor Kim"],
+    professionalBios: [
+      "Lifestyle content creator with 500K+ followers across platforms.",
+      "Tech and gaming influencer specializing in product reviews and tutorials.",
+      "Wellness influencer focusing on sustainable living and mental health."
+    ]
+  },
+  "custom": {
+    id: "custom",
+    name: "Custom Business",
+    professionalName: "professional",
+    professionalTitle: "Professional",
+    services: ["Service 1", "Service 2", "Service 3", "Service 4", "Service 5"],
+    serviceDescriptions: [
+      "Description for Service 1",
+      "Description for Service 2",
+      "Description for Service 3",
+      "Description for Service 4",
+      "Description for Service 5"
+    ],
+    professionalNames: ["Professional 1", "Professional 2", "Professional 3"],
+    professionalBios: [
+      "Bio for Professional 1",
+      "Bio for Professional 2",
+      "Bio for Professional 3"
+    ]
+  }
+};
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
@@ -52,6 +172,9 @@ export class MemStorage implements IStorage {
   private appointmentCurrentId: number;
   private reviewCurrentId: number;
   private contactMessageCurrentId: number;
+  
+  // Track the current industry
+  private currentIndustryId: string = "hairstylist";
 
   constructor() {
     this.users = new Map();
