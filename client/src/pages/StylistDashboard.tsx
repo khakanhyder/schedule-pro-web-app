@@ -34,6 +34,7 @@ import PaymentOptions from "@/components/dashboard/PaymentOptions";
 import AIInsights from "@/components/dashboard/AIInsights";
 import BusinessGrowthTools from "@/components/dashboard/BusinessGrowthToolsSimple";
 import AdvancedFeatures from "@/components/dashboard/AdvancedFeatures";
+import IndustrySpecificFeatures from "@/components/dashboard/IndustrySpecificFeatures";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function StylistDashboard() {
@@ -172,7 +173,7 @@ export default function StylistDashboard() {
         </div>
         
         <Tabs defaultValue="appointments" onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
-          <TabsList className="grid w-full grid-cols-7 mb-8">
+          <TabsList className="grid w-full grid-cols-8 mb-8 text-xs">
             <TabsTrigger value="appointments">Today's {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}s</TabsTrigger>
             <TabsTrigger value="schedule">Weekly Schedule</TabsTrigger>
             <TabsTrigger value="clients">{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Management</TabsTrigger>
@@ -180,6 +181,7 @@ export default function StylistDashboard() {
             <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
             <TabsTrigger value="growth">Growth Tools</TabsTrigger>
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
+            <TabsTrigger value="industry">{selectedIndustry.name} Tools</TabsTrigger>
           </TabsList>
           
           {/* Appointments Tab */}
@@ -364,6 +366,11 @@ export default function StylistDashboard() {
           {/* Advanced Features Tab */}
           <TabsContent value="advanced">
             <AdvancedFeatures />
+          </TabsContent>
+          
+          {/* Industry-Specific Features Tab */}
+          <TabsContent value="industry">
+            <IndustrySpecificFeatures />
           </TabsContent>
         </Tabs>
       </div>
