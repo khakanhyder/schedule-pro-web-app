@@ -36,6 +36,7 @@ import BusinessGrowthTools from "@/components/dashboard/BusinessGrowthToolsSimpl
 import AdvancedFeatures from "@/components/dashboard/AdvancedFeatures";
 import IndustrySpecificFeatures from "@/components/dashboard/IndustrySpecificFeatures";
 import PredictiveInsights from "@/components/dashboard/PredictiveInsights";
+import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function StylistDashboard() {
@@ -174,7 +175,8 @@ export default function StylistDashboard() {
         </div>
         
         <Tabs defaultValue="appointments" onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
-          <TabsList className="grid w-full grid-cols-9 mb-8 text-xs">
+          <TabsList className="grid w-full grid-cols-10 mb-8 text-xs">
+            <TabsTrigger value="executive">Executive</TabsTrigger>
             <TabsTrigger value="appointments">Today's {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}s</TabsTrigger>
             <TabsTrigger value="schedule">Weekly Schedule</TabsTrigger>
             <TabsTrigger value="clients">{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Management</TabsTrigger>
@@ -185,6 +187,11 @@ export default function StylistDashboard() {
             <TabsTrigger value="industry">{selectedIndustry.name} Tools</TabsTrigger>
             <TabsTrigger value="predictive">Predictive AI</TabsTrigger>
           </TabsList>
+          
+          {/* Executive Dashboard Tab */}
+          <TabsContent value="executive">
+            <ExecutiveDashboard />
+          </TabsContent>
           
           {/* Appointments Tab */}
           <TabsContent value="appointments" className="space-y-4">
