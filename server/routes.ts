@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
+import { aiSchedulingService, marketingAutomationService } from "./ai-service";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
@@ -375,6 +376,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: error.message || "An error occurred during payment verification." 
         } 
       });
+    }
+  });
+
+  // AI Scheduling & Marketing Automation Routes
+  
+  // Get smart scheduling suggestions
+  app.get("/api/ai/scheduling-suggestions", async (req, res) => {
+    try {
+      const { date, serviceId, stylistId } = req.query;
+      
+      if (!date || !serviceId) {
+        return res.status(400).json({ message: "Date and serviceId are required" });
+      }
+      
+      const suggestions = await aiSchedulingService.optimizeScheduling(
+        new Date(date as string),
+        parseInt(serviceId as string),
+        stylistId ? parseInt(stylistId as string) : undefined
+      );
+      
+      res.json({ suggestions });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error generating scheduling suggestions" });
+    }
+  });
+
+  // Get rebooking predictions
+  app.get("/api/ai/rebooking-suggestions", async (req, res) => {
+    try {
+      const suggestions = await aiSchedulingService.generateRebookingSuggestions();
+      res.json({ suggestions });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error generating rebooking suggestions" });
+    }
+  });
+
+  // Get pricing optimization suggestions
+  app.get("/api/ai/pricing-suggestions/:serviceId", async (req, res) => {
+    try {
+      const serviceId = parseInt(req.params.serviceId);
+      const suggestions = await aiSchedulingService.generatePricingSuggestions(serviceId);
+      res.json({ suggestions });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error generating pricing suggestions" });
+    }
+  });
+
+  // Marketing Campaigns
+  app.get("/api/marketing/campaigns", async (req, res) => {
+    try {
+      const campaigns = await storage.getMarketingCampaigns();
+      res.json({ campaigns });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching marketing campaigns" });
+    }
+  });
+
+  app.post("/api/marketing/campaigns", async (req, res) => {
+    try {
+      const { type, targetCriteria } = req.body;
+      const campaign = await marketingAutomationService.createAutomatedCampaign(type, targetCriteria);
+      res.status(201).json({ campaign });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error creating marketing campaign" });
+    }
+  });
+
+  // Generate marketing content
+  app.post("/api/marketing/generate-content", async (req, res) => {
+    try {
+      const { type, clientEmail } = req.body;
+      const content = await marketingAutomationService.generateMarketingContent(type, clientEmail);
+      res.json({ content });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error generating marketing content" });
+    }
+  });
+
+  // Client Insights
+  app.get("/api/ai/client-insights/:clientEmail", async (req, res) => {
+    try {
+      const clientEmail = req.params.clientEmail;
+      const insights = await marketingAutomationService.generateClientInsights(clientEmail);
+      res.json({ insights });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error generating client insights" });
+    }
+  });
+
+  // Accept scheduling suggestion
+  app.post("/api/ai/accept-suggestion/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.acceptSchedulingSuggestion(id);
+      res.json({ message: "Suggestion accepted" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error accepting suggestion" });
     }
   });
 

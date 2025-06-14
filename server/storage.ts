@@ -333,6 +333,94 @@ export class MemStorage implements IStorage {
     this.contactMessages.set(id, message);
     return message;
   }
+
+  // AI Marketing Campaigns
+  async getMarketingCampaigns(): Promise<MarketingCampaign[]> {
+    return Array.from(this.marketingCampaigns.values());
+  }
+
+  async createMarketingCampaign(insertCampaign: InsertMarketingCampaign): Promise<MarketingCampaign> {
+    const id = this.marketingCampaignCurrentId++;
+    const campaign: MarketingCampaign = {
+      id,
+      name: insertCampaign.name,
+      type: insertCampaign.type,
+      status: 'draft',
+      targetAudience: insertCampaign.targetAudience,
+      content: insertCampaign.content,
+      schedule: insertCampaign.schedule || null,
+      metrics: null,
+      createdAt: new Date(),
+      lastSent: null
+    };
+    this.marketingCampaigns.set(id, campaign);
+    return campaign;
+  }
+
+  async updateMarketingCampaign(id: number, updates: Partial<MarketingCampaign>): Promise<MarketingCampaign> {
+    const campaign = this.marketingCampaigns.get(id);
+    if (!campaign) {
+      throw new Error(`Marketing campaign with id ${id} not found`);
+    }
+    const updatedCampaign = { ...campaign, ...updates };
+    this.marketingCampaigns.set(id, updatedCampaign);
+    return updatedCampaign;
+  }
+
+  // Client Insights
+  async getClientInsights(clientEmail: string): Promise<ClientInsight[]> {
+    return Array.from(this.clientInsights.values()).filter(
+      insight => insight.clientEmail === clientEmail
+    );
+  }
+
+  async createClientInsight(insertInsight: InsertClientInsight): Promise<ClientInsight> {
+    const id = this.clientInsightCurrentId++;
+    const insight: ClientInsight = {
+      id,
+      clientEmail: insertInsight.clientEmail,
+      appointmentId: insertInsight.appointmentId || null,
+      insightType: insertInsight.insightType,
+      data: insertInsight.data,
+      confidence: insertInsight.confidence || null,
+      createdAt: new Date()
+    };
+    this.clientInsights.set(id, insight);
+    return insight;
+  }
+
+  // Scheduling Suggestions
+  async getSchedulingSuggestions(appointmentId?: number): Promise<SchedulingSuggestion[]> {
+    const suggestions = Array.from(this.schedulingSuggestions.values());
+    if (appointmentId) {
+      return suggestions.filter(s => s.appointmentId === appointmentId);
+    }
+    return suggestions;
+  }
+
+  async createSchedulingSuggestion(insertSuggestion: InsertSchedulingSuggestion): Promise<SchedulingSuggestion> {
+    const id = this.schedulingSuggestionCurrentId++;
+    const suggestion: SchedulingSuggestion = {
+      id,
+      appointmentId: insertSuggestion.appointmentId || null,
+      suggestionType: insertSuggestion.suggestionType,
+      suggestion: insertSuggestion.suggestion,
+      reasoning: insertSuggestion.reasoning,
+      priority: insertSuggestion.priority || 1,
+      isAccepted: null,
+      createdAt: new Date()
+    };
+    this.schedulingSuggestions.set(id, suggestion);
+    return suggestion;
+  }
+
+  async acceptSchedulingSuggestion(id: number): Promise<void> {
+    const suggestion = this.schedulingSuggestions.get(id);
+    if (suggestion) {
+      suggestion.isAccepted = true;
+      this.schedulingSuggestions.set(id, suggestion);
+    }
+  }
 }
 
 export const storage = new MemStorage();
