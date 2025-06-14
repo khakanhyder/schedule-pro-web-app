@@ -32,7 +32,7 @@ import WeeklySchedule from "@/components/dashboard/WeeklySchedule";
 import ClientManagement from "@/components/dashboard/ClientManagement";
 import PaymentOptions from "@/components/dashboard/PaymentOptions";
 import AIInsights from "@/components/dashboard/AIInsights";
-import BusinessGrowthTools from "@/components/dashboard/BusinessGrowthTools";
+import BusinessGrowthTools from "@/components/dashboard/BusinessGrowthToolsSimple";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function StylistDashboard() {
