@@ -4,7 +4,10 @@ import {
   stylists, type Stylist, type InsertStylist,
   appointments, type Appointment, type InsertAppointment,
   reviews, type Review, type InsertReview,
-  contactMessages, type ContactMessage, type InsertContactMessage
+  contactMessages, type ContactMessage, type InsertContactMessage,
+  marketingCampaigns, type MarketingCampaign, type InsertMarketingCampaign,
+  clientInsights, type ClientInsight, type InsertClientInsight,
+  schedulingSuggestions, type SchedulingSuggestion, type InsertSchedulingSuggestion
 } from "@shared/schema";
 import { type IndustryData, industryDatabase } from "./industryData";
 
@@ -38,7 +41,17 @@ export interface IStorage {
   // Contact Messages
   createContactMessage(message: InsertContactMessage): Promise<ContactMessage>;
   
-
+  // AI Scheduling & Marketing
+  getMarketingCampaigns(): Promise<MarketingCampaign[]>;
+  createMarketingCampaign(campaign: InsertMarketingCampaign): Promise<MarketingCampaign>;
+  updateMarketingCampaign(id: number, updates: Partial<MarketingCampaign>): Promise<MarketingCampaign>;
+  
+  getClientInsights(clientEmail: string): Promise<ClientInsight[]>;
+  createClientInsight(insight: InsertClientInsight): Promise<ClientInsight>;
+  
+  getSchedulingSuggestions(appointmentId?: number): Promise<SchedulingSuggestion[]>;
+  createSchedulingSuggestion(suggestion: InsertSchedulingSuggestion): Promise<SchedulingSuggestion>;
+  acceptSchedulingSuggestion(id: number): Promise<void>;
   
   // Industry management
   setIndustry(industryId: string): void;
@@ -52,6 +65,9 @@ export class MemStorage implements IStorage {
   private appointments = new Map<number, Appointment>();
   private reviews = new Map<number, Review>();
   private contactMessages = new Map<number, ContactMessage>();
+  private marketingCampaigns = new Map<number, MarketingCampaign>();
+  private clientInsights = new Map<number, ClientInsight>();
+  private schedulingSuggestions = new Map<number, SchedulingSuggestion>();
   
   private userCurrentId = 1;
   private serviceCurrentId = 1;
@@ -59,6 +75,9 @@ export class MemStorage implements IStorage {
   private appointmentCurrentId = 1;
   private reviewCurrentId = 1;
   private contactMessageCurrentId = 1;
+  private marketingCampaignCurrentId = 1;
+  private clientInsightCurrentId = 1;
+  private schedulingSuggestionCurrentId = 1;
   
   // Track the current industry
   private currentIndustryId = "beauty";

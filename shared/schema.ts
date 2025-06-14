@@ -130,4 +130,83 @@ export const insertContactMessageSchema = createInsertSchema(contactMessages).pi
 export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
 
+// AI Scheduling Optimization
+export const aiSchedulingRules = pgTable("ai_scheduling_rules", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id").notNull().default(1),
+  ruleType: text("rule_type").notNull(), // 'optimization', 'prediction', 'pricing'
+  conditions: text("conditions").notNull(), // JSON string of conditions
+  actions: text("actions").notNull(), // JSON string of actions
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Marketing Campaigns
+export const marketingCampaigns = pgTable("marketing_campaigns", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'email', 'sms', 'review_request', 'rebook_reminder'
+  status: text("status").notNull().default('draft'), // 'draft', 'active', 'paused', 'completed'
+  targetAudience: text("target_audience").notNull(), // JSON string of targeting criteria
+  content: text("content").notNull(), // Generated content
+  schedule: text("schedule"), // JSON string of scheduling rules
+  metrics: text("metrics"), // JSON string of performance metrics
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastSent: timestamp("last_sent"),
+});
+
+// Client Insights (Analytics)
+export const clientInsights = pgTable("client_insights", {
+  id: serial("id").primaryKey(),
+  clientEmail: text("client_email").notNull(),
+  appointmentId: integer("appointment_id").references(() => appointments.id),
+  insightType: text("insight_type").notNull(), // 'loyalty_score', 'churn_risk', 'lifetime_value', 'preferences'
+  data: text("data").notNull(), // JSON string of insight data
+  confidence: real("confidence"), // Confidence score 0-1
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Smart Scheduling Suggestions
+export const schedulingSuggestions = pgTable("scheduling_suggestions", {
+  id: serial("id").primaryKey(),
+  appointmentId: integer("appointment_id").references(() => appointments.id),
+  suggestionType: text("suggestion_type").notNull(), // 'time_optimization', 'service_upsell', 'rebooking'
+  suggestion: text("suggestion").notNull(),
+  reasoning: text("reasoning").notNull(),
+  priority: integer("priority").default(1), // 1-5 priority score
+  isAccepted: boolean("is_accepted"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertMarketingCampaignSchema = createInsertSchema(marketingCampaigns).pick({
+  name: true,
+  type: true,
+  targetAudience: true,
+  content: true,
+  schedule: true,
+});
+
+export const insertClientInsightSchema = createInsertSchema(clientInsights).pick({
+  clientEmail: true,
+  appointmentId: true,
+  insightType: true,
+  data: true,
+  confidence: true,
+});
+
+export const insertSchedulingSuggestionSchema = createInsertSchema(schedulingSuggestions).pick({
+  appointmentId: true,
+  suggestionType: true,
+  suggestion: true,
+  reasoning: true,
+  priority: true,
+});
+
+export type MarketingCampaign = typeof marketingCampaigns.$inferSelect;
+export type InsertMarketingCampaign = z.infer<typeof insertMarketingCampaignSchema>;
+export type ClientInsight = typeof clientInsights.$inferSelect;
+export type InsertClientInsight = z.infer<typeof insertClientInsightSchema>;
+export type SchedulingSuggestion = typeof schedulingSuggestions.$inferSelect;
+export type InsertSchedulingSuggestion = z.infer<typeof insertSchedulingSuggestionSchema>;
+
 
