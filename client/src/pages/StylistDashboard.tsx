@@ -31,6 +31,7 @@ import AppointmentForm from "@/components/dashboard/AppointmentForm";
 import WeeklySchedule from "@/components/dashboard/WeeklySchedule";
 import ClientManagement from "@/components/dashboard/ClientManagement";
 import PaymentOptions from "@/components/dashboard/PaymentOptions";
+import AIInsights from "@/components/dashboard/AIInsights";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function StylistDashboard() {
@@ -169,11 +170,12 @@ export default function StylistDashboard() {
         </div>
         
         <Tabs defaultValue="appointments" onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="appointments">Today's {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}s</TabsTrigger>
             <TabsTrigger value="schedule">Weekly Schedule</TabsTrigger>
             <TabsTrigger value="clients">{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Management</TabsTrigger>
             <TabsTrigger value="payments">Process Payment</TabsTrigger>
+            <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
           </TabsList>
           
           {/* Appointments Tab */}
@@ -343,6 +345,11 @@ export default function StylistDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+          
+          {/* AI Insights Tab */}
+          <TabsContent value="ai-insights">
+            <AIInsights />
           </TabsContent>
         </Tabs>
       </div>

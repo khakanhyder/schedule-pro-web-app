@@ -5,6 +5,7 @@ import BookingForm from "@/components/booking/BookingForm";
 import Calendar from "@/components/booking/Calendar";
 import TimeSlots from "@/components/booking/TimeSlots";
 import ConfirmationModal from "@/components/booking/ConfirmationModal";
+import SmartSchedulingSuggestions from "@/components/booking/SmartSchedulingSuggestions";
 import { type Service, type Stylist, type Appointment } from "@shared/schema";
 
 export interface SelectedBooking {
@@ -84,6 +85,13 @@ export default function Booking() {
                 selectedStylistId={selectedBooking.stylistId}
                 selectedTimeSlot={selectedBooking.timeSlot}
                 onSelectTimeSlot={(timeSlot) => setSelectedBooking({...selectedBooking, timeSlot})}
+              />
+              
+              <SmartSchedulingSuggestions
+                selectedDate={selectedBooking.date}
+                selectedServiceId={selectedBooking.serviceId}
+                selectedStylistId={selectedBooking.stylistId}
+                onTimeSlotSelect={(timeSlot) => setSelectedBooking({...selectedBooking, timeSlot})}
               />
             </div>
           </div>
