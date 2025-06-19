@@ -17,6 +17,20 @@ export default function Setup() {
   
   const handleTemplateSelection = (templateId: string) => {
     setSelectedTemplate(templateId);
+    
+    // Update the selected industry in our context
+    selectIndustryById(templateId);
+    
+    // Show success toast
+    toast({
+      title: "Industry Template Selected",
+      description: "Now choose your theme style for this industry."
+    });
+    
+    // Automatically advance to step 2
+    setTimeout(() => {
+      setStep(2);
+    }, 500);
   };
   
   const handleContinue = () => {

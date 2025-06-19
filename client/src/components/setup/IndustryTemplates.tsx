@@ -23,15 +23,6 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
 
   const handleSelectTemplate = (templateId: string) => {
     setSelectedTemplate(templateId);
-    
-    const template = industryTemplates.find(t => t.id === templateId);
-    if (template) {
-      toast({
-        title: `${template.name} Template Selected`,
-        description: "Your dashboard will be personalized for this industry."
-      });
-    }
-    
     onSelectTemplate(templateId);
   };
 
