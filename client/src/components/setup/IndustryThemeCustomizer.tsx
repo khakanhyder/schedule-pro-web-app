@@ -112,7 +112,7 @@ export default function IndustryThemeCustomizer() {
     branding: industryThemes[selectedIndustry.id]?.brandingElements[0] || "Professional"
   });
 
-  const currentTheme = industryThemes[selectedIndustry.id] || industryThemes.beauty;
+  const currentTheme = industryThemes[selectedIndustry.id as keyof typeof industryThemes] || industryThemes.beauty;
 
   const handleApplyTheme = () => {
     toast({

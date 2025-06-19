@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import IndustryTemplates from "@/components/setup/IndustryTemplates";
-import IndustryThemeCustomizer from "@/components/setup/IndustryThemeCustomizer";
+import SimpleThemeCustomizer from "@/components/setup/SimpleThemeCustomizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +9,7 @@ import { useIndustry } from "@/lib/industryContext";
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
@@ -36,6 +37,15 @@ export default function Setup() {
     }
     
     if (step === 2) {
+      if (!selectedTheme) {
+        toast({
+          title: "Please select a theme",
+          description: "Choose a theme template to complete setup.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       // Navigate to the dashboard
       setLocation("/dashboard");
       
@@ -62,7 +72,10 @@ export default function Setup() {
               <IndustryTemplates onSelectTemplate={handleTemplateSelection} />
             )}
             {step === 2 && (
-              <IndustryThemeCustomizer />
+              <SimpleThemeCustomizer 
+                selectedTheme={selectedTheme}
+                onThemeSelect={setSelectedTheme}
+              />
             )}
           </CardContent>
           
