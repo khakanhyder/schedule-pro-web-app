@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import IndustryTemplates from "@/components/setup/IndustryTemplates";
 import SimpleThemeCustomizer from "@/components/setup/SimpleThemeCustomizer";
@@ -16,21 +16,18 @@ export default function Setup() {
   const { selectIndustryById } = useIndustry();
   
   const handleTemplateSelection = (templateId: string) => {
-    console.log("Template selected:", templateId);
-    setSelectedTemplate(templateId);
-    
-    // Update the selected industry in our context
+    // Update the selected industry in our context first
     selectIndustryById(templateId);
+    
+    // Then update local state and step in a single batch
+    setSelectedTemplate(templateId);
+    setStep(2);
     
     // Show success toast
     toast({
       title: "Industry Template Selected",
       description: "Now choose your theme style for this industry."
     });
-    
-    // Immediately advance to step 2
-    console.log("Setting step to 2");
-    setStep(2);
   };
   
   const handleCompleteSetup = () => {
@@ -52,8 +49,6 @@ export default function Setup() {
     });
   };
 
-  console.log("Current step:", step, "Selected template:", selectedTemplate);
-
   return (
     <section className="py-12 bg-neutral min-h-screen">
       <div className="container mx-auto px-4">
@@ -61,7 +56,7 @@ export default function Setup() {
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold">Set Up Your Scheduled Dashboard</CardTitle>
             <CardDescription>
-              Let's personalize your scheduling experience for your business (Step {step}/2)
+              Let's personalize your scheduling experience for your business
             </CardDescription>
           </CardHeader>
           
