@@ -104,10 +104,28 @@ export default function AIInsights() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="scheduling">Smart Scheduling</TabsTrigger>
-          <TabsTrigger value="marketing">Marketing Automation</TabsTrigger>
-          <TabsTrigger value="insights">Client Insights</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="scheduling" className="text-xs sm:text-sm px-2 py-3">
+            <div className="flex flex-col items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Smart Scheduling</span>
+              <span className="sm:hidden">Schedule</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="marketing" className="text-xs sm:text-sm px-2 py-3">
+            <div className="flex flex-col items-center gap-1">
+              <Target className="h-4 w-4" />
+              <span className="hidden sm:inline">Marketing Automation</span>
+              <span className="sm:hidden">Marketing</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="insights" className="text-xs sm:text-sm px-2 py-3">
+            <div className="flex flex-col items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Client Insights</span>
+              <span className="sm:hidden">Insights</span>
+            </div>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="scheduling" className="space-y-4">
@@ -175,29 +193,30 @@ export default function AIInsights() {
         </TabsContent>
 
         <TabsContent value="marketing" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
+            <Card className="h-fit">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Review Requests</CardTitle>
-                <CardDescription>Automated review collection</CardDescription>
+                <CardTitle className="text-base sm:text-lg">Review Requests</CardTitle>
+                <CardDescription className="text-sm">Automated review collection</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <Button 
                   onClick={() => handleCreateCampaign('review_request')}
                   disabled={createCampaignMutation.isPending}
-                  className="w-full"
+                  className="w-full text-sm"
+                  size="sm"
                 >
                   Create Campaign
                 </Button>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="h-fit">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Rebooking Reminders</CardTitle>
-                <CardDescription>Smart rebooking automation</CardDescription>
+                <CardTitle className="text-base sm:text-lg">Rebooking Reminders</CardTitle>
+                <CardDescription className="text-sm">Smart rebooking automation</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <Button 
                   onClick={() => handleCreateCampaign('rebook_reminder')}
                   disabled={createCampaignMutation.isPending}
