@@ -201,14 +201,14 @@ const defaultIndustry = industryTemplates[0];
 interface IndustryContextType {
   selectedIndustry: Industry;
   setSelectedIndustry: (industry: Industry) => void;
-  selectIndustryById: (id: string) => void;
+  selectIndustryById: (id: string) => Promise<void>;
 }
 
 // Create context
 const IndustryContext = createContext<IndustryContextType>({
   selectedIndustry: defaultIndustry,
   setSelectedIndustry: () => {},
-  selectIndustryById: () => {}
+  selectIndustryById: async (_id: string) => {}
 });
 
 // Provider component
@@ -233,28 +233,32 @@ export const IndustryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [selectedIndustry]);
 
   // Select industry by ID
-  const selectIndustryById = (id: string) => {
+  const selectIndustryById = async (id: string): Promise<void> => {
     const industry = industryTemplates.find(ind => ind.id === id);
     if (industry) {
       setSelectedIndustry(industry);
       
       // Notify the backend about the industry change
       // This will update services and professionals on the server side
-      fetch('/api/set-industry', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ industryId: id }),
-      })
-      .then(response => response.json())
-      .then(() => {
-        // Force reload services after industry change
-        window.location.reload();
-      })
-      .catch(error => {
+      try {
+        const response = await fetch('/api/set-industry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ industryId: id }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to set industry on server');
+        }
+        
+        await response.json();
+        // Don't reload the page during setup flow
+      } catch (error) {
         console.error('Error setting industry on server:', error);
-      });
+        throw error;
+      }
     }
   };
 

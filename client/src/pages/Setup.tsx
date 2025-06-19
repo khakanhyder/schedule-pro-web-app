@@ -13,20 +13,23 @@ export default function Setup() {
   const [step, setStep] = useState(1);
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
-  const { selectIndustryById } = useIndustry();
+  const { selectIndustryById, selectedIndustry } = useIndustry();
   
   const handleTemplateSelection = (templateId: string) => {
-    // Update the selected industry in our context first
-    selectIndustryById(templateId);
-    
-    // Then update local state and step in a single batch
+    // Set the template selection state first
     setSelectedTemplate(templateId);
+    
+    // Update industry in background
+    selectIndustryById(templateId).catch(error => {
+      console.error('Error setting industry:', error);
+    });
+    
+    // Immediately advance to step 2
     setStep(2);
     
-    // Show success toast
     toast({
-      title: "Industry Template Selected",
-      description: "Now choose your theme style for this industry."
+      title: "Industry Selected",
+      description: "Now choose your theme style."
     });
   };
   
