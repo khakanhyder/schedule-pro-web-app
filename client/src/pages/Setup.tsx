@@ -33,41 +33,23 @@ export default function Setup() {
     }, 500);
   };
   
-  const handleContinue = () => {
-    if (step === 1) {
-      if (!selectedTemplate) {
-        toast({
-          title: "Please Select a Template",
-          description: "You need to select an industry template to continue.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Update the selected industry in our context
-      selectIndustryById(selectedTemplate);
-      setStep(2);
+  const handleCompleteSetup = () => {
+    if (!selectedTheme) {
+      toast({
+        title: "Please select a theme",
+        description: "Choose a theme template to complete setup.",
+        variant: "destructive"
+      });
       return;
     }
     
-    if (step === 2) {
-      if (!selectedTheme) {
-        toast({
-          title: "Please select a theme",
-          description: "Choose a theme template to complete setup.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Navigate to the dashboard
-      setLocation("/dashboard");
-      
-      toast({
-        title: "Setup Complete!",
-        description: "Your dashboard has been personalized with your custom theme."
-      });
-    }
+    // Navigate to the dashboard
+    setLocation("/dashboard");
+    
+    toast({
+      title: "Setup Complete!",
+      description: "Your dashboard has been personalized with your custom theme."
+    });
   };
 
   return (
@@ -98,12 +80,14 @@ export default function Setup() {
               {step === 1 ? "Cancel" : "Back"}
             </Button>
             
-            <Button 
-              onClick={handleContinue}
-              disabled={step === 1 ? !selectedTemplate : !selectedTheme}
-            >
-              {step === 1 ? "Customize Theme" : "Complete Setup"}
-            </Button>
+            {step === 2 && (
+              <Button 
+                onClick={handleCompleteSetup}
+                disabled={!selectedTheme}
+              >
+                Complete Setup
+              </Button>
+            )}
           </CardFooter>
         </Card>
       </div>
