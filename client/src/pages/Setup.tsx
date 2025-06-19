@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import IndustryTemplates from "@/components/setup/IndustryTemplates";
+import IndustryThemeCustomizer from "@/components/setup/IndustryThemeCustomizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -18,25 +19,31 @@ export default function Setup() {
   };
   
   const handleContinue = () => {
-    if (!selectedTemplate) {
-      toast({
-        title: "Please Select a Template",
-        description: "You need to select an industry template to continue.",
-        variant: "destructive"
-      });
+    if (step === 1) {
+      if (!selectedTemplate) {
+        toast({
+          title: "Please Select a Template",
+          description: "You need to select an industry template to continue.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Update the selected industry in our context
+      selectIndustryById(selectedTemplate);
+      setStep(2);
       return;
     }
     
-    // Update the selected industry in our context
-    selectIndustryById(selectedTemplate);
-    
-    // Navigate to the dashboard
-    setLocation("/dashboard");
-    
-    toast({
-      title: "Setup Complete!",
-      description: "Your dashboard has been personalized for your industry."
-    });
+    if (step === 2) {
+      // Navigate to the dashboard
+      setLocation("/dashboard");
+      
+      toast({
+        title: "Setup Complete!",
+        description: "Your dashboard has been personalized with your custom theme."
+      });
+    }
   };
 
   return (
@@ -54,18 +61,21 @@ export default function Setup() {
             {step === 1 && (
               <IndustryTemplates onSelectTemplate={handleTemplateSelection} />
             )}
+            {step === 2 && (
+              <IndustryThemeCustomizer />
+            )}
           </CardContent>
           
           <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setLocation("/")}>
-              Cancel
+            <Button variant="outline" onClick={() => step === 1 ? setLocation("/") : setStep(1)}>
+              {step === 1 ? "Cancel" : "Back"}
             </Button>
             
             <Button 
               onClick={handleContinue}
-              disabled={!selectedTemplate}
+              disabled={step === 1 && !selectedTemplate}
             >
-              Continue to Dashboard
+              {step === 1 ? "Customize Theme" : "Complete Setup"}
             </Button>
           </CardFooter>
         </Card>
