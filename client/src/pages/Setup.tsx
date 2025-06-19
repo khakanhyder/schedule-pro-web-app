@@ -86,7 +86,7 @@ export default function Setup() {
             
             <Button 
               onClick={handleContinue}
-              disabled={step === 1 && !selectedTemplate}
+              disabled={step === 1 ? !selectedTemplate : !selectedTheme}
             >
               {step === 1 ? "Customize Theme" : "Complete Setup"}
             </Button>

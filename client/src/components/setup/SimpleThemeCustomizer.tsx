@@ -169,21 +169,8 @@ export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: 
 
   const presets = getThemePresets();
 
-  const handleApplyTheme = () => {
-    if (!selectedPreset) {
-      toast({
-        title: "Please select a theme",
-        description: "Choose a theme preset to continue.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Theme Applied Successfully",
-      description: `Your ${selectedIndustry.name} theme has been customized and applied.`
-    });
-  };
+  // This component is now controlled by the parent, so we don't need the apply handler
+  // The parent Setup.tsx handles the completion logic
 
   return (
     <div className="space-y-6">
@@ -235,7 +222,7 @@ export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: 
               >
                 {preset.preview}
               </div>
-              {selectedPreset === preset.id && (
+              {selectedTheme === preset.id && (
                 <Badge className="w-full justify-center" style={{ backgroundColor: preset.primaryColor }}>
                   Selected
                 </Badge>
@@ -245,7 +232,7 @@ export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: 
         ))}
       </div>
 
-      {selectedPreset && (
+      {selectedTheme && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -258,7 +245,7 @@ export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: 
           </CardHeader>
           <CardContent>
             {(() => {
-              const selected = presets.find(p => p.id === selectedPreset);
+              const selected = presets.find(p => p.id === selectedTheme);
               return selected ? (
                 <div 
                   className="p-6 rounded-lg border-2"
@@ -301,15 +288,7 @@ export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: 
         </Card>
       )}
 
-      <div className="flex justify-center">
-        <Button 
-          onClick={handleApplyTheme}
-          disabled={!selectedPreset}
-          className="px-8"
-        >
-          Apply Selected Theme
-        </Button>
-      </div>
+
     </div>
   );
 }
