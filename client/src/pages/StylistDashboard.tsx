@@ -37,6 +37,7 @@ import AdvancedFeatures from "@/components/dashboard/AdvancedFeatures";
 import IndustrySpecificFeatures from "@/components/dashboard/IndustrySpecificFeatures";
 import PredictiveInsights from "@/components/dashboard/PredictiveInsights";
 import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
+import SettingsManagement from "@/components/dashboard/SettingsManagement";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function StylistDashboard() {
@@ -180,6 +181,7 @@ export default function StylistDashboard() {
             <TabsTrigger value="appointments">Today's {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}s</TabsTrigger>
             <TabsTrigger value="schedule">Weekly Schedule</TabsTrigger>
             <TabsTrigger value="clients">{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Management</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="payments">Process Payment</TabsTrigger>
             <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
             <TabsTrigger value="growth">Growth Tools</TabsTrigger>
@@ -380,6 +382,11 @@ export default function StylistDashboard() {
           {/* Industry-Specific Features Tab */}
           <TabsContent value="industry">
             <IndustrySpecificFeatures />
+          </TabsContent>
+          
+          {/* Settings Management Tab */}
+          <TabsContent value="settings">
+            <SettingsManagement />
           </TabsContent>
           
           {/* Predictive Insights Tab */}
