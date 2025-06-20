@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import IndustryTemplates from "@/components/setup/IndustryTemplates";
 import SimpleThemeCustomizer from "@/components/setup/SimpleThemeCustomizer";
+import LogoCustomizer from "@/components/setup/LogoCustomizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +12,8 @@ import { useTheme } from "@/lib/themeContext";
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const [businessLogo, setBusinessLogo] = useState<string | null>(null);
+  const [businessName, setBusinessName] = useState<string>("");
   const [step, setStep] = useState(1);
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
@@ -75,17 +78,44 @@ export default function Setup() {
                 onThemeSelect={setSelectedTheme}
               />
             )}
+            {step === 3 && (
+              <LogoCustomizer 
+                onLogoChange={(logo, name) => {
+                  setBusinessLogo(logo);
+                  setBusinessName(name);
+                }}
+                currentLogo={businessLogo}
+                currentBusinessName={businessName}
+              />
+            )}
           </CardContent>
           
           <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => step === 1 ? setLocation("/") : setStep(1)}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                if (step === 1) {
+                  setLocation("/");
+                } else {
+                  setStep(step - 1);
+                }
+              }}
+            >
               {step === 1 ? "Cancel" : "Back"}
             </Button>
             
             {step === 2 && (
               <Button 
-                onClick={handleCompleteSetup}
+                onClick={() => setStep(3)}
                 disabled={!selectedTheme}
+              >
+                Next: Add Your Logo
+              </Button>
+            )}
+            
+            {step === 3 && (
+              <Button 
+                onClick={handleCompleteSetup}
               >
                 Complete Setup
               </Button>

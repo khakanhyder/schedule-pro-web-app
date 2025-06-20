@@ -34,17 +34,17 @@ export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: 
       case 'beauty':
         return [
           {
-            id: 'feminine-elegant',
-            name: 'Feminine & Elegant',
-            description: 'Perfect for upscale salons with pink and rose gold accents',
+            id: 'beauty-pink',
+            name: 'Pink',
+            description: 'Classic pink theme',
             primaryColor: '#EC4899',
             accentColor: '#FDF2F8',
             preview: 'Rose gold with soft curves'
           },
           {
-            id: 'luxury-spa',
-            name: 'Luxury Spa',
-            description: 'High-end spa experience with purple tones',
+            id: 'beauty-purple',
+            name: 'Purple',
+            description: 'Rich purple theme',
             primaryColor: '#8B5CF6',
             accentColor: '#F3E8FF',
             preview: 'Purple luxury with elegant fonts'
