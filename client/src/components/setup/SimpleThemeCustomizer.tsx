@@ -50,12 +50,12 @@ export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: 
             preview: 'Purple luxury with elegant fonts'
           },
           {
-            id: 'modern-clean',
-            name: 'Modern Clean',
-            description: 'Clean and professional while maintaining appeal',
-            primaryColor: '#EC4899',
-            accentColor: '#F8FAFC',
-            preview: 'Pink with clean minimalist design'
+            id: 'beauty-orange',
+            name: 'Orange',
+            description: 'Warm orange theme',
+            primaryColor: '#F97316',
+            accentColor: '#FFF7ED',
+            preview: 'Warm orange styling'
           }
         ];
       case 'trades':
