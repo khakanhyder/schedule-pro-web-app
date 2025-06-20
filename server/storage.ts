@@ -21,11 +21,15 @@ export interface IStorage {
   getServices(): Promise<Service[]>;
   getService(id: number): Promise<Service | undefined>;
   createService(service: InsertService): Promise<Service>;
+  updateService(id: number, updates: Partial<InsertService>): Promise<Service>;
+  deleteService(id: number): Promise<void>;
   
   // Stylists
   getStylists(): Promise<Stylist[]>;
   getStylist(id: number): Promise<Stylist | undefined>;
   createStylist(stylist: InsertStylist): Promise<Stylist>;
+  updateStylist(id: number, updates: Partial<InsertStylist>): Promise<Stylist>;
+  deleteStylist(id: number): Promise<void>;
   
   // Appointments
   getAppointments(): Promise<Appointment[]>;
@@ -235,6 +239,22 @@ export class MemStorage implements IStorage {
     const service: Service = { ...insertService, id };
     this.services.set(id, service);
     return service;
+  }
+
+  async updateService(id: number, updates: Partial<InsertService>): Promise<Service> {
+    const service = this.services.get(id);
+    if (!service) {
+      throw new Error(`Service with id ${id} not found`);
+    }
+    const updatedService = { ...service, ...updates };
+    this.services.set(id, updatedService);
+    return updatedService;
+  }
+
+  async deleteService(id: number): Promise<void> {
+    if (!this.services.delete(id)) {
+      throw new Error(`Service with id ${id} not found`);
+    }
   }
 
   async getStylists(): Promise<Stylist[]> {

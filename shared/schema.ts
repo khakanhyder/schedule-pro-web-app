@@ -23,6 +23,7 @@ export const services = pgTable("services", {
   description: text("description").notNull(),
   price: text("price").notNull(),
   durationMinutes: integer("duration_minutes").notNull(),
+  category: text("category"),
 });
 
 export const insertServiceSchema = createInsertSchema(services).pick({
@@ -30,6 +31,7 @@ export const insertServiceSchema = createInsertSchema(services).pick({
   description: true,
   price: true,
   durationMinutes: true,
+  category: true,
 });
 
 export type InsertService = z.infer<typeof insertServiceSchema>;

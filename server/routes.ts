@@ -111,6 +111,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CRUD operations for stylists
+  app.post("/api/stylists", async (req, res) => {
+    try {
+      const stylist = await storage.createStylist(req.body);
+      res.json(stylist);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error creating stylist: " + error.message });
+    }
+  });
+
+  app.put("/api/stylists/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const stylist = await storage.updateStylist(id, req.body);
+      res.json(stylist);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error updating stylist: " + error.message });
+    }
+  });
+
+  app.delete("/api/stylists/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteStylist(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error deleting stylist: " + error.message });
+    }
+  });
+
+  // CRUD operations for services
+  app.post("/api/services", async (req, res) => {
+    try {
+      const service = await storage.createService(req.body);
+      res.json(service);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error creating service: " + error.message });
+    }
+  });
+
+  app.put("/api/services/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const service = await storage.updateService(id, req.body);
+      res.json(service);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error updating service: " + error.message });
+    }
+  });
+
+  app.delete("/api/services/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteService(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error deleting service: " + error.message });
+    }
+  });
+
   // API endpoint to get published reviews
   app.get("/api/reviews", async (req, res) => {
     try {
