@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { aiSchedulingService, marketingAutomationService } from "./ai-service";
+import { GlossGeniusIntegration, validateGlossGeniusCredentials } from "./glossgenius-integration";
+import { CSVImporter } from "./csv-import";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
@@ -533,6 +535,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Suggestion accepted" });
     } catch (error: any) {
       res.status(500).json({ message: "Error accepting suggestion" });
+    }
+  });
+
+  // Data Import API endpoints for multiple scheduling platforms
+  app.post("/api/import/glossgenius/validate", async (req, res) => {
+    try {
+      const { apiKey, businessId } = req.body;
+      
+      const config = {
+        apiKey,
+        businessId,
+        baseUrl: "https://api.glossgenius.com/v1"
+      };
+      
+      const isValid = await validateGlossGeniusCredentials(config);
+      
+      if (isValid) {
+        res.json({ valid: true, message: "Credentials validated successfully" });
+      } else {
+        res.status(400).json({ valid: false, message: "Invalid credentials" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Error validating credentials: " + error.message });
+    }
+  });
+
+  app.post("/api/import/glossgenius/sync", async (req, res) => {
+    try {
+      const { apiKey, businessId, startDate, endDate } = req.body;
+      
+      const config = {
+        apiKey,
+        businessId,
+        baseUrl: "https://api.glossgenius.com/v1"
+      };
+      
+      const glossGenius = new GlossGeniusIntegration(config);
+      
+      // Get appointments from GlossGenius
+      const ggAppointments = await glossGenius.getAppointments(startDate, endDate);
+      
+      // Convert and import appointments
+      const convertedAppointments = glossGenius.convertAppointments(ggAppointments);
+      
+      let importedCount = 0;
+      const errors: string[] = [];
+      
+      for (const appointment of convertedAppointments) {
+        try {
+          await storage.createAppointment(appointment);
+          importedCount++;
+        } catch (error: any) {
+          errors.push(`Failed to import appointment for ${appointment.clientName}: ${error.message}`);
+        }
+      }
+      
+      res.json({
+        message: "Import completed",
+        imported: importedCount,
+        total: ggAppointments.length,
+        errors
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error importing from GlossGenius: " + error.message });
+    }
+  });
+
+  app.post("/api/import/csv/preview", async (req, res) => {
+    try {
+      const { csvContent } = req.body;
+      
+      const importer = new CSVImporter();
+      const rows = importer.parseCSV(csvContent);
+      
+      if (rows.length === 0) {
+        return res.status(400).json({ message: "No data found in CSV" });
+      }
+      
+      const headers = rows[0];
+      const mappings = importer.detectFieldMappings(headers);
+      const appointments = importer.convertToAppointments(rows.slice(1), mappings);
+      const preview = importer.generatePreview(appointments, 10);
+      
+      res.json({
+        headers,
+        mappings,
+        preview,
+        totalRows: appointments.length
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error processing CSV: " + error.message });
+    }
+  });
+
+  app.post("/api/import/csv/import", async (req, res) => {
+    try {
+      const { csvContent, mappings } = req.body;
+      
+      const importer = new CSVImporter();
+      const rows = importer.parseCSV(csvContent);
+      const appointments = importer.convertToAppointments(rows.slice(1), mappings);
+      
+      let importedCount = 0;
+      const errors: string[] = [];
+      
+      for (const csvAppointment of appointments) {
+        try {
+          // Convert CSV appointment to our format
+          const appointment = {
+            date: new Date(csvAppointment.date + " " + csvAppointment.time),
+            serviceId: 1, // Default service, can be improved with service matching
+            stylistId: 1, // Default stylist, can be improved with staff matching
+            clientName: csvAppointment.clientName,
+            clientEmail: csvAppointment.clientEmail || "",
+            clientPhone: csvAppointment.clientPhone || "",
+            durationMinutes: csvAppointment.duration || 60,
+            notes: csvAppointment.notes || null,
+            professionalNotes: null,
+            confirmed: csvAppointment.status === "Confirmed",
+            emailConfirmation: true,
+            smsConfirmation: false
+          };
+          
+          await storage.createAppointment(appointment);
+          importedCount++;
+        } catch (error: any) {
+          errors.push(`Failed to import appointment for ${csvAppointment.clientName}: ${error.message}`);
+        }
+      }
+      
+      res.json({
+        message: "Import completed",
+        imported: importedCount,
+        total: appointments.length,
+        errors
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error importing CSV: " + error.message });
     }
   });
 

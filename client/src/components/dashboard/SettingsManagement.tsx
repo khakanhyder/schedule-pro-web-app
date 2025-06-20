@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Scissors, Clock, Settings2, Building2, Brain, Zap } from "lucide-react";
+import { Users, Scissors, Clock, Settings2, Building2, Brain, Zap, Download } from "lucide-react";
 import StaffManagement from "./StaffManagement";
 import ServicesManagement from "./ServicesManagement";
 import BusinessHoursManagement from "./BusinessHoursManagement";
 import AutomationSettings from "./AutomationSettings";
 import BusinessIntelligenceDashboard from "./BusinessIntelligenceDashboard";
+import DataImportManager from "./DataImportManager";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function SettingsManagement() {
@@ -22,8 +23,12 @@ export default function SettingsManagement() {
         </p>
       </div>
 
-      <Tabs defaultValue="staff" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+      <Tabs defaultValue="import" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="import" className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Import
+          </TabsTrigger>
           <TabsTrigger value="staff" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Team
@@ -72,6 +77,10 @@ export default function SettingsManagement() {
 
         <TabsContent value="intelligence" className="space-y-6">
           <BusinessIntelligenceDashboard />
+        </TabsContent>
+
+        <TabsContent value="import" className="space-y-6">
+          <DataImportManager />
         </TabsContent>
       </Tabs>
     </div>
