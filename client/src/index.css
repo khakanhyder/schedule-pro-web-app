@@ -117,12 +117,12 @@ body {
   border-color: var(--color-primary) !important;
 }
 
-/* Hero and accent colors */
-.text-blue-600:not(button):not(.btn) {
+/* Only apply theme colors to specific branded elements */
+.hero-text, .accent-text {
   color: var(--color-primary) !important;
 }
 
-.bg-blue-600:not(button):not(.btn) {
+.hero-bg, .accent-bg {
   background-color: var(--color-primary) !important;
 }
 

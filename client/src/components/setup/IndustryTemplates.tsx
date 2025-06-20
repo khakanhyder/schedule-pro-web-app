@@ -153,13 +153,13 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
               <Button 
                 className="w-full btn-premium font-medium"
                 style={{ 
-                  backgroundColor: selectedTemplate === template.id ? template.accentColor : template.primaryColor,
+                  backgroundColor: template.primaryColor,
                   color: "white",
                   border: "none"
                 }}
                 onClick={() => handleSelectTemplate(template.id)}
               >
-                {selectedTemplate === template.id ? 'Selected' : 'Choose Template'}
+                {selectedTemplate === template.id ? '✓ Selected' : 'Choose Template'}
               </Button>
             </CardFooter>
           </Card>
