@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import IndustryTemplates from "@/components/setup/IndustryTemplates";
 import SimpleThemeCustomizer from "@/components/setup/SimpleThemeCustomizer";
 import LogoCustomizer from "@/components/setup/LogoCustomizer";
+import BusinessDetailsCustomizer from "@/components/setup/BusinessDetailsCustomizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";

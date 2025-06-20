@@ -41,12 +41,18 @@ export const stylists = pgTable("stylists", {
   name: text("name").notNull(),
   bio: text("bio"),
   imageUrl: text("image_url"),
+  email: text("email"),
+  phone: text("phone"),
+  specialties: text("specialties").array(),
 });
 
 export const insertStylistSchema = createInsertSchema(stylists).pick({
   name: true,
   bio: true,
   imageUrl: true,
+  email: true,
+  phone: true,
+  specialties: true,
 });
 
 export type InsertStylist = z.infer<typeof insertStylistSchema>;
