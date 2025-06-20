@@ -2,6 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme CSS Variables */
+:root {
+  --color-primary: #3B82F6;
+  --color-accent: #EFF6FF;
+  --color-text: #1F2937;
+  --color-background: #FFFFFF;
+  --color-card: #F9FAFB;
+  --color-border: #E5E7EB;
+}
+
+/* Apply theme variables to components */
+.theme-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.theme-accent {
+  background-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+.theme-text {
+  color: var(--color-text);
+}
+
+.theme-bg {
+  background-color: var(--color-background);
+}
+
+.theme-card {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+.theme-border {
+  border-color: var(--color-border);
+}
+
+/* Override button primary styles */
+.btn-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.btn-primary:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, black) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 90%, black) !important;
+}
+
+/* Override card styles */
+.card {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+/* Override primary color usage in components */
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--color-primary) !important;
+}
+
+.border-primary {
+  border-color: var(--color-primary) !important;
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 20 14.3% 4.1%;

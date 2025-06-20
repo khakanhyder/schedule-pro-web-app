@@ -11,6 +11,7 @@ import Checkout from "@/pages/checkout";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { IndustryProvider } from "@/lib/industryContext";
+import { ThemeProvider } from "@/lib/themeContext";
 
 function App() {
   const [location] = useLocation();
@@ -18,10 +19,11 @@ function App() {
   const isAdminPage = location === "/admin";
 
   return (
-    <IndustryProvider>
-      <div className="flex flex-col min-h-screen">
-        {!isSetupPage && !isAdminPage && <Navbar />}
-        <main className="flex-grow">
+    <ThemeProvider>
+      <IndustryProvider>
+        <div className="flex flex-col min-h-screen theme-bg">
+          {!isSetupPage && !isAdminPage && <Navbar />}
+          <main className="flex-grow">
           <Switch>
             <Route path="/" component={Home} />
             <Route path="/booking" component={Booking} />
@@ -33,10 +35,11 @@ function App() {
             <Route path="/ios-test" component={IOSTest} />
             <Route component={NotFound} />
           </Switch>
-        </main>
-        {!isSetupPage && !isAdminPage && <Footer />}
-      </div>
-    </IndustryProvider>
+          </main>
+          {!isSetupPage && !isAdminPage && <Footer />}
+        </div>
+      </IndustryProvider>
+    </ThemeProvider>
   );
 }
 

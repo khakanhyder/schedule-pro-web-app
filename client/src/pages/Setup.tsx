@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useIndustry } from "@/lib/industryContext";
+import { useTheme } from "@/lib/themeContext";
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
