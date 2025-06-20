@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Palette, Eye } from "lucide-react";
 import { useIndustry } from "@/lib/industryContext";
+import { useTheme } from "@/lib/themeContext";
 import { useToast } from "@/hooks/use-toast";
 
 interface SimpleThemeCustomizerProps {
@@ -14,7 +15,19 @@ interface SimpleThemeCustomizerProps {
 
 export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: SimpleThemeCustomizerProps) {
   const { selectedIndustry } = useIndustry();
+  const { applyTheme } = useTheme();
   const { toast } = useToast();
+
+  const handleThemeSelect = (themeId: string) => {
+    // Apply the theme immediately when selected
+    applyTheme(themeId, selectedIndustry.id);
+    onThemeSelect(themeId);
+    
+    toast({
+      title: "Theme Applied",
+      description: "Your theme has been updated. You can see the changes on your pages."
+    });
+  };
 
   const getThemePresets = () => {
     switch (selectedIndustry.id) {
@@ -197,7 +210,7 @@ export default function SimpleThemeCustomizer({ selectedTheme, onThemeSelect }: 
             className={`cursor-pointer border-2 transition-all ${
               selectedTheme === preset.id ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
             }`}
-            onClick={() => onThemeSelect(preset.id)}
+            onClick={() => handleThemeSelect(preset.id)}
           >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2 mb-2">

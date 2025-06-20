@@ -15,6 +15,7 @@ export default function Setup() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
   const { selectIndustryById, selectedIndustry } = useIndustry();
+  const { applyTheme } = useTheme();
   
   const handleTemplateSelection = (templateId: string) => {
     // Set the template selection state first
