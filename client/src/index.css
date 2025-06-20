@@ -57,16 +57,16 @@
   border-color: var(--color-border);
 }
 
-/* Override primary color usage in components */
-.text-primary {
+/* Only apply primary colors when explicitly requested */
+.theme-text-primary {
   color: var(--color-primary) !important;
 }
 
-.bg-primary {
+.theme-bg-primary {
   background-color: var(--color-primary) !important;
 }
 
-.border-primary {
+.theme-border-primary {
   border-color: var(--color-primary) !important;
 }
 
@@ -76,16 +76,7 @@ body {
   color: var(--color-text);
 }
 
-/* Selective button theming - only for primary buttons */
-.btn-primary, button[data-theme="primary"] {
-  background-color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  color: white !important;
-}
-
-.btn-primary:hover, button[data-theme="primary"]:hover {
-  background-color: color-mix(in srgb, var(--color-primary) 90%, black) !important;
-}
+/* Remove button overrides - let components handle their own styling */
 
 /* Hero section theming */
 .gradient-bg {
