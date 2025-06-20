@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Scissors, Clock, Settings2, Building2 } from "lucide-react";
+import { Users, Scissors, Clock, Settings2, Building2, Brain, Zap } from "lucide-react";
 import StaffManagement from "./StaffManagement";
 import ServicesManagement from "./ServicesManagement";
 import BusinessHoursManagement from "./BusinessHoursManagement";
+import AutomationSettings from "./AutomationSettings";
+import BusinessIntelligenceDashboard from "./BusinessIntelligenceDashboard";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function SettingsManagement() {
@@ -21,7 +23,7 @@ export default function SettingsManagement() {
       </div>
 
       <Tabs defaultValue="staff" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="staff" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Team
@@ -37,6 +39,14 @@ export default function SettingsManagement() {
           <TabsTrigger value="business" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Business
+          </TabsTrigger>
+          <TabsTrigger value="automation" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Automation
+          </TabsTrigger>
+          <TabsTrigger value="intelligence" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            Intelligence
           </TabsTrigger>
         </TabsList>
 
@@ -54,6 +64,14 @@ export default function SettingsManagement() {
 
         <TabsContent value="business" className="space-y-6">
           <BusinessInfoManagement />
+        </TabsContent>
+
+        <TabsContent value="automation" className="space-y-6">
+          <AutomationSettings />
+        </TabsContent>
+
+        <TabsContent value="intelligence" className="space-y-6">
+          <BusinessIntelligenceDashboard />
         </TabsContent>
       </Tabs>
     </div>
