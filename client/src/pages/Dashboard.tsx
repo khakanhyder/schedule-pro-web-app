@@ -62,8 +62,16 @@ export default function Dashboard() {
     }
   }, [setLocation]);
 
-  // Get terminology for current industry
-  const terms = getTerminology(selectedIndustry.id as any);
+  // Get terminology for current industry - fallback to default
+  const defaultTerms = {
+    professional: 'professional',
+    professionals: 'professionals',
+    client: 'client',
+    appointment: 'appointment',
+    service: 'service'
+  };
+  
+  const terms = selectedIndustry ? getTerminology(selectedIndustry) : defaultTerms;
 
   // Fetch services
   const { data: services = [] } = useQuery<Service[]>({
@@ -115,7 +123,7 @@ export default function Dashboard() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              {selectedIndustry.name} Dashboard
+              {selectedIndustry?.name || 'Business'} Dashboard
             </h1>
             <p className="text-muted-foreground">
               Manage your {terms.appointment}s and grow your business
