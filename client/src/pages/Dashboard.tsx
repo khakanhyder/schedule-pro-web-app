@@ -200,13 +200,13 @@ export default function Dashboard() {
 
         {/* Main Dashboard Tabs */}
         <Tabs defaultValue="appointments" onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
-          <TabsList className="grid w-full grid-cols-6 mb-8">
-            <TabsTrigger value="appointments">Calendar</TabsTrigger>
-            <TabsTrigger value="schedule">Schedule</TabsTrigger>
-            <TabsTrigger value="clients">{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}s</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="insights">AI Insights</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8 h-auto">
+            <TabsTrigger value="appointments" className="text-xs sm:text-sm py-3">Calendar</TabsTrigger>
+            <TabsTrigger value="schedule" className="text-xs sm:text-sm py-3">Schedule</TabsTrigger>
+            <TabsTrigger value="clients" className="text-xs sm:text-sm py-3">{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}s</TabsTrigger>
+            <TabsTrigger value="payments" className="text-xs sm:text-sm py-3">Payments</TabsTrigger>
+            <TabsTrigger value="insights" className="text-xs sm:text-sm py-3">AI Insights</TabsTrigger>
+            <TabsTrigger value="settings" className="text-xs sm:text-sm py-3">Settings</TabsTrigger>
           </TabsList>
 
           {/* Calendar-Centric Dashboard */}

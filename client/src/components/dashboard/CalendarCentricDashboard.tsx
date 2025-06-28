@@ -101,74 +101,99 @@ export default function CalendarCentricDashboard() {
   const FullscreenCalendar = () => (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
       {/* Full-screen Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-card">
-        <div>
-          <h1 className="text-4xl font-bold">Schedule Calendar</h1>
-          <p className="text-lg text-muted-foreground mt-1">
-            {format(selectedDate, "EEEE, MMMM d, yyyy")}
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex gap-2">
-            <Button 
-              variant={viewMode === "day" ? "default" : "outline"}
-              onClick={() => setViewMode("day")}
-            >
-              Day View
-            </Button>
-            <Button 
-              variant={viewMode === "week" ? "default" : "outline"}
-              onClick={() => setViewMode("week")}
-            >
-              Week View
-            </Button>
-            <Button 
-              variant={viewMode === "month" ? "default" : "outline"}
-              onClick={() => setViewMode("month")}
-            >
-              Month View
-            </Button>
+      <div className="p-4 sm:p-6 border-b bg-card">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold truncate">Schedule Calendar</h1>
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mt-1">
+              {format(selectedDate, "EEEE, MMMM d, yyyy")}
+            </p>
           </div>
           
-          <Button onClick={() => setIsFullscreen(false)} variant="outline" size="lg">
-            <X className="h-5 w-5 mr-2" />
-            Exit Fullscreen
+          <Button 
+            onClick={() => setIsFullscreen(false)} 
+            variant="outline" 
+            className="ml-4 flex-shrink-0"
+          >
+            <X className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Exit</span>
+          </Button>
+        </div>
+        
+        {/* Mobile-friendly view mode buttons */}
+        <div className="flex gap-1 sm:gap-2">
+          <Button 
+            variant={viewMode === "day" ? "default" : "outline"}
+            onClick={() => setViewMode("day")}
+            size="sm"
+            className="flex-1 text-xs sm:text-sm"
+          >
+            Day
+          </Button>
+          <Button 
+            variant={viewMode === "week" ? "default" : "outline"}
+            onClick={() => setViewMode("week")}
+            size="sm"
+            className="flex-1 text-xs sm:text-sm"
+          >
+            Week
+          </Button>
+          <Button 
+            variant={viewMode === "month" ? "default" : "outline"}
+            onClick={() => setViewMode("month")}
+            size="sm"
+            className="flex-1 text-xs sm:text-sm"
+          >
+            Month
           </Button>
         </div>
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center justify-center gap-4 p-4 border-b bg-muted/10">
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/10">
         <Button 
           variant="outline" 
           onClick={viewMode === "week" ? goToPreviousWeek : viewMode === "day" ? goToPreviousDay : goToPreviousMonth}
+          className="flex-1 max-w-[120px] mr-2"
         >
-          <ChevronLeft className="h-4 w-4" /> 
-          Previous {viewMode === "week" ? "Week" : viewMode === "day" ? "Day" : "Month"}
+          <ChevronLeft className="h-4 w-4 mr-1" /> 
+          <span className="hidden sm:inline">
+            {viewMode === "week" ? "Week" : viewMode === "day" ? "Day" : "Month"}
+          </span>
+          <span className="sm:hidden">Prev</span>
         </Button>
         
-        <Button variant="outline" onClick={goToToday}>
+        <Button 
+          variant="outline" 
+          onClick={goToToday}
+          className="mx-2 px-6"
+        >
           Today
         </Button>
         
         <Button 
           variant="outline" 
           onClick={viewMode === "week" ? goToNextWeek : viewMode === "day" ? goToNextDay : goToNextMonth}
+          className="flex-1 max-w-[120px] ml-2"
         >
-          Next {viewMode === "week" ? "Week" : viewMode === "day" ? "Day" : "Month"} <ChevronRight className="h-4 w-4" />
+          <span className="hidden sm:inline">
+            {viewMode === "week" ? "Week" : viewMode === "day" ? "Day" : "Month"}
+          </span>
+          <span className="sm:hidden">Next</span>
+          <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
 
       {/* Full-screen Calendar Grid */}
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 p-2 sm:p-4 lg:p-6 overflow-auto">
         {viewMode === "week" && (
-          <div className="grid grid-cols-8 gap-2 h-full min-h-[600px]">
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 h-full min-h-[600px]">
             {/* Time column */}
-            <div className="space-y-8 pt-12">
+            <div className="space-y-4 sm:space-y-8 pt-8 sm:pt-12">
               {timeSlots.map((time) => (
-                <div key={time} className="text-sm text-muted-foreground text-right pr-2 font-medium h-16 flex items-center">
-                  {time}
+                <div key={time} className="text-xs sm:text-sm text-muted-foreground text-right pr-1 sm:pr-2 font-medium h-12 sm:h-16 flex items-center">
+                  <span className="hidden sm:inline">{time}</span>
+                  <span className="sm:hidden">{time.split(':')[0] + (time.includes('AM') ? 'A' : 'P')}</span>
                 </div>
               ))}
             </div>
@@ -176,19 +201,19 @@ export default function CalendarCentricDashboard() {
             {/* Day columns */}
             {weekDays.map((day) => (
               <div key={day.toISOString()} className="border rounded-lg bg-card shadow-sm">
-                <div className={`p-3 text-center border-b ${
+                <div className={`p-1 sm:p-3 text-center border-b ${
                   isToday(day) ? 'bg-primary text-primary-foreground' : 
                   isSameDay(day, selectedDate) ? 'bg-primary/10' : ''
                 }`}>
-                  <div className="font-medium text-sm">{format(day, "EEE")}</div>
-                  <div className="text-2xl font-bold">{format(day, "d")}</div>
+                  <div className="font-medium text-xs sm:text-sm">{format(day, "EEE")}</div>
+                  <div className="text-lg sm:text-2xl font-bold">{format(day, "d")}</div>
                 </div>
                 
-                <div className="p-1 space-y-8">
+                <div className="p-1 space-y-4 sm:space-y-8">
                   {timeSlots.map((time) => {
                     const dayAppointments = appointments.filter((apt: any) => isSameDay(new Date(apt.date), day));
                     return (
-                      <div key={time} className="h-16 border-t border-dashed relative group cursor-pointer hover:bg-muted/50">
+                      <div key={time} className="h-12 sm:h-16 border-t border-dashed relative group cursor-pointer hover:bg-muted/50">
                         {dayAppointments.map((apt: any, idx: number) => (
                           <div 
                             key={apt.id || idx} 
