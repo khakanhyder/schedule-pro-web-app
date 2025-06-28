@@ -1,35 +1,51 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import SimpleThemeCustomizer from "@/components/setup/SimpleThemeCustomizer";
+import IndustryTemplates from "@/components/setup/IndustryTemplates";
 import LogoCustomizer from "@/components/setup/LogoCustomizer";
 import BusinessDetailsCustomizer from "@/components/setup/BusinessDetailsCustomizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "@/lib/themeContext";
+import { useIndustry } from "@/lib/industryContext";
 
 export default function Setup() {
-  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [businessLogo, setBusinessLogo] = useState<string | null>(null);
   const [businessName, setBusinessName] = useState<string>("");
   const [step, setStep] = useState(1);
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
-  const { applyTheme } = useTheme();
+  const { selectIndustryById, selectedIndustry } = useIndustry();
   
-  const handleStartSetup = () => {
+  const handleTemplateSelection = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    
+    selectIndustryById(templateId).catch((error: any) => {
+      console.error('Error setting industry:', error);
+    });
+    
     setStep(2);
+    
     toast({
-      title: "Let's Get Started",
-      description: "Customize your business appearance."
+      title: "Industry Selected",
+      description: "Now customize your business details."
     });
   };
   
   const handleCompleteSetup = () => {
-    if (!selectedTheme) {
+    if (!selectedTemplate) {
       toast({
-        title: "Please select a theme",
-        description: "Choose a theme template to complete setup.",
+        title: "Please select an industry",
+        description: "Choose an industry template to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!businessName.trim()) {
+      toast({
+        title: "Please enter business name",
+        description: "Enter your business name to continue.",
         variant: "destructive"
       });
       return;
@@ -39,8 +55,7 @@ export default function Setup() {
     localStorage.setItem('setupCompleted', 'true');
     localStorage.setItem('hasServices', 'true'); // Default services are created
     localStorage.setItem('hasStaff', 'true'); // Default staff is created
-    localStorage.setItem('selectedIndustry', selectedTemplate || 'beauty');
-    localStorage.setItem('selectedTheme', selectedTheme);
+    localStorage.setItem('selectedIndustry', selectedTemplate);
     localStorage.setItem('businessName', businessName);
     if (businessLogo) {
       localStorage.setItem('businessLogo', businessLogo);
@@ -51,7 +66,7 @@ export default function Setup() {
     
     toast({
       title: "Setup Complete!",
-      description: "Your dashboard has been personalized with your custom theme."
+      description: "Your business profile has been configured successfully."
     });
   };
 
@@ -82,16 +97,7 @@ export default function Setup() {
                 }`}>
                   2
                 </div>
-                <span className="ml-2 text-sm">Theme</span>
-              </div>
-              <div className="w-8 h-px bg-gray-300"></div>
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
-                  3
-                </div>
-                <span className="ml-2 text-sm">Branding</span>
+                <span className="ml-2 text-sm">Business Details</span>
               </div>
             </div>
           </CardHeader>
@@ -101,12 +107,6 @@ export default function Setup() {
               <IndustryTemplates onSelectTemplate={handleTemplateSelection} />
             )}
             {step === 2 && (
-              <SimpleThemeCustomizer 
-                selectedTheme={selectedTheme}
-                onThemeSelect={setSelectedTheme}
-              />
-            )}
-            {step === 3 && (
               <LogoCustomizer 
                 onLogoChange={(logo, name) => {
                   setBusinessLogo(logo);
