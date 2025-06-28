@@ -217,17 +217,17 @@ export default function CalendarCentricDashboard() {
                         {dayAppointments.map((apt: any, idx: number) => (
                           <div 
                             key={apt.id || idx} 
-                            className="absolute inset-0 bg-primary/20 border border-primary rounded p-2 text-xs cursor-pointer hover:bg-primary/30"
+                            className="absolute inset-0 bg-primary/20 border border-primary rounded p-1 sm:p-2 text-xs cursor-pointer hover:bg-primary/30"
                             onClick={() => handleAppointmentClick(apt)}
                           >
-                            <div className="font-medium">{apt.clientName}</div>
-                            <div className="text-muted-foreground">{apt.serviceName}</div>
+                            <div className="font-medium truncate">{apt.clientName}</div>
+                            <div className="text-muted-foreground truncate hidden sm:block">{apt.serviceName}</div>
                           </div>
                         ))}
                         <Button 
                           size="sm" 
                           variant="ghost" 
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 opacity-50 sm:opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 sm:h-8 sm:w-8"
                           onClick={() => handleAddAppointment(time)}
                         >
                           <Plus className="h-3 w-3" />
