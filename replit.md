@@ -18,7 +18,10 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (December 29, 2024)
 
-### Button Functionality & Industry Terminology Fix (Latest)
+### Enhanced Calendar Features & Template Navigation (Latest)
+- ✅ Added full month view option to calendar interface with clickable day navigation
+- ✅ Implemented 30-minute time slots (9:00 AM, 9:30 AM, 10:00 AM, etc.) instead of hourly only
+- ✅ Added "Back to Templates" button for easy template testing and industry switching
 - ✅ Fixed all non-functional buttons by adding proper click handlers
 - ✅ Made calendar appointment cards clickable with interaction feedback
 - ✅ Added functional "Add Appointment" buttons throughout calendar interface
