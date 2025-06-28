@@ -110,7 +110,58 @@ export default function Setup() {
           
           <CardContent>
             {step === 1 && (
-              <IndustryTemplates onSelectTemplate={handleTemplateSelection} />
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-center">Choose Your Industry</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button
+                    onClick={() => {
+                      console.log('Beauty button clicked');
+                      handleTemplateSelection('beauty');
+                    }}
+                    className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+                  >
+                    <div className="text-2xl mb-2">💄</div>
+                    <h4 className="font-semibold">Beauty Professional</h4>
+                    <p className="text-sm text-gray-600">Salons, spas, beauty specialists</p>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      console.log('Wellness button clicked');
+                      handleTemplateSelection('wellness');
+                    }}
+                    className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+                  >
+                    <div className="text-2xl mb-2">🧘</div>
+                    <h4 className="font-semibold">Wellness Provider</h4>
+                    <p className="text-sm text-gray-600">Massage, fitness, therapy</p>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      console.log('Home services button clicked');
+                      handleTemplateSelection('home_services');
+                    }}
+                    className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+                  >
+                    <div className="text-2xl mb-2">🔧</div>
+                    <h4 className="font-semibold">Home Services</h4>
+                    <p className="text-sm text-gray-600">Contractors, repair, maintenance</p>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      console.log('Pet care button clicked');
+                      handleTemplateSelection('pet_care');
+                    }}
+                    className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+                  >
+                    <div className="text-2xl mb-2">🐾</div>
+                    <h4 className="font-semibold">Pet Care</h4>
+                    <p className="text-sm text-gray-600">Grooming, training, veterinary</p>
+                  </button>
+                </div>
+              </div>
             )}
             {step === 2 && (
               <LogoCustomizer 
