@@ -16,6 +16,23 @@ export default function Setup() {
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
   const { selectIndustryById, selectedIndustry } = useIndustry();
+
+  console.log('Setup component rendered, step:', step, 'selectedTemplate:', selectedTemplate);
+
+  useEffect(() => {
+    console.log('Setup component mounted/updated');
+    
+    // Add a global click listener to see if any clicks are happening
+    const handleGlobalClick = (e: MouseEvent) => {
+      console.log('Global click detected:', e.target);
+    };
+    
+    document.addEventListener('click', handleGlobalClick);
+    
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, []);
   
   const handleTemplateSelection = (templateId: string) => {
     console.log('Setup: handleTemplateSelection called with:', templateId);
@@ -113,53 +130,73 @@ export default function Setup() {
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-center">Choose Your Industry</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <button
-                    onClick={() => {
-                      console.log('Beauty button clicked');
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Beauty button clicked - event object:', e);
                       handleTemplateSelection('beauty');
                     }}
-                    className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+                    variant="outline"
+                    className="p-6 h-auto border-2 hover:border-blue-500 hover:bg-blue-50 text-left justify-start"
                   >
-                    <div className="text-2xl mb-2">💄</div>
-                    <h4 className="font-semibold">Beauty Professional</h4>
-                    <p className="text-sm text-gray-600">Salons, spas, beauty specialists</p>
-                  </button>
+                    <div className="space-y-2">
+                      <div className="text-2xl">💄</div>
+                      <h4 className="font-semibold">Beauty Professional</h4>
+                      <p className="text-sm text-gray-600">Salons, spas, beauty specialists</p>
+                    </div>
+                  </Button>
                   
-                  <button
-                    onClick={() => {
-                      console.log('Wellness button clicked');
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Wellness button clicked - event object:', e);
                       handleTemplateSelection('wellness');
                     }}
-                    className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+                    variant="outline"
+                    className="p-6 h-auto border-2 hover:border-blue-500 hover:bg-blue-50 text-left justify-start"
                   >
-                    <div className="text-2xl mb-2">🧘</div>
-                    <h4 className="font-semibold">Wellness Provider</h4>
-                    <p className="text-sm text-gray-600">Massage, fitness, therapy</p>
-                  </button>
+                    <div className="space-y-2">
+                      <div className="text-2xl">🧘</div>
+                      <h4 className="font-semibold">Wellness Provider</h4>
+                      <p className="text-sm text-gray-600">Massage, fitness, therapy</p>
+                    </div>
+                  </Button>
                   
-                  <button
-                    onClick={() => {
-                      console.log('Home services button clicked');
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Home services button clicked - event object:', e);
                       handleTemplateSelection('home_services');
                     }}
-                    className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+                    variant="outline"
+                    className="p-6 h-auto border-2 hover:border-blue-500 hover:bg-blue-50 text-left justify-start"
                   >
-                    <div className="text-2xl mb-2">🔧</div>
-                    <h4 className="font-semibold">Home Services</h4>
-                    <p className="text-sm text-gray-600">Contractors, repair, maintenance</p>
-                  </button>
+                    <div className="space-y-2">
+                      <div className="text-2xl">🔧</div>
+                      <h4 className="font-semibold">Home Services</h4>
+                      <p className="text-sm text-gray-600">Contractors, repair, maintenance</p>
+                    </div>
+                  </Button>
                   
-                  <button
-                    onClick={() => {
-                      console.log('Pet care button clicked');
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Pet care button clicked - event object:', e);
                       handleTemplateSelection('pet_care');
                     }}
-                    className="p-4 border rounded-lg hover:bg-gray-50 text-left"
+                    variant="outline"
+                    className="p-6 h-auto border-2 hover:border-blue-500 hover:bg-blue-50 text-left justify-start"
                   >
-                    <div className="text-2xl mb-2">🐾</div>
-                    <h4 className="font-semibold">Pet Care</h4>
-                    <p className="text-sm text-gray-600">Grooming, training, veterinary</p>
-                  </button>
+                    <div className="space-y-2">
+                      <div className="text-2xl">🐾</div>
+                      <h4 className="font-semibold">Pet Care</h4>
+                      <p className="text-sm text-gray-600">Grooming, training, veterinary</p>
+                    </div>
+                  </Button>
                 </div>
               </div>
             )}
