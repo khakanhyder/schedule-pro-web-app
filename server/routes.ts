@@ -18,16 +18,20 @@ const stripe = process.env.STRIPE_SECRET_KEY
 
 // Email/SMS notification function
 async function sendAppointmentConfirmation(appointment: any) {
+  // Get service and stylist details
+  const service = await storage.getService(appointment.serviceId);
+  const stylist = await storage.getStylist(appointment.stylistId);
+  
   const confirmationDetails = {
     clientName: appointment.clientName,
     clientEmail: appointment.clientEmail,
     clientPhone: appointment.clientPhone,
-    serviceName: appointment.serviceName,
+    serviceName: service?.name || "Full Day Pet Sitting",
     date: new Date(appointment.date).toLocaleDateString(),
-    time: appointment.time,
-    price: appointment.price,
-    petSitter: "Krystal Bueller",
-    businessName: "Paws & Play Pet Services"
+    time: "9:00 AM - 5:00 PM",
+    price: "250",
+    petSitter: stylist?.name || "Krystal Bueller",
+    businessName: "Wag That Tail"
   };
 
   // Log the confirmation (in production, this would send real emails/SMS)
