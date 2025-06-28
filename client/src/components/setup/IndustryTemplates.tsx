@@ -39,6 +39,15 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
         <p className="text-body text-neutral-600">
           Select a template to personalize your scheduling dashboard for your business
         </p>
+        <Button 
+          onClick={() => {
+            console.log('Test button clicked!');
+            alert('Test button works!');
+          }}
+          className="mt-4"
+        >
+          Test Click (Remove this)
+        </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
