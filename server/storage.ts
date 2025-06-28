@@ -2,6 +2,7 @@ import {
   users, type User, type InsertUser,
   services, type Service, type InsertService,
   stylists, type Stylist, type InsertStylist,
+  clients, type Client, type InsertClient,
   appointments, type Appointment, type InsertAppointment,
   reviews, type Review, type InsertReview,
   contactMessages, type ContactMessage, type InsertContactMessage,
@@ -30,6 +31,14 @@ export interface IStorage {
   createStylist(stylist: InsertStylist): Promise<Stylist>;
   updateStylist(id: number, updates: Partial<InsertStylist>): Promise<Stylist>;
   deleteStylist(id: number): Promise<void>;
+  
+  // Clients
+  getClients(): Promise<Client[]>;
+  getClient(id: number): Promise<Client | undefined>;
+  getClientByEmail(email: string): Promise<Client | undefined>;
+  createClient(client: InsertClient): Promise<Client>;
+  updateClient(id: number, updates: Partial<InsertClient>): Promise<Client>;
+  deleteClient(id: number): Promise<void>;
   
   // Appointments
   getAppointments(): Promise<Appointment[]>;
@@ -66,6 +75,7 @@ export class MemStorage implements IStorage {
   private users = new Map<number, User>();
   private services = new Map<number, Service>();
   private stylists = new Map<number, Stylist>();
+  private clients = new Map<number, Client>();
   private appointments = new Map<number, Appointment>();
   private reviews = new Map<number, Review>();
   private contactMessages = new Map<number, ContactMessage>();
@@ -76,6 +86,7 @@ export class MemStorage implements IStorage {
   private userCurrentId = 1;
   private serviceCurrentId = 1;
   private stylistCurrentId = 1;
+  private clientCurrentId = 1;
   private appointmentCurrentId = 1;
   private reviewCurrentId = 1;
   private contactMessageCurrentId = 1;
@@ -271,10 +282,89 @@ export class MemStorage implements IStorage {
       id, 
       name: insertStylist.name, 
       bio: insertStylist.bio || null,
-      imageUrl: insertStylist.imageUrl || null
+      imageUrl: insertStylist.imageUrl || null,
+      email: insertStylist.email || null,
+      phone: insertStylist.phone || null,
+      specialties: insertStylist.specialties || null
     };
     this.stylists.set(id, stylist);
     return stylist;
+  }
+
+  async updateStylist(id: number, updates: Partial<InsertStylist>): Promise<Stylist> {
+    const existing = this.stylists.get(id);
+    if (!existing) {
+      throw new Error(`Stylist with id ${id} not found`);
+    }
+    
+    const updated: Stylist = {
+      ...existing,
+      name: updates.name !== undefined ? updates.name : existing.name,
+      bio: updates.bio !== undefined ? updates.bio : existing.bio,
+      imageUrl: updates.imageUrl !== undefined ? updates.imageUrl : existing.imageUrl,
+      email: updates.email !== undefined ? updates.email : existing.email,
+      phone: updates.phone !== undefined ? updates.phone : existing.phone,
+      specialties: updates.specialties !== undefined ? updates.specialties : existing.specialties
+    };
+    
+    this.stylists.set(id, updated);
+    return updated;
+  }
+
+  async deleteStylist(id: number): Promise<void> {
+    this.stylists.delete(id);
+  }
+
+  // Client methods
+  async getClients(): Promise<Client[]> {
+    return Array.from(this.clients.values());
+  }
+
+  async getClient(id: number): Promise<Client | undefined> {
+    return this.clients.get(id);
+  }
+
+  async getClientByEmail(email: string): Promise<Client | undefined> {
+    return Array.from(this.clients.values()).find(client => client.email === email);
+  }
+
+  async createClient(insertClient: InsertClient): Promise<Client> {
+    const id = this.clientCurrentId++;
+    const client: Client = { 
+      id, 
+      name: insertClient.name,
+      email: insertClient.email,
+      phone: insertClient.phone,
+      preferredService: insertClient.preferredService || null,
+      notes: insertClient.notes || null,
+      createdAt: new Date(),
+      lastVisit: null
+    };
+    this.clients.set(id, client);
+    return client;
+  }
+
+  async updateClient(id: number, updates: Partial<InsertClient>): Promise<Client> {
+    const existing = this.clients.get(id);
+    if (!existing) {
+      throw new Error(`Client with id ${id} not found`);
+    }
+    
+    const updated: Client = {
+      ...existing,
+      name: updates.name !== undefined ? updates.name : existing.name,
+      email: updates.email !== undefined ? updates.email : existing.email,
+      phone: updates.phone !== undefined ? updates.phone : existing.phone,
+      preferredService: updates.preferredService !== undefined ? updates.preferredService : existing.preferredService,
+      notes: updates.notes !== undefined ? updates.notes : existing.notes
+    };
+    
+    this.clients.set(id, updated);
+    return updated;
+  }
+
+  async deleteClient(id: number): Promise<void> {
+    this.clients.delete(id);
   }
 
   async getAppointments(): Promise<Appointment[]> {

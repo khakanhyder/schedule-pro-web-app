@@ -60,6 +60,29 @@ export const insertStylistSchema = createInsertSchema(stylists).pick({
 export type InsertStylist = z.infer<typeof insertStylistSchema>;
 export type Stylist = typeof stylists.$inferSelect;
 
+// Clients
+export const clients = pgTable("clients", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: text("phone").notNull(),
+  preferredService: text("preferred_service"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastVisit: timestamp("last_visit"),
+});
+
+export const insertClientSchema = createInsertSchema(clients).pick({
+  name: true,
+  email: true,
+  phone: true,
+  preferredService: true,
+  notes: true,
+});
+
+export type InsertClient = z.infer<typeof insertClientSchema>;
+export type Client = typeof clients.$inferSelect;
+
 // Appointments
 export const appointments = pgTable("appointments", {
   id: serial("id").primaryKey(),
