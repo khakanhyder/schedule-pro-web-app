@@ -1,41 +1,27 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import IndustryTemplates from "@/components/setup/IndustryTemplates";
 import SimpleThemeCustomizer from "@/components/setup/SimpleThemeCustomizer";
 import LogoCustomizer from "@/components/setup/LogoCustomizer";
 import BusinessDetailsCustomizer from "@/components/setup/BusinessDetailsCustomizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useIndustry } from "@/lib/industryContext";
 import { useTheme } from "@/lib/themeContext";
 
 export default function Setup() {
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [businessLogo, setBusinessLogo] = useState<string | null>(null);
   const [businessName, setBusinessName] = useState<string>("");
   const [step, setStep] = useState(1);
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
-  const { selectIndustryById, selectedIndustry } = useIndustry();
   const { applyTheme } = useTheme();
   
-  const handleTemplateSelection = (templateId: string) => {
-    // Set the template selection state first
-    setSelectedTemplate(templateId);
-    
-    // Update industry in background
-    selectIndustryById(templateId).catch(error => {
-      console.error('Error setting industry:', error);
-    });
-    
-    // Immediately advance to step 2
+  const handleStartSetup = () => {
     setStep(2);
-    
     toast({
-      title: "Industry Selected",
-      description: "Now choose your theme style."
+      title: "Let's Get Started",
+      description: "Customize your business appearance."
     });
   };
   
