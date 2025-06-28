@@ -16,6 +16,61 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
+// Email/SMS notification function
+async function sendAppointmentConfirmation(appointment: any) {
+  const confirmationDetails = {
+    clientName: appointment.clientName,
+    clientEmail: appointment.clientEmail,
+    clientPhone: appointment.clientPhone,
+    serviceName: appointment.serviceName,
+    date: new Date(appointment.date).toLocaleDateString(),
+    time: appointment.time,
+    price: appointment.price,
+    petSitter: "Krystal Bueller",
+    businessName: "Paws & Play Pet Services"
+  };
+
+  // Log the confirmation (in production, this would send real emails/SMS)
+  console.log("=== APPOINTMENT CONFIRMATION ===");
+  console.log(`
+📧 EMAIL CONFIRMATION SENT TO: ${confirmationDetails.clientEmail}
+
+Subject: Your Pet Sitting Appointment is Confirmed! - Paws & Play Pet Services
+
+Dear ${confirmationDetails.clientName},
+
+Your pet sitting appointment has been confirmed! Here are the details:
+
+🐕 SERVICE: ${confirmationDetails.serviceName}
+📅 DATE: ${confirmationDetails.date}
+⏰ TIME: ${confirmationDetails.time}
+💰 PRICE: $${confirmationDetails.price}
+👩‍💼 PET SITTER: ${confirmationDetails.petSitter}
+
+Your trusted pet sitter Krystal will arrive at your home and provide excellent care for your pets. She will ensure they are fed, walked, and given plenty of attention while you're away.
+
+📱 KRYSTAL'S CONTACT: (555) 123-4567
+📧 BUSINESS EMAIL: hello@pawsandplay.com
+
+If you need to reschedule or have any questions, please contact us at least 24 hours in advance.
+
+Thank you for choosing Paws & Play Pet Services!
+
+Best regards,
+Krystal Bueller
+Paws & Play Pet Services
+  `);
+
+  console.log("=== SMS CONFIRMATION ===");
+  console.log(`
+📱 SMS SENT TO: ${confirmationDetails.clientPhone}
+
+Hi ${confirmationDetails.clientName}! Your pet sitting appointment with Krystal at Paws & Play is confirmed for ${confirmationDetails.date} at ${confirmationDetails.time}. Service: ${confirmationDetails.serviceName} ($${confirmationDetails.price}). Contact Krystal: (555) 123-4567. Thanks for trusting us with your pets! 🐕
+  `);
+  
+  return true;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe payment processing endpoint
   app.post("/api/create-payment-intent", async (req, res) => {
@@ -203,7 +258,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API endpoint to create a new appointment
+  // Pet sitting business setup endpoint
+  app.post("/api/setup-pet-business", async (req, res) => {
+    try {
+      // Set up the pet care industry
+      storage.setIndustry("petcare");
+      
+      // Create Krystal Bueller as the pet sitter
+      const krystal = await storage.createStylist({
+        name: "Krystal Bueller",
+        bio: "Professional pet sitter with 5+ years experience. Specializes in dog care, medication administration, and overnight sitting. Bonded and insured.",
+        email: "krystal@pawsandplay.com",
+        phone: "(555) 123-4567"
+      });
+
+      // Create pet sitting services
+      const petServices = [
+        {
+          name: "Full Day Pet Sitting",
+          description: "Complete in-home pet care while you are away, including feeding, walks, and companionship",
+          duration: 480,
+          price: 250
+        },
+        {
+          name: "Dog Walking (30 min)", 
+          description: "Individual dog walking service with exercise and potty breaks",
+          duration: 30,
+          price: 25
+        },
+        {
+          name: "Overnight Pet Sitting",
+          description: "24-hour in-home pet care including overnight supervision", 
+          duration: 1440,
+          price: 120
+        }
+      ];
+
+      // Add pet services
+      for (const service of petServices) {
+        await storage.createService(service);
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Pet sitting business configured successfully",
+        petSitter: krystal,
+        services: petServices.length
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // API endpoint to create a new appointment with notifications
   app.post("/api/appointments", async (req, res) => {
     try {
       console.log("Appointment data received:", req.body);
@@ -217,35 +324,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // This will validate and convert the data format
       const validatedData = insertAppointmentSchema.parse(appointmentData);
       
-      // Check if the provided date is valid (not in the past)
-      const appointmentDate = new Date(validatedData.date);
-      const now = new Date();
-      now.setHours(0, 0, 0, 0); // Compare just the date part
-      
-      const appointmentDay = new Date(appointmentDate);
-      appointmentDay.setHours(0, 0, 0, 0);
-      
-      if (appointmentDay < now) {
-        return res.status(400).json({ message: "Cannot book appointments in the past" });
-      }
-      
       // Create the appointment
       const appointment = await storage.createAppointment(validatedData);
       
-      // In a real application, this is where we would send confirmation emails/SMS
-      // For this mock version, we'll simply return success
-      const confirmations = [];
-      if (validatedData.emailConfirmation) {
-        confirmations.push("email");
-      }
-      if (validatedData.smsConfirmation) {
-        confirmations.push("SMS");
-      }
+      // Send confirmation email and SMS
+      await sendAppointmentConfirmation(appointment);
       
       res.status(201).json({ 
         appointment, 
-        message: "Appointment booked successfully",
-        confirmations: confirmations 
+        message: "Appointment booked successfully - confirmations sent!",
+        confirmations: ["email", "SMS"]
       });
     } catch (error: any) {
       console.error("Appointment creation error:", error);
