@@ -36,11 +36,10 @@ export default function Navbar() {
                       `${selectedIndustry.name} Services`;
   
   const links = [
-    { name: serviceLabel, href: "/#services" },
+    { name: serviceLabel, href: "/", scroll: "services" },
     { name: "Book", href: "/booking" },
-    { name: "Reviews", href: "/#reviews" },
-    { name: portalName, href: "/dashboard" },
-    { name: "Setup", href: "/setup" }
+    { name: "Reviews", href: "/", scroll: "reviews" },
+    { name: portalName, href: "/dashboard" }
   ];
 
   return (
@@ -67,9 +66,17 @@ export default function Navbar() {
             >
               <div 
                 className={`cursor-pointer text-foreground hover:text-primary transition-colors tap-highlight-none ${
-                  location === link.href || (link.href.includes('#') && location === '/' && window.location.hash === link.href.substring(1)) 
-                    ? "text-primary font-medium" : ""
+                  location === link.href ? "text-primary font-medium" : ""
                 }`}
+                onClick={(e) => {
+                  if (link.scroll && location === "/") {
+                    e.preventDefault();
+                    const element = document.getElementById(link.scroll);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }
+                }}
               >
                 {link.name}
               </div>

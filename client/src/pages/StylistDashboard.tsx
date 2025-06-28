@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { Link, useLocation } from "wouter";
 import { 
   Tabs, 
   TabsContent, 
@@ -13,7 +14,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { 
   PlusCircle,
-  AlertCircle
+  AlertCircle,
+  Settings,
+  ArrowRight
 } from "lucide-react";
 import {
   Dialog,
@@ -21,6 +24,7 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   type Service, 
   type Stylist, 
@@ -46,6 +50,12 @@ export default function StylistDashboard() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isAppointmentDetailsOpen, setIsAppointmentDetailsOpen] = useState(false);
   const [isAddAppointmentOpen, setIsAddAppointmentOpen] = useState(false);
+  const [, setLocation] = useLocation();
+
+  // Check if setup is completed
+  const isSetupCompleted = localStorage.getItem('setupCompleted') === 'true';
+  const hasServices = localStorage.getItem('hasServices') === 'true';
+  const hasStaff = localStorage.getItem('hasStaff') === 'true';
   
   // For data refreshing
   const queryClient = useQueryClient();
@@ -124,6 +134,59 @@ export default function StylistDashboard() {
     ? Math.round((completedAppointments.length / appointments.length) * 100) 
     : 0;
   
+  // Show setup prompt if not completed
+  if (!isSetupCompleted || !hasServices || !hasStaff) {
+    return (
+      <section className="py-8 bg-neutral min-h-screen">
+        <div className="container mx-auto px-4 max-w-2xl">
+          <Card className="mt-8">
+            <CardHeader className="text-center">
+              <Settings className="h-12 w-12 mx-auto mb-4 text-primary" />
+              <CardTitle className="text-2xl">Complete Your Setup</CardTitle>
+              <CardDescription>
+                You need to finish setting up your business before accessing the dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Your dashboard will be ready once you complete the initial setup process.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span>Choose your industry</span>
+                  <Badge variant="secondary">Required</Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span>Add your services</span>
+                  <Badge variant={hasServices ? "default" : "secondary"}>
+                    {hasServices ? "Complete" : "Required"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <span>Add your staff</span>
+                  <Badge variant={hasStaff ? "default" : "secondary"}>
+                    {hasStaff ? "Complete" : "Required"}
+                  </Badge>
+                </div>
+              </div>
+
+              <Link href="/setup">
+                <Button className="w-full" size="lg">
+                  Complete Setup
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-8 bg-neutral">
       <div className="container mx-auto px-4">

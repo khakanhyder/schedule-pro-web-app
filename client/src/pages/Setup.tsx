@@ -49,6 +49,17 @@ export default function Setup() {
       return;
     }
     
+    // Mark setup as completed in localStorage
+    localStorage.setItem('setupCompleted', 'true');
+    localStorage.setItem('hasServices', 'true'); // Default services are created
+    localStorage.setItem('hasStaff', 'true'); // Default staff is created
+    localStorage.setItem('selectedIndustry', selectedTemplate || 'beauty');
+    localStorage.setItem('selectedTheme', selectedTheme);
+    localStorage.setItem('businessName', businessName);
+    if (businessLogo) {
+      localStorage.setItem('businessLogo', businessLogo);
+    }
+    
     // Navigate to the dashboard
     setLocation("/dashboard");
     
