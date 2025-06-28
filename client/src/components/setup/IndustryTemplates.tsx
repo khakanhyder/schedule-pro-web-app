@@ -36,90 +36,95 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
   };
 
   return (
-    <div className="space-y-10">
-      <div className="text-center mb-12 max-w-2xl mx-auto">
-        <h2 className="text-3xl mb-3 font-bold tracking-tight">Choose Your Industry</h2>
-        <p className="text-muted-foreground">
-          Select a template to personalize your scheduling dashboard for your business
+    <div className="space-y-8">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold tracking-tight mb-2">Choose Your Industry</h2>
+        <p className="text-muted-foreground text-sm">
+          Select a template to personalize your business dashboard
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {industryTemplates.map((template) => (
           <Card 
             key={template.id}
-            className={`overflow-hidden transition-all duration-200 hover:shadow-lg ${
+            className={`group relative overflow-hidden transition-all duration-300 cursor-pointer border-2 ${
               selectedTemplate === template.id 
-                ? 'ring-2 ring-blue-500 shadow-xl' 
-                : 'shadow-md'
+                ? 'border-blue-500 shadow-xl scale-[1.02] bg-blue-50/30' 
+                : 'border-gray-200 hover:border-gray-300 hover:shadow-lg hover:scale-[1.01]'
             }`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log(`${template.name} card clicked`);
+              handleSelectTemplate(template.id);
+            }}
           >
+            {/* Gradient overlay */}
             <div 
-              className="h-1.5" 
-              style={{ backgroundColor: template.primaryColor }}
+              className="absolute inset-0 opacity-5"
+              style={{ 
+                background: `linear-gradient(135deg, ${template.primaryColor} 0%, transparent 100%)` 
+              }}
             />
             
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-3xl">{template.icon}</div>
-                {selectedTemplate === template.id && (
-                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm">✓</span>
-                  </div>
-                )}
+            {/* Selection indicator */}
+            {selectedTemplate === template.id && (
+              <div className="absolute top-3 right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center z-10">
+                <span className="text-white text-sm font-bold">✓</span>
               </div>
-              <CardTitle className="text-xl font-bold">{template.name}</CardTitle>
-              <CardDescription className="text-sm text-muted-foreground">
-                {template.description}
-              </CardDescription>
+            )}
+            
+            <CardHeader className="relative pb-3">
+              <div className="flex items-center gap-3 mb-3">
+                <div 
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm"
+                  style={{ backgroundColor: `${template.primaryColor}15` }}
+                >
+                  {template.icon}
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-bold text-gray-900">{template.name}</CardTitle>
+                  <CardDescription className="text-xs text-gray-600">
+                    {template.description}
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             
-            <CardContent className="space-y-4">
+            <CardContent className="pt-0 space-y-3">
               <div>
-                <h4 className="text-sm font-semibold mb-2">Key Benefits:</h4>
-                <ul className="space-y-1">
-                  {template.benefits?.slice(0, 2).map((benefit, index) => (
-                    <li key={index} className="text-sm text-muted-foreground flex items-start">
-                      <span className="text-green-500 mr-2">•</span>
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-semibold mb-2">Sample Services:</h4>
-                <div className="flex flex-wrap gap-1">
-                  {template.services.slice(0, 3).map((service, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
+                <div className="flex flex-wrap gap-1.5">
+                  {template.services.slice(0, 4).map((service, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="secondary" 
+                      className="text-xs px-2 py-1 bg-gray-100 text-gray-700 border-0"
+                    >
                       {service}
                     </Badge>
                   ))}
-                  {template.services.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{template.services.length - 3} more
+                  {template.services.length > 4 && (
+                    <Badge variant="outline" className="text-xs px-2 py-1 text-gray-500">
+                      +{template.services.length - 4}
                     </Badge>
                   )}
                 </div>
               </div>
             </CardContent>
             
-            <CardFooter className="pt-4">
-              <Button 
-                className="w-full"
-                style={{ 
-                  backgroundColor: template.primaryColor,
-                  color: "white"
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log(`${template.name} button clicked - event object:`, e);
-                  handleSelectTemplate(template.id);
-                }}
-              >
-                {selectedTemplate === template.id ? '✓ Selected' : 'Choose Template'}
-              </Button>
+            <CardFooter className="pt-2 pb-4">
+              <div className="w-full text-center">
+                <div 
+                  className={`text-sm font-medium transition-colors ${
+                    selectedTemplate === template.id 
+                      ? 'text-blue-600' 
+                      : 'text-gray-500 group-hover:text-gray-700'
+                  }`}
+                >
+                  {selectedTemplate === template.id ? '✓ Selected' : 'Click to select'}
+                </div>
+              </div>
             </CardFooter>
           </Card>
         ))}
