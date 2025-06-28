@@ -12,46 +12,60 @@ import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function SettingsManagement() {
   const { selectedIndustry } = useIndustry();
-  const terminology = getTerminology(selectedIndustry.id);
+  const terminology = getTerminology(selectedIndustry);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Business Settings</h1>
-        <p className="text-muted-foreground">
-          Manage your team, services, hours, and business configuration
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border">
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Business Settings</h1>
+        <p className="text-muted-foreground mb-4">
+          Customize every aspect of your business - staff, services, hours, and automation
         </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>Fully customizable for any industry</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span>Import data from existing platforms</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+            <span>AI-powered automation & insights</span>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="import" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="import" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-7 h-auto">
+          <TabsTrigger value="import" className="flex flex-col items-center gap-1 py-3 px-2">
             <Download className="h-4 w-4" />
-            Import
+            <span className="text-xs">Import Data</span>
           </TabsTrigger>
-          <TabsTrigger value="staff" className="flex items-center gap-2">
+          <TabsTrigger value="staff" className="flex flex-col items-center gap-1 py-3 px-2">
             <Users className="h-4 w-4" />
-            Team
+            <span className="text-xs">Team</span>
           </TabsTrigger>
-          <TabsTrigger value="services" className="flex items-center gap-2">
+          <TabsTrigger value="services" className="flex flex-col items-center gap-1 py-3 px-2">
             <Scissors className="h-4 w-4" />
-            Services
+            <span className="text-xs">Services</span>
           </TabsTrigger>
-          <TabsTrigger value="hours" className="flex items-center gap-2">
+          <TabsTrigger value="hours" className="flex flex-col items-center gap-1 py-3 px-2">
             <Clock className="h-4 w-4" />
-            Hours
+            <span className="text-xs">Hours</span>
           </TabsTrigger>
-          <TabsTrigger value="business" className="flex items-center gap-2">
+          <TabsTrigger value="business" className="flex flex-col items-center gap-1 py-3 px-2">
             <Building2 className="h-4 w-4" />
-            Business
+            <span className="text-xs">Business</span>
           </TabsTrigger>
-          <TabsTrigger value="automation" className="flex items-center gap-2">
+          <TabsTrigger value="automation" className="flex flex-col items-center gap-1 py-3 px-2">
             <Zap className="h-4 w-4" />
-            Automation
+            <span className="text-xs">Automation</span>
           </TabsTrigger>
-          <TabsTrigger value="intelligence" className="flex items-center gap-2">
+          <TabsTrigger value="intelligence" className="flex flex-col items-center gap-1 py-3 px-2">
             <Brain className="h-4 w-4" />
-            Intelligence
+            <span className="text-xs">AI Insights</span>
           </TabsTrigger>
         </TabsList>
 
