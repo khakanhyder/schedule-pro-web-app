@@ -102,6 +102,16 @@ export default function CalendarCentricDashboard() {
   const goToNextWeek = () => setSelectedDate(addWeeks(selectedDate, 1));
   const goToToday = () => setSelectedDate(new Date());
 
+  // Button action handlers
+  const handleAddAppointment = (time?: string) => {
+    const timeInfo = time ? ` at ${time}` : '';
+    alert(`Would open appointment creation form for ${format(selectedDate, 'MMM d, yyyy')}${timeInfo}`);
+  };
+
+  const handleAppointmentClick = (appointment: any) => {
+    alert(`Would open details for ${appointment.clientName}'s appointment`);
+  };
+
   // Full-screen calendar component
   const FullscreenCalendar = () => (
     <div className="fixed inset-0 bg-background z-50 flex flex-col">
@@ -250,7 +260,7 @@ export default function CalendarCentricDashboard() {
                             ))}
                           </div>
                         ) : (
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" onClick={() => handleAddAppointment(time)}>
                             <Plus className="h-3 w-3" />
                           </Button>
                         )}
@@ -281,7 +291,7 @@ export default function CalendarCentricDashboard() {
                   <Card key={time} className="p-6 min-h-32 hover:shadow-lg transition-shadow cursor-pointer group">
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-xl font-semibold">{time}</span>
-                      <Button size="sm" variant="outline" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="sm" variant="outline" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleAddAppointment(time)}>
                         <Plus className="h-4 w-4 mr-1" />
                         Book
                       </Button>
@@ -289,8 +299,10 @@ export default function CalendarCentricDashboard() {
                     
                     {dayAppointments.length > 0 ? (
                       <div className="space-y-2">
-                        {dayAppointments.map((apt, idx) => (
-                          <div key={apt.id || idx} className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                        {dayAppointments.map((apt: any, idx: number) => (
+                          <div key={apt.id || idx} 
+                               className="p-3 bg-primary/10 rounded-lg border border-primary/20 cursor-pointer hover:bg-primary/20 transition-colors" 
+                               onClick={() => handleAppointmentClick(apt)}>
                             <div className="font-medium text-lg">{apt.clientName}</div>
                             <div className="text-muted-foreground">{apt.serviceName || 'Service'}</div>
                             <div className="text-sm text-primary font-medium mt-1">
