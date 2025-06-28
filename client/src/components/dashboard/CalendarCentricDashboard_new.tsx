@@ -14,59 +14,32 @@ export default function CalendarCentricDashboard() {
 
   // Keyboard shortcuts for desktop users
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      // Only handle shortcuts when not typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      
-      switch (e.key.toLowerCase()) {
-        case 'f':
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'ArrowLeft') {
           e.preventDefault();
-          setIsFullscreen(!isFullscreen);
-          break;
-        case 'w':
+          if (viewMode === 'week') goToPreviousWeek();
+          else if (viewMode === 'day') goToPreviousDay();
+          else goToPreviousMonth();
+        }
+        if (e.key === 'ArrowRight') {
           e.preventDefault();
-          setViewMode('week');
-          break;
-        case 'd':
-          e.preventDefault();
-          setViewMode('day');
-          break;
-        case 't':
-          e.preventDefault();
-          setSelectedDate(new Date());
-          break;
-        case 'arrowleft':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            if (viewMode === 'week') {
-              goToPreviousWeek();
-            } else {
-              setSelectedDate(new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000));
-            }
-          }
-          break;
-        case 'arrowright':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            if (viewMode === 'week') {
-              goToNextWeek();
-            } else {
-              setSelectedDate(new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000));
-            }
-          }
-          break;
-        case 'escape':
-          if (isFullscreen) {
-            e.preventDefault();
-            setIsFullscreen(false);
-          }
-          break;
+          if (viewMode === 'week') goToNextWeek();
+          else if (viewMode === 'day') goToNextDay();
+          else goToNextMonth();
+        }
       }
+      
+      if (e.key.toLowerCase() === 'f') setIsFullscreen(!isFullscreen);
+      if (e.key.toLowerCase() === 'w') setViewMode('week');
+      if (e.key.toLowerCase() === 'd') setViewMode('day');
+      if (e.key.toLowerCase() === 'm') setViewMode('month');
+      if (e.key.toLowerCase() === 't') goToToday();
     };
 
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isFullscreen, viewMode, selectedDate]);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [viewMode, isFullscreen]);
 
   // Get appointments for selected date
   const { data: appointments = [] } = useQuery({
@@ -189,122 +162,69 @@ export default function CalendarCentricDashboard() {
 
       {/* Full-screen Calendar Grid */}
       <div className="flex-1 p-6 overflow-auto">
-        {viewMode === "week" ? (
-          <>
-            {/* Desktop Week View */}
-            <div className="hidden lg:grid grid-cols-8 gap-2 h-full min-h-[600px]">
-              {/* Time column */}
-              <div className="space-y-16 pt-12">
-                {timeSlots.map((time) => (
-                  <div key={time} className="text-sm text-muted-foreground text-right pr-2 font-medium">
-                    {time}
-                  </div>
-                ))}
-              </div>
-              
-              {/* Day columns */}
-              {weekDays.map((day) => (
-                <div key={day.toISOString()} className="border rounded-lg bg-card shadow-sm hover:shadow-md transition-shadow">
-                  <div className={`p-4 text-center border-b ${
-                    isToday(day) ? 'bg-primary text-primary-foreground' : 
-                    isSameDay(day, selectedDate) ? 'bg-primary/10' : ''
-                  }`}>
-                    <div className="font-medium text-sm">{format(day, "EEE")}</div>
-                    <div className="text-3xl font-bold">{format(day, "d")}</div>
-                  </div>
-                  
-                  <div className="p-2 space-y-16">
-                    {timeSlots.map((time) => (
-                      <div key={time} className="h-16 border-t border-dashed relative group cursor-pointer hover:bg-muted/50">
-                        {appointments
-                          .filter(apt => isSameDay(new Date(apt.date), day))
-                          .map((apt, idx) => (
-                            <div
-                              key={apt.id || idx}
-                              className="absolute inset-x-1 top-1 bg-primary text-primary-foreground text-xs rounded p-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                            >
-                              <div className="font-medium truncate">{apt.clientName}</div>
-                              <div className="truncate opacity-90">{apt.serviceName || 'Service'}</div>
-                            </div>
-                          ))}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Plus className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+        {viewMode === "week" && (
+          <div className="grid grid-cols-8 gap-2 h-full min-h-[600px]">
+            {/* Time column */}
+            <div className="space-y-8 pt-12">
+              {timeSlots.map((time) => (
+                <div key={time} className="text-sm text-muted-foreground text-right pr-2 font-medium h-16 flex items-center">
+                  {time}
                 </div>
               ))}
             </div>
-
-            {/* Mobile Week View - Simplified */}
-            <div className="lg:hidden space-y-4">
-              <div className="grid grid-cols-7 gap-2 mb-6">
-                {weekDays.map((day) => (
-                  <button
-                    key={day.toISOString()}
-                    onClick={() => setSelectedDate(day)}
-                    className={`p-3 rounded-lg border text-center transition-colors ${
-                      isToday(day) ? 'bg-primary text-primary-foreground' : 
-                      isSameDay(day, selectedDate) ? 'bg-primary/10 border-primary' : 'hover:bg-muted'
-                    }`}
-                  >
-                    <div className="text-xs font-medium">{format(day, "EEE")}</div>
-                    <div className="text-lg font-bold">{format(day, "d")}</div>
-                    <div className="text-xs">
-                      {appointments.filter(apt => isSameDay(new Date(apt.date), day)).length || ''}
-                    </div>
-                  </button>
-                ))}
-              </div>
-              
-              {/* Selected Day Schedule for Mobile */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{format(selectedDate, "EEEE, MMMM d")}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+            
+            {/* Day columns */}
+            {weekDays.map((day) => (
+              <div key={day.toISOString()} className="border rounded-lg bg-card shadow-sm">
+                <div className={`p-3 text-center border-b ${
+                  isToday(day) ? 'bg-primary text-primary-foreground' : 
+                  isSameDay(day, selectedDate) ? 'bg-primary/10' : ''
+                }`}>
+                  <div className="font-medium text-sm">{format(day, "EEE")}</div>
+                  <div className="text-2xl font-bold">{format(day, "d")}</div>
+                </div>
+                
+                <div className="p-1 space-y-8">
                   {timeSlots.map((time) => {
-                    const dayAppointments = appointments.filter(apt => isSameDay(new Date(apt.date), selectedDate));
+                    const dayAppointments = appointments.filter((apt: any) => isSameDay(new Date(apt.date), day));
                     return (
-                      <div key={time} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
-                        <span className="font-medium">{time}</span>
-                        {dayAppointments.length > 0 ? (
-                          <div className="text-sm">
-                            {dayAppointments.map((apt, idx) => (
-                              <div key={apt.id || idx} className="text-primary font-medium">
-                                {apt.clientName}
-                              </div>
-                            ))}
+                      <div key={time} className="h-16 border-t border-dashed relative group cursor-pointer hover:bg-muted/50">
+                        {dayAppointments.map((apt: any, idx: number) => (
+                          <div 
+                            key={apt.id || idx} 
+                            className="absolute inset-0 bg-primary/20 border border-primary rounded p-2 text-xs cursor-pointer hover:bg-primary/30"
+                            onClick={() => handleAppointmentClick(apt)}
+                          >
+                            <div className="font-medium">{apt.clientName}</div>
+                            <div className="text-muted-foreground">{apt.serviceName}</div>
                           </div>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => handleAddAppointment(time)}>
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        )}
+                        ))}
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleAddAppointment(time)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
                       </div>
                     );
                   })}
-                </CardContent>
-              </Card>
-            </div>
-          </>
-          
-        ) : (
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-4xl font-bold mb-2">{format(selectedDate, "EEEE")}</h2>
-              <p className="text-2xl text-muted-foreground">{format(selectedDate, "MMMM d, yyyy")}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {viewMode === "day" && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold">{format(selectedDate, "EEEE, MMMM d, yyyy")}</h2>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid gap-4">
               {timeSlots.map((time) => {
-                const dayAppointments = appointments.filter(apt => isSameDay(new Date(apt.date), selectedDate));
-                const hasAppointment = dayAppointments.some(apt => {
-                  // Simple time matching - in real app would need proper time parsing
-                  return true; // For demo purposes
-                });
-                
+                const dayAppointments = appointments.filter((apt: any) => isSameDay(new Date(apt.date), selectedDate));
                 return (
                   <Card key={time} className="p-6 min-h-32 hover:shadow-lg transition-shadow cursor-pointer group">
                     <div className="flex justify-between items-center mb-4">
@@ -339,83 +259,67 @@ export default function CalendarCentricDashboard() {
                 );
               })}
             </div>
-          </>
-        ) : viewMode === "month" ? (
-          <>
-            {/* Month View */}
-            <div className="space-y-4">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold">{format(selectedDate, "MMMM yyyy")}</h2>
-              </div>
+          </div>
+        )}
+
+        {viewMode === "month" && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold">{format(selectedDate, "MMMM yyyy")}</h2>
+            </div>
+            
+            {/* Month Calendar Grid */}
+            <div className="grid grid-cols-7 gap-2">
+              {/* Day headers */}
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                <div key={day} className="p-2 text-center font-medium text-muted-foreground bg-muted/20 rounded">
+                  {day}
+                </div>
+              ))}
               
-              {/* Month Calendar Grid */}
-              <div className="grid grid-cols-7 gap-2">
-                {/* Day headers */}
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                  <div key={day} className="p-2 text-center font-medium text-muted-foreground bg-muted/20 rounded">
-                    {day}
-                  </div>
-                ))}
+              {/* Calendar days */}
+              {monthDays.map((day) => {
+                const dayAppointments = appointments.filter((apt: any) => isSameDay(new Date(apt.date), day));
+                const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
                 
-                {/* Calendar days */}
-                {monthDays.map((day) => {
-                  const dayAppointments = appointments.filter((apt: any) => isSameDay(new Date(apt.date), day));
-                  const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
-                  
-                  return (
-                    <div 
-                      key={day.toISOString()} 
-                      className={`min-h-24 p-2 border rounded-lg cursor-pointer transition-colors ${
-                        isToday(day) ? 'bg-primary text-primary-foreground' :
-                        isSameDay(day, selectedDate) ? 'bg-primary/10 border-primary' :
-                        isCurrentMonth ? 'bg-card hover:bg-muted/50' : 'bg-muted/20 text-muted-foreground'
-                      }`}
-                      onClick={() => setSelectedDate(day)}
-                    >
-                      <div className={`text-sm font-medium ${!isCurrentMonth ? 'opacity-50' : ''}`}>
-                        {format(day, 'd')}
-                      </div>
-                      <div className="mt-1 space-y-1">
-                        {dayAppointments.slice(0, 2).map((apt: any, idx: number) => (
-                          <div 
-                            key={apt.id || idx} 
-                            className="text-xs bg-primary/20 text-primary px-1 py-0.5 rounded truncate cursor-pointer hover:bg-primary/30"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAppointmentClick(apt);
-                            }}
-                          >
-                            {apt.clientName}
-                          </div>
-                        ))}
-                        {dayAppointments.length > 2 && (
-                          <div className="text-xs text-muted-foreground">
-                            +{dayAppointments.length - 2} more
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Add appointment button on hover */}
-                      <div className="opacity-0 hover:opacity-100 transition-opacity mt-1">
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="h-6 w-full text-xs"
+                return (
+                  <div 
+                    key={day.toISOString()} 
+                    className={`min-h-24 p-2 border rounded-lg cursor-pointer transition-colors ${
+                      isToday(day) ? 'bg-primary text-primary-foreground' :
+                      isSameDay(day, selectedDate) ? 'bg-primary/10 border-primary' :
+                      isCurrentMonth ? 'bg-card hover:bg-muted/50' : 'bg-muted/20 text-muted-foreground'
+                    }`}
+                    onClick={() => setSelectedDate(day)}
+                  >
+                    <div className={`text-sm font-medium ${!isCurrentMonth ? 'opacity-50' : ''}`}>
+                      {format(day, 'd')}
+                    </div>
+                    <div className="mt-1 space-y-1">
+                      {dayAppointments.slice(0, 2).map((apt: any, idx: number) => (
+                        <div 
+                          key={apt.id || idx} 
+                          className="text-xs bg-primary/20 text-primary px-1 py-0.5 rounded truncate cursor-pointer hover:bg-primary/30"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleAddAppointment();
+                            handleAppointmentClick(apt);
                           }}
                         >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
+                          {apt.clientName}
+                        </div>
+                      ))}
+                      {dayAppointments.length > 2 && (
+                        <div className="text-xs text-muted-foreground">
+                          +{dayAppointments.length - 2} more
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          </>
-        ) : null}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -464,7 +368,7 @@ export default function CalendarCentricDashboard() {
               <Maximize2 className="h-4 w-4 mr-2" />
               Full Calendar
             </Button>
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" onClick={() => handleAddAppointment()}>
               <Plus className="h-4 w-4 mr-2" />
               New Appointment
             </Button>
@@ -472,8 +376,8 @@ export default function CalendarCentricDashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setIsFullscreen(true)}>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Today's Appointments</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -481,7 +385,7 @@ export default function CalendarCentricDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{todayAppointments}</div>
               <p className="text-xs text-muted-foreground">
-                {todayAppointments > 0 ? "scheduled" : "No appointments today"}
+                Active bookings
               </p>
             </CardContent>
           </Card>
@@ -520,73 +424,74 @@ export default function CalendarCentricDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{services.length}</div>
               <p className="text-xs text-muted-foreground">
-                Available services
+                Active services
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Compact Calendar Preview - Click to Expand */}
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setIsFullscreen(true)}>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">Weekly Schedule</CardTitle>
-              <CardDescription className="hidden sm:block">
-                Click to expand • Keyboard: F (fullscreen), W (week), D (day), T (today), Ctrl+← → (navigate)
-              </CardDescription>
-              <CardDescription className="sm:hidden">
-                Tap to open full calendar view
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); goToPreviousWeek(); }}>
-                <ChevronLeft className="h-4 w-4" />
-                <span className="hidden sm:inline ml-1">Prev</span>
-              </Button>
-              <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); goToToday(); }}>
-                <span className="hidden sm:inline">Today</span>
-                <span className="sm:hidden">•</span>
-              </Button>
-              <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); goToNextWeek(); }}>
-                <span className="hidden sm:inline mr-1">Next</span>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button size="sm" onClick={(e) => { e.stopPropagation(); setIsFullscreen(true); }}>
-                <Maximize2 className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Expand</span>
-              </Button>
+        {/* Main Calendar View */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Weekly Schedule</CardTitle>
+                <CardDescription>
+                  {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
+                </CardDescription>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={viewMode === "week" ? goToPreviousWeek : viewMode === "day" ? goToPreviousDay : goToPreviousMonth}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={goToToday}>
+                  Today
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={viewMode === "week" ? goToNextWeek : viewMode === "day" ? goToNextDay : goToNextMonth}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
-            {/* Desktop Week Grid */}
-            <div className="hidden md:block">
-              <div className="grid grid-cols-7 gap-3">
-                {weekDays.map((day) => (
-                  <div key={day.toISOString()} className="text-center p-4 border rounded-lg bg-card/50 hover:bg-card transition-colors min-h-24">
-                    <div className={`font-medium text-sm ${isToday(day) ? 'text-primary' : ''}`}>
-                      {format(day, "EEE")}
-                    </div>
-                    <div className={`text-xl font-bold ${isToday(day) ? 'text-primary' : ''}`}>
-                      {format(day, "d")}
-                    </div>
-                    <div className="mt-2 space-y-1">
-                      {appointments
-                        .filter((apt: any) => isSameDay(new Date(apt.date), day))
-                        .slice(0, 3)
-                        .map((apt: any, idx: number) => (
-                          <div key={apt.id || idx} className="text-xs bg-primary/20 text-primary px-2 py-1 rounded truncate">
-                            {apt.clientName}
-                          </div>
-                        ))}
-                      {appointments.filter((apt: any) => isSameDay(new Date(apt.date), day)).length > 3 && (
-                        <div className="text-xs text-muted-foreground">
-                          +{appointments.filter((apt: any) => isSameDay(new Date(apt.date), day)).length - 3} more
-                        </div>
-                      )}
-                    </div>
+            {/* Desktop Week Calendar */}
+            <div className="hidden md:grid grid-cols-8 gap-2 mb-6">
+              <div></div>
+              {weekDays.map((day) => (
+                <div key={day.toISOString()} className={`text-center p-2 rounded ${
+                  isToday(day) ? 'bg-primary text-primary-foreground' : 
+                  isSameDay(day, selectedDate) ? 'bg-primary/10' : ''
+                }`}>
+                  <div className="text-xs font-medium">{format(day, "EEE")}</div>
+                  <div className={`text-xl font-bold ${isToday(day) ? 'text-primary-foreground' : ''}`}>
+                    {format(day, "d")}
                   </div>
-                ))}
-              </div>
+                  <div className="mt-2 space-y-1">
+                    {appointments
+                      .filter((apt: any) => isSameDay(new Date(apt.date), day))
+                      .slice(0, 3)
+                      .map((apt: any, idx: number) => (
+                        <div key={apt.id || idx} className="text-xs bg-primary/20 text-primary px-2 py-1 rounded truncate">
+                          {apt.clientName}
+                        </div>
+                      ))}
+                    {appointments.filter((apt: any) => isSameDay(new Date(apt.date), day)).length > 3 && (
+                      <div className="text-xs text-muted-foreground">
+                        +{appointments.filter((apt: any) => isSameDay(new Date(apt.date), day)).length - 3} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Mobile Week Row */}
@@ -623,7 +528,7 @@ export default function CalendarCentricDashboard() {
           <CardContent>
             {todayAppointments > 0 ? (
               <div className="space-y-4">
-                {appointments.map((apt, idx) => (
+                {appointments.map((apt: any, idx: number) => (
                   <div key={apt.id || idx} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="text-center">
@@ -637,23 +542,23 @@ export default function CalendarCentricDashboard() {
                       <div>
                         <div className="font-medium">{apt.clientName}</div>
                         <div className="text-sm text-muted-foreground">{apt.serviceName || 'Service'}</div>
-                        <div className="text-sm text-muted-foreground">{apt.clientPhone || apt.clientEmail}</div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Badge variant="secondary">{apt.duration || 60} min</Badge>
-                      <Badge variant="outline">${apt.price || '0'}</Badge>
-                    </div>
+                    <Badge variant="outline">
+                      {apt.duration ? `${apt.duration} min` : '60 min'}
+                    </Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
-                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No appointments today</h3>
-                <p className="text-muted-foreground mb-4">Your schedule is clear</p>
-                <Button onClick={() => setIsFullscreen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No appointments scheduled for today</p>
+                <Button 
+                  size="sm" 
+                  className="mt-3"
+                  onClick={() => handleAddAppointment()}
+                >
                   Schedule Appointment
                 </Button>
               </div>

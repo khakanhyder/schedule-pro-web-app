@@ -131,6 +131,18 @@ export default function Dashboard() {
           </div>
           
           <div className="flex gap-2">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                localStorage.removeItem('setupCompleted');
+                localStorage.removeItem('hasServices');
+                localStorage.removeItem('hasStaff');
+                setLocation('/setup');
+              }}
+              size="sm"
+            >
+              Back to Templates
+            </Button>
             <Button onClick={() => setIsAddAppointmentOpen(true)}>
               <PlusCircle className="h-4 w-4 mr-2" />
               New {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}
