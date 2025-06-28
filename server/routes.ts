@@ -35,12 +35,7 @@ async function sendAppointmentConfirmation(appointment: any) {
     price: service?.price || "150",
     professional: stylist?.name || "Professional",
     businessName: `${industry.name} Services`,
-    industryTerms: {
-      professional: industry.professionalName,
-      appointment: industry.appointmentTerm,
-      client: industry.clientName,
-      service: industry.serviceTerm
-    }
+    professionalType: industry.professionalName || "professional"
   };
 
   // Log the confirmation (in production, this would send real emails/SMS)
@@ -48,19 +43,19 @@ async function sendAppointmentConfirmation(appointment: any) {
   console.log(`
 📧 EMAIL CONFIRMATION SENT TO: ${confirmationDetails.clientEmail}
 
-Subject: Your ${confirmationDetails.industryTerms.appointment} is Confirmed! - ${confirmationDetails.businessName}
+Subject: Your Appointment is Confirmed! - ${confirmationDetails.businessName}
 
 Dear ${confirmationDetails.clientName},
 
-Your ${confirmationDetails.industryTerms.appointment} has been confirmed! Here are the details:
+Your appointment has been confirmed! Here are the details:
 
-📋 ${confirmationDetails.industryTerms.service.toUpperCase()}: ${confirmationDetails.serviceName}
+📋 SERVICE: ${confirmationDetails.serviceName}
 📅 DATE: ${confirmationDetails.date}
 ⏰ TIME: ${confirmationDetails.time}
 💰 PRICE: $${confirmationDetails.price}
-👤 ${confirmationDetails.industryTerms.professional.toUpperCase()}: ${confirmationDetails.professional}
+👤 ${confirmationDetails.professionalType.toUpperCase()}: ${confirmationDetails.professional}
 
-Your ${confirmationDetails.industryTerms.professional} will provide excellent ${confirmationDetails.industryTerms.service} and ensure you receive professional, quality care.
+Your ${confirmationDetails.professionalType} will provide excellent service and ensure you receive professional, quality care.
 
 📱 CONTACT: (555) 123-4567
 📧 BUSINESS EMAIL: hello@${confirmationDetails.businessName.toLowerCase().replace(/\s+/g, '')}.com
@@ -78,7 +73,7 @@ ${confirmationDetails.businessName}
   console.log(`
 📱 SMS SENT TO: ${confirmationDetails.clientPhone}
 
-Hi ${confirmationDetails.clientName}! Your ${confirmationDetails.industryTerms.appointment} with ${confirmationDetails.professional} at ${confirmationDetails.businessName} is confirmed for ${confirmationDetails.date} at ${confirmationDetails.time}. ${confirmationDetails.industryTerms.service}: ${confirmationDetails.serviceName} ($${confirmationDetails.price}). Contact: (555) 123-4567. Thank you!
+Hi ${confirmationDetails.clientName}! Your appointment with ${confirmationDetails.professional} at ${confirmationDetails.businessName} is confirmed for ${confirmationDetails.date} at ${confirmationDetails.time}. Service: ${confirmationDetails.serviceName} ($${confirmationDetails.price}). Contact: (555) 123-4567. Thank you!
   `);
   
   return true;
