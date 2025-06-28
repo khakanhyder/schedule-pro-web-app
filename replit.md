@@ -18,6 +18,14 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (December 29, 2024)
 
+### Click Handling Fix (Latest)
+- ✅ Fixed industry selection buttons that were unresponsive during setup
+- ✅ Added proper event handling and debugging to setup components
+- ✅ Clarified that step indicators are progress displays, not clickable buttons
+- ✅ Restored beautiful card-based industry selection layout with working functionality
+
+## Previous Changes
+
 ### Quality Audit & UX Improvements
 Conducted comprehensive quality audit to identify and fix critical user flow problems:
 
