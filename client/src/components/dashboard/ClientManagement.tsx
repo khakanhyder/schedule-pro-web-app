@@ -1,4 +1,9 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { format } from "date-fns";
 import { 
   Card, 
   CardContent, 
@@ -8,316 +13,359 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Edit, Trash2, Users, Phone, Mail, Calendar } from "lucide-react";
+import { insertClientSchema, type Client } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import ReviewRequestModal from "./ReviewRequestModal";
+import { useIndustry, getTerminology } from "@/lib/industryContext";
 
-// Sample client data (in a real app, this would come from your backend)
-const mockClients = [
-  { 
-    id: 1, 
-    name: "Jane Smith", 
-    email: "jane.smith@example.com", 
-    phone: "555-123-4567", 
-    lastVisit: "2023-04-15", 
-    preferredService: "Women's Haircut",
-    notes: "Prefers organic products",
-    reviewStatus: "None" // None, Requested, Completed
-  },
-  { 
-    id: 2, 
-    name: "Michael Johnson", 
-    email: "michael.j@example.com", 
-    phone: "555-987-6543", 
-    lastVisit: "2023-05-02", 
-    preferredService: "Men's Haircut & Beard Trim",
-    notes: "Allergic to certain dyes",
-    reviewStatus: "Completed"
-  },
-  { 
-    id: 3, 
-    name: "Lisa Brown", 
-    email: "lisa.brown@example.com", 
-    phone: "555-567-8901", 
-    lastVisit: "2023-04-28", 
-    preferredService: "Highlights",
-    notes: "Likes to be early",
-    reviewStatus: "Requested"
-  },
-  { 
-    id: 4, 
-    name: "Robert Davis", 
-    email: "robert.d@example.com", 
-    phone: "555-345-6789", 
-    lastVisit: "2023-03-20", 
-    preferredService: "Men's Haircut",
-    notes: "",
-    reviewStatus: "None"
-  },
-];
+const formSchema = insertClientSchema.extend({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 characters")
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export default function ClientManagement() {
-  const [clients, setClients] = useState(mockClients);
   const [searchTerm, setSearchTerm] = useState("");
-  const [newClient, setNewClient] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    preferredService: "",
-    notes: ""
-  });
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<typeof mockClients[0] | null>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { selectedIndustry } = useIndustry();
+  const terms = getTerminology(selectedIndustry);
+  const queryClient = useQueryClient();
 
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.phone.includes(searchTerm)
-  );
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNewClient(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddClient = () => {
-    if (!newClient.name || !newClient.email || !newClient.phone) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const newClientWithId = {
-      ...newClient,
-      id: clients.length + 1,
-      lastVisit: "Never",
-      reviewStatus: "None"
-    };
-
-    setClients([...clients, newClientWithId]);
-    setNewClient({
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
       name: "",
       email: "",
       phone: "",
       preferredService: "",
       notes: ""
-    });
-    setIsAddDialogOpen(false);
+    }
+  });
 
-    toast({
-      title: "Client Added",
-      description: `${newClient.name} has been added to your client list.`
-    });
+  // Fetch clients
+  const { data: clients = [], isLoading } = useQuery({
+    queryKey: ["/api/clients"],
+    queryFn: () => apiRequest("GET", "/api/clients").then(res => res.json())
+  });
+
+  // Create client mutation
+  const createMutation = useMutation({
+    mutationFn: (data: FormData) =>
+      apiRequest("POST", "/api/clients", data).then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      form.reset();
+      setIsDialogOpen(false);
+      toast({
+        title: `${terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Added`,
+        description: "Successfully added new client"
+      });
+    }
+  });
+
+  // Update client mutation
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: FormData }) =>
+      apiRequest("PUT", `/api/clients/${id}`, data).then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      setEditingClient(null);
+      form.reset();
+      setIsDialogOpen(false);
+      toast({
+        title: `${terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Updated`,
+        description: "Successfully updated client information"
+      });
+    }
+  });
+
+  // Delete client mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) =>
+      apiRequest("DELETE", `/api/clients/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      toast({
+        title: `${terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Removed`,
+        description: "Client has been removed from your list"
+      });
+    }
+  });
+
+  const filteredClients = clients.filter((client: Client) =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const onSubmit = (data: FormData) => {
+    if (editingClient) {
+      updateMutation.mutate({ id: editingClient.id, data });
+    } else {
+      createMutation.mutate(data);
+    }
   };
 
-  const handleSendReviewRequest = (clientId: number) => {
-    const client = clients.find(c => c.id === clientId);
-    if (!client) return;
-    
-    setSelectedClient(client);
-    setReviewModalOpen(true);
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
+    form.reset({
+      name: client.name,
+      email: client.email,
+      phone: client.phone,
+      preferredService: client.preferredService || "",
+      notes: client.notes || ""
+    });
+    setIsDialogOpen(true);
   };
-  
-  const handleReviewRequestSent = () => {
-    if (!selectedClient) return;
-    
-    // Update the client's review status
-    setClients(clients.map(client => 
-      client.id === selectedClient.id 
-        ? { ...client, reviewStatus: "Requested" } 
-        : client
-    ));
-    
-    setReviewModalOpen(false);
+
+  const handleDelete = (client: Client) => {
+    if (confirm(`Are you sure you want to remove ${client.name} from your client list?`)) {
+      deleteMutation.mutate(client.id);
+    }
   };
+
+  const handleAddNew = () => {
+    setEditingClient(null);
+    form.reset();
+    setIsDialogOpen(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Your Clients</CardTitle>
-            <CardDescription>Manage your client list and request Google reviews</CardDescription>
-          </div>
-          <div className="flex space-x-2">
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              <CardTitle>{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)} Management</CardTitle>
+            </div>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>Add New Client</Button>
+                <Button onClick={handleAddNew}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add {terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}
+                </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Add New Client</DialogTitle>
+                  <DialogTitle>
+                    {editingClient ? "Edit" : "Add New"} {terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}
+                  </DialogTitle>
                   <DialogDescription>
-                    Enter the client's details below to add them to your system.
+                    {editingClient ? "Update client information" : "Add a new client to your database"}
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Name *
-                    </Label>
-                    <Input
-                      id="name"
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
                       name="name"
-                      value={newClient.name}
-                      onChange={handleInputChange}
-                      className="col-span-3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Client name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="email" className="text-right">
-                      Email *
-                    </Label>
-                    <Input
-                      id="email"
+                    <FormField
+                      control={form.control}
                       name="email"
-                      type="email"
-                      value={newClient.email}
-                      onChange={handleInputChange}
-                      className="col-span-3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email *</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="client@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="phone" className="text-right">
-                      Phone *
-                    </Label>
-                    <Input
-                      id="phone"
+                    <FormField
+                      control={form.control}
                       name="phone"
-                      value={newClient.phone}
-                      onChange={handleInputChange}
-                      className="col-span-3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="(555) 123-4567" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="preferredService" className="text-right">
-                      Preferred Service
-                    </Label>
-                    <Input
-                      id="preferredService"
+                    <FormField
+                      control={form.control}
                       name="preferredService"
-                      value={newClient.preferredService}
-                      onChange={handleInputChange}
-                      className="col-span-3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Preferred Service</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Most common service" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="notes" className="text-right">
-                      Notes
-                    </Label>
-                    <Input
-                      id="notes"
+                    <FormField
+                      control={form.control}
                       name="notes"
-                      value={newClient.notes}
-                      onChange={handleInputChange}
-                      className="col-span-3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notes</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Preferences, allergies, special instructions..." 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" onClick={handleAddClient}>
-                    Add Client
-                  </Button>
-                </DialogFooter>
+                    <DialogFooter>
+                      <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                        {createMutation.isPending || updateMutation.isPending ? "Saving..." : "Save"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
           </div>
+          <CardDescription>
+            Manage your {terms.client} database and contact information
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
             <Input
-              placeholder="Search clients..."
+              placeholder={`Search ${terms.client}s...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
             />
           </div>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Last Visit</TableHead>
-                  <TableHead>Preferred Service</TableHead>
-                  <TableHead>Review Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredClients.length > 0 ? (
-                  filteredClients.map((client) => (
+          
+          {filteredClients.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-lg font-medium text-muted-foreground">
+                {clients.length === 0 ? `No ${terms.client}s added yet` : "No matching clients found"}
+              </p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {clients.length === 0 
+                  ? `Start building your ${terms.client} database by adding your first ${terms.client}` 
+                  : "Try adjusting your search terms"
+                }
+              </p>
+              {clients.length === 0 && (
+                <Button onClick={handleAddNew}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First {terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Preferred Service</TableHead>
+                    <TableHead>Last Visit</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredClients.map((client: Client) => (
                     <TableRow key={client.id}>
-                      <TableCell className="font-medium">{client.name}</TableCell>
                       <TableCell>
-                        <div>{client.email}</div>
-                        <div>{client.phone}</div>
-                      </TableCell>
-                      <TableCell>{client.lastVisit}</TableCell>
-                      <TableCell>{client.preferredService}</TableCell>
-                      <TableCell>
-                        {client.reviewStatus === "None" && (
-                          <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-neutral-100 text-neutral-800">
-                            Not requested
-                          </span>
-                        )}
-                        {client.reviewStatus === "Requested" && (
-                          <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-amber-100 text-amber-800">
-                            Requested
-                          </span>
-                        )}
-                        {client.reviewStatus === "Completed" && (
-                          <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-800">
-                            <svg className="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                            Posted
-                          </span>
-                        )}
+                        <div>
+                          <div className="font-medium">{client.name}</div>
+                          {client.notes && (
+                            <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                              {client.notes}
+                            </div>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">View</Button>
-                          <Button 
-                            variant="outline" 
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="h-3 w-3" />
+                            {client.email}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-3 w-3" />
+                            {client.phone}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {client.preferredService ? (
+                          <Badge variant="secondary">{client.preferredService}</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">Not specified</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {client.lastVisit ? (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(client.lastVisit), "MMM d, yyyy")}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">No visits yet</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
                             size="sm"
-                            onClick={() => handleSendReviewRequest(client.id)}
-                            disabled={client.reviewStatus === "Completed"}
+                            onClick={() => handleEdit(client)}
                           >
-                            {client.reviewStatus === "Requested" ? "Resend Request" : "Ask for Review"}
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(client)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
-                      No clients found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
-      
-      {selectedClient && (
-        <ReviewRequestModal
-          isOpen={reviewModalOpen}
-          onClose={() => setReviewModalOpen(false)}
-          clientName={selectedClient.name}
-          clientEmail={selectedClient.email}
-        />
-      )}
     </div>
   );
 }

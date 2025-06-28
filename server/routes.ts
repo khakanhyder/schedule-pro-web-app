@@ -206,6 +206,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Client API Routes
+  app.get("/api/clients", async (req, res) => {
+    try {
+      const clients = await storage.getClients();
+      res.json(clients);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching clients" });
+    }
+  });
+
+  app.post("/api/clients", async (req, res) => {
+    try {
+      const client = await storage.createClient(req.body);
+      res.json(client);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error creating client: " + error.message });
+    }
+  });
+
+  app.put("/api/clients/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const client = await storage.updateClient(id, req.body);
+      res.json(client);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error updating client: " + error.message });
+    }
+  });
+
+  app.delete("/api/clients/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteClient(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error deleting client: " + error.message });
+    }
+  });
+
   // CRUD operations for services
   app.post("/api/services", async (req, res) => {
     try {
