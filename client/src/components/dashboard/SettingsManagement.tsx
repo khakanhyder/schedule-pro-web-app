@@ -8,6 +8,7 @@ import BusinessHoursManagement from "./BusinessHoursManagement";
 import AutomationSettings from "./AutomationSettings";
 import BusinessIntelligenceDashboard from "./BusinessIntelligenceDashboard";
 import DataImportManager from "./DataImportManager";
+import BusinessBrandingPreview from "./BusinessBrandingPreview";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function SettingsManagement() {
@@ -83,6 +84,7 @@ export default function SettingsManagement() {
 
         <TabsContent value="business" className="space-y-6">
           <BusinessInfoManagement />
+          <BusinessBrandingPreview />
         </TabsContent>
 
         <TabsContent value="automation" className="space-y-6">

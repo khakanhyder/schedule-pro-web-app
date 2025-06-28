@@ -12,6 +12,10 @@ export default function Navbar() {
   const { selectedIndustry } = useIndustry();
   const terms = getTerminology(selectedIndustry);
   
+  // Get business branding from localStorage
+  const businessName = localStorage.getItem('businessName') || selectedIndustry.name;
+  const businessLogo = localStorage.getItem('businessLogo');
+  
   // Track scrolling for enhanced mobile UX
   useEffect(() => {
     const handleScroll = () => {
@@ -51,9 +55,13 @@ export default function Navbar() {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/">
-            <div className="flex items-center cursor-pointer text-2xl font-bold text-primary">
-              <img src="/favicon.svg" alt="Scheduled" className="h-8 w-8 mr-2" />
-              <span className="font-display">Scheduled</span>
+            <div className="flex items-center cursor-pointer text-xl font-bold text-primary">
+              {businessLogo ? (
+                <img src={businessLogo} alt={businessName} className="h-8 w-8 mr-3 rounded object-cover" />
+              ) : (
+                <img src="/favicon.svg" alt="Scheduled" className="h-8 w-8 mr-3" />
+              )}
+              <span className="font-display">{businessName}</span>
             </div>
           </Link>
         </div>
