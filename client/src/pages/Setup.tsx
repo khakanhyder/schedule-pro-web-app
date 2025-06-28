@@ -134,15 +134,6 @@ export default function Setup() {
             
             {step === 2 && (
               <Button 
-                onClick={() => setStep(3)}
-                disabled={!selectedTheme}
-              >
-                Next: Add Your Logo
-              </Button>
-            )}
-            
-            {step === 3 && (
-              <Button 
                 onClick={handleCompleteSetup}
               >
                 Complete Setup

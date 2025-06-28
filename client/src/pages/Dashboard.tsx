@@ -44,7 +44,7 @@ import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
 import SettingsManagement from "@/components/dashboard/SettingsManagement";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
-export default function StylistDashboard() {
+export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTab, setSelectedTab] = useState("appointments");
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);

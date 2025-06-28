@@ -41,6 +41,12 @@ Conducted comprehensive quality audit to identify and fix critical user flow pro
 - ✅ Shows clear setup requirements if not completed
 - ✅ Guides users back to setup process when needed
 
+**Contractor-Friendly Terminology:**
+- ✅ Simplified setup to remove confusing template customization steps
+- ✅ Kept industry selection (Beauty, Wellness, Home Services, etc.) for initial personalization
+- ✅ Renamed "StylistDashboard" to generic "Dashboard" for broader appeal
+- ✅ Updated terminology throughout to use "staff/team" instead of beauty-specific terms
+
 ## Data Import System
 Comprehensive migration system supporting 12+ scheduling platforms:
 - Vagaro, Booksy, Square Appointments, Acuity Scheduling

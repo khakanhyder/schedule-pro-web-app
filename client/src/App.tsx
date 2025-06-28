@@ -1,7 +1,7 @@
 import { Switch, Route, useLocation } from "wouter";
 import Home from "@/pages/Home";
 import Booking from "@/pages/Booking";
-import StylistDashboard from "@/pages/StylistDashboard";
+import Dashboard from "@/pages/Dashboard";
 import Setup from "@/pages/Setup";
 import Pricing from "@/pages/Pricing";
 import AdminDashboard from "@/pages/AdminDashboard";
@@ -27,7 +27,7 @@ function App() {
           <Switch>
             <Route path="/" component={Home} />
             <Route path="/booking" component={Booking} />
-            <Route path="/dashboard" component={StylistDashboard} />
+            <Route path="/dashboard" component={Dashboard} />
             <Route path="/setup" component={Setup} />
             <Route path="/pricing" component={Pricing} />
             <Route path="/admin" component={AdminDashboard} />
