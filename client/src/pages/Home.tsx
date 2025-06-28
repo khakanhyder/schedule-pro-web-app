@@ -15,11 +15,16 @@ export default function Home() {
       <Reviews />
       <Contact />
       
-      {/* iOS Test Button */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <Link href="/ios-test">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-lg">
-            iOS App Preview
+      {/* Quick Actions */}
+      <div className="fixed bottom-4 right-4 z-50 space-y-2">
+        <Link href="/booking">
+          <Button className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-full shadow-lg w-full">
+            Book Now
+          </Button>
+        </Link>
+        <Link href="/dashboard">
+          <Button variant="outline" className="bg-white hover:bg-gray-50 border-2 border-primary text-primary font-bold py-2 px-4 rounded-full shadow-lg text-sm w-full">
+            Business Portal
           </Button>
         </Link>
       </div>

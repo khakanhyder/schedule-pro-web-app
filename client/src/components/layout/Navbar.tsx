@@ -107,9 +107,17 @@ export default function Navbar() {
             >
               <div 
                 className={`cursor-pointer text-foreground hover:text-primary transition-colors py-2 ${
-                  location === link.href || (link.href.includes('#') && location === '/' && window.location.hash === link.href.substring(1)) 
-                    ? "text-primary font-medium" : ""
+                  location === link.href ? "text-primary font-medium" : ""
                 }`}
+                onClick={(e) => {
+                  if (link.scroll && location === "/") {
+                    e.preventDefault();
+                    const element = document.getElementById(link.scroll);
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }
+                }}
               >
                 {link.name}
               </div>
