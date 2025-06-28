@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
-import IndustryTemplates from "@/components/setup/IndustryTemplates";
-import LogoCustomizer from "@/components/setup/LogoCustomizer";
-import BusinessDetailsCustomizer from "@/components/setup/BusinessDetailsCustomizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useIndustry } from "@/lib/industryContext";
+import { useIndustry, industryTemplates } from "@/lib/industryContext";
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -15,39 +13,20 @@ export default function Setup() {
   const [step, setStep] = useState(1);
   const [_, setLocation] = useLocation();
   const { toast } = useToast();
-  const { selectIndustryById, selectedIndustry } = useIndustry();
-
-  console.log('Setup component rendered, step:', step, 'selectedTemplate:', selectedTemplate);
-
-  useEffect(() => {
-    console.log('Setup component mounted/updated');
-    
-    // Add a global click listener to see if any clicks are happening
-    const handleGlobalClick = (e: MouseEvent) => {
-      console.log('Global click detected:', e.target);
-    };
-    
-    document.addEventListener('click', handleGlobalClick);
-    
-    return () => {
-      document.removeEventListener('click', handleGlobalClick);
-    };
-  }, []);
+  const { selectIndustryById } = useIndustry();
   
   const handleTemplateSelection = (templateId: string) => {
-    console.log('Setup: handleTemplateSelection called with:', templateId);
+    console.log('Template selected:', templateId);
     setSelectedTemplate(templateId);
     
-    selectIndustryById(templateId).then(() => {
-      console.log('Industry set successfully');
-      setStep(2);
-      toast({
-        title: "Industry Selected",
-        description: "Now customize your business details."
-      });
-    }).catch((error: any) => {
-      console.error('Error setting industry:', error);
-      toast({
+    selectIndustryById(templateId);
+    setStep(2);
+    
+    toast({
+      title: "Industry Selected",
+      description: "Now customize your business details."
+    });
+  };
         title: "Error",
         description: "Failed to set industry. Please try again.",
         variant: "destructive"
