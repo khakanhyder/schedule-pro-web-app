@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Clock, Plus, Users, DollarSign, TrendingUp } from "lucide-react";
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday } from "date-fns";
+import { type Service, type Stylist, type Appointment } from "@shared/schema";
 
 export default function CalendarCentricDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -17,11 +18,11 @@ export default function CalendarCentricDashboard() {
   });
 
   // Get services and staff for quick stats
-  const { data: services = [] } = useQuery({
+  const { data: services = [] } = useQuery<Service[]>({
     queryKey: ['/api/services']
   });
 
-  const { data: staff = [] } = useQuery({
+  const { data: staff = [] } = useQuery<Stylist[]>({
     queryKey: ['/api/stylists']
   });
 
