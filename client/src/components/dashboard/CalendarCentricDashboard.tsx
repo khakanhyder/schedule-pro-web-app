@@ -9,7 +9,7 @@ import { type Service, type Stylist, type Appointment } from "@shared/schema";
 
 export default function CalendarCentricDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"week" | "day">("week");
+  const [viewMode, setViewMode] = useState<"week" | "day" | "month">("week");
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Keyboard shortcuts for desktop users
@@ -93,13 +93,18 @@ export default function CalendarCentricDashboard() {
   const todayRevenue = appointments.reduce((sum: number, apt: any) => sum + (parseFloat(apt.price) || 0), 0);
 
   const timeSlots = [
-    "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
-    "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
+    "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", 
+    "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM", 
+    "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM"
   ];
 
-  // Navigate week
+  // Navigation functions
   const goToPreviousWeek = () => setSelectedDate(subWeeks(selectedDate, 1));
   const goToNextWeek = () => setSelectedDate(addWeeks(selectedDate, 1));
+  const goToPreviousDay = () => setSelectedDate(new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000));
+  const goToNextDay = () => setSelectedDate(new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000));
+  const goToPreviousMonth = () => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, selectedDate.getDate()));
+  const goToNextMonth = () => setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, selectedDate.getDate()));
   const goToToday = () => setSelectedDate(new Date());
 
   // Button action handlers
@@ -138,6 +143,12 @@ export default function CalendarCentricDashboard() {
             >
               Week View
             </Button>
+            <Button 
+              variant={viewMode === "month" ? "default" : "outline"}
+              onClick={() => setViewMode("month")}
+            >
+              Month View
+            </Button>
           </div>
           
           <Button onClick={() => setIsFullscreen(false)} variant="outline" size="lg">
@@ -151,10 +162,10 @@ export default function CalendarCentricDashboard() {
       <div className="flex items-center justify-center gap-4 p-4 border-b bg-muted/10">
         <Button 
           variant="outline" 
-          onClick={viewMode === "week" ? goToPreviousWeek : () => setSelectedDate(new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000))}
+          onClick={viewMode === "week" ? goToPreviousWeek : viewMode === "day" ? goToPreviousDay : goToPreviousMonth}
         >
           <ChevronLeft className="h-4 w-4" /> 
-          Previous {viewMode === "week" ? "Week" : "Day"}
+          Previous {viewMode === "week" ? "Week" : viewMode === "day" ? "Day" : "Month"}
         </Button>
         
         <Button variant="outline" onClick={goToToday}>
@@ -163,9 +174,9 @@ export default function CalendarCentricDashboard() {
         
         <Button 
           variant="outline" 
-          onClick={viewMode === "week" ? goToNextWeek : () => setSelectedDate(new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000))}
+          onClick={viewMode === "week" ? goToNextWeek : viewMode === "day" ? goToNextDay : goToNextMonth}
         >
-          Next {viewMode === "week" ? "Week" : "Day"} <ChevronRight className="h-4 w-4" />
+          Next {viewMode === "week" ? "Week" : viewMode === "day" ? "Day" : "Month"} <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
