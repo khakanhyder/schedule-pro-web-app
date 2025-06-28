@@ -18,17 +18,23 @@ export default function Setup() {
   const { selectIndustryById, selectedIndustry } = useIndustry();
   
   const handleTemplateSelection = (templateId: string) => {
+    console.log('Setup: handleTemplateSelection called with:', templateId);
     setSelectedTemplate(templateId);
     
-    selectIndustryById(templateId).catch((error: any) => {
+    selectIndustryById(templateId).then(() => {
+      console.log('Industry set successfully');
+      setStep(2);
+      toast({
+        title: "Industry Selected",
+        description: "Now customize your business details."
+      });
+    }).catch((error: any) => {
       console.error('Error setting industry:', error);
-    });
-    
-    setStep(2);
-    
-    toast({
-      title: "Industry Selected",
-      description: "Now customize your business details."
+      toast({
+        title: "Error",
+        description: "Failed to set industry. Please try again.",
+        variant: "destructive"
+      });
     });
   };
   

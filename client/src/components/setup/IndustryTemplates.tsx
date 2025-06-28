@@ -22,8 +22,14 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
   const { toast } = useToast();
 
   const handleSelectTemplate = (templateId: string) => {
+    console.log('Template selected:', templateId);
     setSelectedTemplate(templateId);
     onSelectTemplate(templateId);
+    
+    toast({
+      title: "Industry Selected",
+      description: `Selected ${templateId} template`,
+    });
   };
 
   return (
