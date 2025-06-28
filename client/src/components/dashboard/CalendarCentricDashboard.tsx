@@ -88,6 +88,13 @@ export default function CalendarCentricDashboard() {
   const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
+  // Calculate month days for month view
+  const monthStart = startOfMonth(selectedDate);
+  const monthEnd = endOfMonth(selectedDate);
+  const monthStartWeek = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const monthEndWeek = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const monthDays = eachDayOfInterval({ start: monthStartWeek, end: monthEndWeek });
+
   // Quick stats
   const todayAppointments = appointments.length;
   const todayRevenue = appointments.reduce((sum: number, apt: any) => sum + (parseFloat(apt.price) || 0), 0);
@@ -332,8 +339,83 @@ export default function CalendarCentricDashboard() {
                 );
               })}
             </div>
-          </div>
-        )}
+          </>
+        ) : viewMode === "month" ? (
+          <>
+            {/* Month View */}
+            <div className="space-y-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold">{format(selectedDate, "MMMM yyyy")}</h2>
+              </div>
+              
+              {/* Month Calendar Grid */}
+              <div className="grid grid-cols-7 gap-2">
+                {/* Day headers */}
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                  <div key={day} className="p-2 text-center font-medium text-muted-foreground bg-muted/20 rounded">
+                    {day}
+                  </div>
+                ))}
+                
+                {/* Calendar days */}
+                {monthDays.map((day) => {
+                  const dayAppointments = appointments.filter((apt: any) => isSameDay(new Date(apt.date), day));
+                  const isCurrentMonth = day.getMonth() === selectedDate.getMonth();
+                  
+                  return (
+                    <div 
+                      key={day.toISOString()} 
+                      className={`min-h-24 p-2 border rounded-lg cursor-pointer transition-colors ${
+                        isToday(day) ? 'bg-primary text-primary-foreground' :
+                        isSameDay(day, selectedDate) ? 'bg-primary/10 border-primary' :
+                        isCurrentMonth ? 'bg-card hover:bg-muted/50' : 'bg-muted/20 text-muted-foreground'
+                      }`}
+                      onClick={() => setSelectedDate(day)}
+                    >
+                      <div className={`text-sm font-medium ${!isCurrentMonth ? 'opacity-50' : ''}`}>
+                        {format(day, 'd')}
+                      </div>
+                      <div className="mt-1 space-y-1">
+                        {dayAppointments.slice(0, 2).map((apt: any, idx: number) => (
+                          <div 
+                            key={apt.id || idx} 
+                            className="text-xs bg-primary/20 text-primary px-1 py-0.5 rounded truncate cursor-pointer hover:bg-primary/30"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAppointmentClick(apt);
+                            }}
+                          >
+                            {apt.clientName}
+                          </div>
+                        ))}
+                        {dayAppointments.length > 2 && (
+                          <div className="text-xs text-muted-foreground">
+                            +{dayAppointments.length - 2} more
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Add appointment button on hover */}
+                      <div className="opacity-0 hover:opacity-100 transition-opacity mt-1">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-6 w-full text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddAppointment();
+                          }}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );
@@ -366,6 +448,13 @@ export default function CalendarCentricDashboard() {
               size="sm"
             >
               Week
+            </Button>
+            <Button 
+              variant={viewMode === "month" ? "default" : "outline"}
+              onClick={() => setViewMode("month")}
+              size="sm"
+            >
+              Month
             </Button>
             <Button 
               onClick={() => setIsFullscreen(true)}
