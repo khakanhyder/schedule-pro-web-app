@@ -22,16 +22,25 @@ async function sendAppointmentConfirmation(appointment: any) {
   const service = await storage.getService(appointment.serviceId);
   const stylist = await storage.getStylist(appointment.stylistId);
   
+  // Get current industry for proper terminology
+  const industry = storage.getCurrentIndustry();
+  
   const confirmationDetails = {
     clientName: appointment.clientName,
     clientEmail: appointment.clientEmail,
     clientPhone: appointment.clientPhone,
-    serviceName: service?.name || "Full Day Pet Sitting",
+    serviceName: service?.name || "Service",
     date: new Date(appointment.date).toLocaleDateString(),
-    time: "9:00 AM - 5:00 PM",
-    price: "250",
-    petSitter: stylist?.name || "Krystal Bueller",
-    businessName: "Wag That Tail"
+    time: new Date(appointment.date).toLocaleTimeString(),
+    price: service?.price || "150",
+    professional: stylist?.name || "Professional",
+    businessName: `${industry.name} Services`,
+    industryTerms: {
+      professional: industry.professionalName,
+      appointment: industry.appointmentTerm,
+      client: industry.clientName,
+      service: industry.serviceTerm
+    }
   };
 
   // Log the confirmation (in production, this would send real emails/SMS)
@@ -39,37 +48,37 @@ async function sendAppointmentConfirmation(appointment: any) {
   console.log(`
 📧 EMAIL CONFIRMATION SENT TO: ${confirmationDetails.clientEmail}
 
-Subject: Your Pet Sitting Appointment is Confirmed! - Paws & Play Pet Services
+Subject: Your ${confirmationDetails.industryTerms.appointment} is Confirmed! - ${confirmationDetails.businessName}
 
 Dear ${confirmationDetails.clientName},
 
-Your pet sitting appointment has been confirmed! Here are the details:
+Your ${confirmationDetails.industryTerms.appointment} has been confirmed! Here are the details:
 
-🐕 SERVICE: ${confirmationDetails.serviceName}
+📋 ${confirmationDetails.industryTerms.service.toUpperCase()}: ${confirmationDetails.serviceName}
 📅 DATE: ${confirmationDetails.date}
 ⏰ TIME: ${confirmationDetails.time}
 💰 PRICE: $${confirmationDetails.price}
-👩‍💼 PET SITTER: ${confirmationDetails.petSitter}
+👤 ${confirmationDetails.industryTerms.professional.toUpperCase()}: ${confirmationDetails.professional}
 
-Your trusted pet sitter Krystal will arrive at your home and provide excellent care for your pets. She will ensure they are fed, walked, and given plenty of attention while you're away.
+Your ${confirmationDetails.industryTerms.professional} will provide excellent ${confirmationDetails.industryTerms.service} and ensure you receive professional, quality care.
 
-📱 KRYSTAL'S CONTACT: (555) 123-4567
-📧 BUSINESS EMAIL: hello@pawsandplay.com
+📱 CONTACT: (555) 123-4567
+📧 BUSINESS EMAIL: hello@${confirmationDetails.businessName.toLowerCase().replace(/\s+/g, '')}.com
 
 If you need to reschedule or have any questions, please contact us at least 24 hours in advance.
 
-Thank you for choosing Paws & Play Pet Services!
+Thank you for choosing ${confirmationDetails.businessName}!
 
 Best regards,
-Krystal Bueller
-Paws & Play Pet Services
+${confirmationDetails.professional}
+${confirmationDetails.businessName}
   `);
 
   console.log("=== SMS CONFIRMATION ===");
   console.log(`
 📱 SMS SENT TO: ${confirmationDetails.clientPhone}
 
-Hi ${confirmationDetails.clientName}! Your pet sitting appointment with Krystal at Paws & Play is confirmed for ${confirmationDetails.date} at ${confirmationDetails.time}. Service: ${confirmationDetails.serviceName} ($${confirmationDetails.price}). Contact Krystal: (555) 123-4567. Thanks for trusting us with your pets! 🐕
+Hi ${confirmationDetails.clientName}! Your ${confirmationDetails.industryTerms.appointment} with ${confirmationDetails.professional} at ${confirmationDetails.businessName} is confirmed for ${confirmationDetails.date} at ${confirmationDetails.time}. ${confirmationDetails.industryTerms.service}: ${confirmationDetails.serviceName} ($${confirmationDetails.price}). Contact: (555) 123-4567. Thank you!
   `);
   
   return true;
