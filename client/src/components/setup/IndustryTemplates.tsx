@@ -111,7 +111,12 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
                   backgroundColor: template.primaryColor,
                   color: "white"
                 }}
-                onClick={() => handleSelectTemplate(template.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log(`${template.name} button clicked - event object:`, e);
+                  handleSelectTemplate(template.id);
+                }}
               >
                 {selectedTemplate === template.id ? '✓ Selected' : 'Choose Template'}
               </Button>

@@ -127,78 +127,7 @@ export default function Setup() {
           
           <CardContent>
             {step === 1 && (
-              <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-center">Choose Your Industry</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('Beauty button clicked - event object:', e);
-                      handleTemplateSelection('beauty');
-                    }}
-                    variant="outline"
-                    className="p-6 h-auto border-2 hover:border-blue-500 hover:bg-blue-50 text-left justify-start"
-                  >
-                    <div className="space-y-2">
-                      <div className="text-2xl">💄</div>
-                      <h4 className="font-semibold">Beauty Professional</h4>
-                      <p className="text-sm text-gray-600">Salons, spas, beauty specialists</p>
-                    </div>
-                  </Button>
-                  
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('Wellness button clicked - event object:', e);
-                      handleTemplateSelection('wellness');
-                    }}
-                    variant="outline"
-                    className="p-6 h-auto border-2 hover:border-blue-500 hover:bg-blue-50 text-left justify-start"
-                  >
-                    <div className="space-y-2">
-                      <div className="text-2xl">🧘</div>
-                      <h4 className="font-semibold">Wellness Provider</h4>
-                      <p className="text-sm text-gray-600">Massage, fitness, therapy</p>
-                    </div>
-                  </Button>
-                  
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('Home services button clicked - event object:', e);
-                      handleTemplateSelection('home_services');
-                    }}
-                    variant="outline"
-                    className="p-6 h-auto border-2 hover:border-blue-500 hover:bg-blue-50 text-left justify-start"
-                  >
-                    <div className="space-y-2">
-                      <div className="text-2xl">🔧</div>
-                      <h4 className="font-semibold">Home Services</h4>
-                      <p className="text-sm text-gray-600">Contractors, repair, maintenance</p>
-                    </div>
-                  </Button>
-                  
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('Pet care button clicked - event object:', e);
-                      handleTemplateSelection('pet_care');
-                    }}
-                    variant="outline"
-                    className="p-6 h-auto border-2 hover:border-blue-500 hover:bg-blue-50 text-left justify-start"
-                  >
-                    <div className="space-y-2">
-                      <div className="text-2xl">🐾</div>
-                      <h4 className="font-semibold">Pet Care</h4>
-                      <p className="text-sm text-gray-600">Grooming, training, veterinary</p>
-                    </div>
-                  </Button>
-                </div>
-              </div>
+              <IndustryTemplates onSelectTemplate={handleTemplateSelection} />
             )}
             {step === 2 && (
               <LogoCustomizer 
