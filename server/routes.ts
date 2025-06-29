@@ -837,6 +837,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Invoice tracking routes
+  app.post("/api/invoices", async (req, res) => {
+    try {
+      const invoiceData = req.body;
+      // Generate unique public URL for the invoice
+      const publicUrl = `/invoice/${Math.random().toString(36).substring(2, 15)}`;
+      
+      const invoice = await storage.createInvoice({
+        ...invoiceData,
+        publicUrl
+      });
+      
+      res.json(invoice);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error creating invoice: " + error.message });
+    }
+  });
+
+  app.get("/api/invoices", async (req, res) => {
+    try {
+      const invoices = await storage.getInvoices();
+      res.json(invoices);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching invoices: " + error.message });
+    }
+  });
+
+  // Public invoice view (for clients)
+  app.get("/invoice/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const publicUrl = `/invoice/${token}`;
+      
+      const invoice = await storage.getInvoiceByPublicUrl(publicUrl);
+      
+      if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+      }
+      
+      // Track the view
+      await storage.trackInvoiceView({
+        invoiceId: invoice.id,
+        ipAddress: req.ip || req.connection.remoteAddress || null,
+        userAgent: req.get('User-Agent') || null,
+        duration: null
+      });
+      
+      // Create notification for business owner
+      const viewCount = await storage.getInvoiceViewCount(invoice.id);
+      let notificationMessage = '';
+      
+      if (viewCount === 1) {
+        notificationMessage = `${invoice.clientName} viewed invoice #${invoice.invoiceNumber} for the first time`;
+      } else if (viewCount > 1) {
+        notificationMessage = `${invoice.clientName} viewed invoice #${invoice.invoiceNumber} again (${viewCount} times total)`;
+      }
+      
+      if (notificationMessage) {
+        await storage.createInvoiceNotification({
+          invoiceId: invoice.id,
+          notificationType: viewCount === 1 ? 'view' : 'multiple_views',
+          message: notificationMessage
+        });
+      }
+      
+      res.json(invoice);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error viewing invoice: " + error.message });
+    }
+  });
+
+  // Track time spent on invoice
+  app.post("/api/invoices/:id/track-time", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { duration } = req.body;
+      
+      // Update the most recent view with duration
+      await storage.updateInvoiceViewDuration(parseInt(id), duration);
+      
+      // Create time-based notification if significant time spent
+      if (duration > 30) { // More than 30 seconds
+        const invoice = await storage.getInvoice(parseInt(id));
+        if (invoice) {
+          await storage.createInvoiceNotification({
+            invoiceId: parseInt(id),
+            notificationType: 'time_spent',
+            message: `${invoice.clientName} spent ${Math.round(duration / 60)} minutes reviewing invoice #${invoice.invoiceNumber}`
+          });
+        }
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error tracking time: " + error.message });
+    }
+  });
+
+  // Get invoice notifications
+  app.get("/api/invoice-notifications", async (req, res) => {
+    try {
+      const notifications = await storage.getInvoiceNotifications();
+      res.json(notifications);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching notifications: " + error.message });
+    }
+  });
+
+  // Mark notifications as read
+  app.post("/api/invoice-notifications/:id/read", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.markNotificationAsRead(parseInt(id));
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error marking notification as read: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

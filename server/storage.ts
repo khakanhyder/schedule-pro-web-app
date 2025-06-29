@@ -8,7 +8,10 @@ import {
   contactMessages, type ContactMessage, type InsertContactMessage,
   marketingCampaigns, type MarketingCampaign, type InsertMarketingCampaign,
   clientInsights, type ClientInsight, type InsertClientInsight,
-  schedulingSuggestions, type SchedulingSuggestion, type InsertSchedulingSuggestion
+  schedulingSuggestions, type SchedulingSuggestion, type InsertSchedulingSuggestion,
+  invoices, type Invoice, type InsertInvoice,
+  invoiceViews, type InvoiceView, type InsertInvoiceView,
+  invoiceNotifications, type InvoiceNotification, type InsertInvoiceNotification
 } from "@shared/schema";
 import { type IndustryData, industryDatabase } from "./industryData";
 
@@ -69,6 +72,18 @@ export interface IStorage {
   // Industry management
   setIndustry(industryId: string): void;
   getCurrentIndustry(): IndustryData;
+  
+  // Invoice tracking
+  getInvoices(): Promise<Invoice[]>;
+  getInvoice(id: number): Promise<Invoice | undefined>;
+  getInvoiceByPublicUrl(publicUrl: string): Promise<Invoice | undefined>;
+  createInvoice(invoice: InsertInvoice): Promise<Invoice>;
+  trackInvoiceView(view: InsertInvoiceView): Promise<InvoiceView>;
+  getInvoiceViewCount(invoiceId: number): Promise<number>;
+  updateInvoiceViewDuration(invoiceId: number, duration: number): Promise<void>;
+  getInvoiceNotifications(): Promise<InvoiceNotification[]>;
+  createInvoiceNotification(notification: InsertInvoiceNotification): Promise<InvoiceNotification>;
+  markNotificationAsRead(id: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {

@@ -233,11 +233,78 @@ export const insertSchedulingSuggestionSchema = createInsertSchema(schedulingSug
   priority: true,
 });
 
+// Invoices and Tracking
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").references(() => clients.id),
+  clientEmail: text("client_email").notNull(),
+  clientName: text("client_name").notNull(),
+  invoiceNumber: text("invoice_number").notNull().unique(),
+  title: text("title").notNull(),
+  description: text("description"),
+  amount: real("amount").notNull(),
+  status: text("status").notNull().default('sent'), // 'sent', 'viewed', 'paid', 'overdue'
+  dueDate: timestamp("due_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  paidAt: timestamp("paid_at"),
+  publicUrl: text("public_url").notNull(), // Unique URL for client access
+});
+
+export const invoiceViews = pgTable("invoice_views", {
+  id: serial("id").primaryKey(),
+  invoiceId: integer("invoice_id").references(() => invoices.id).notNull(),
+  viewedAt: timestamp("viewed_at").defaultNow().notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  duration: integer("duration"), // Time spent viewing in seconds
+});
+
+export const invoiceNotifications = pgTable("invoice_notifications", {
+  id: serial("id").primaryKey(),
+  invoiceId: integer("invoice_id").references(() => invoices.id).notNull(),
+  notificationType: text("notification_type").notNull(), // 'view', 'multiple_views', 'time_spent'
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).pick({
+  clientId: true,
+  clientEmail: true,
+  clientName: true,
+  invoiceNumber: true,
+  title: true,
+  description: true,
+  amount: true,
+  status: true,
+  dueDate: true,
+  publicUrl: true,
+});
+
+export const insertInvoiceViewSchema = createInsertSchema(invoiceViews).pick({
+  invoiceId: true,
+  ipAddress: true,
+  userAgent: true,
+  duration: true,
+});
+
+export const insertInvoiceNotificationSchema = createInsertSchema(invoiceNotifications).pick({
+  invoiceId: true,
+  notificationType: true,
+  message: true,
+});
+
 export type MarketingCampaign = typeof marketingCampaigns.$inferSelect;
 export type InsertMarketingCampaign = z.infer<typeof insertMarketingCampaignSchema>;
 export type ClientInsight = typeof clientInsights.$inferSelect;
 export type InsertClientInsight = z.infer<typeof insertClientInsightSchema>;
 export type SchedulingSuggestion = typeof schedulingSuggestions.$inferSelect;
 export type InsertSchedulingSuggestion = z.infer<typeof insertSchedulingSuggestionSchema>;
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type InvoiceView = typeof invoiceViews.$inferSelect;
+export type InsertInvoiceView = z.infer<typeof insertInvoiceViewSchema>;
+export type InvoiceNotification = typeof invoiceNotifications.$inferSelect;
+export type InsertInvoiceNotification = z.infer<typeof insertInvoiceNotificationSchema>;
 
 
