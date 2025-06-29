@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useIndustry, industryTemplates } from "@/lib/industryContext";
-import ImageSelection from "@/components/setup/ImageSelection";
+import VisualPreviewCustomizer from "@/components/setup/VisualPreviewCustomizer";
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -242,7 +242,7 @@ export default function Setup() {
                   </p>
                 </div>
                 
-                <ImageSelection />
+                <VisualPreviewCustomizer />
               </div>
             )}
           </CardContent>
