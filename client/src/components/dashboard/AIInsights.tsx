@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiRequest } from "@/lib/queryClient";
-import { Brain, TrendingUp, Users, Calendar, CheckCircle, Clock, Target } from "lucide-react";
+import { Brain, TrendingUp, Users, Calendar, CheckCircle, Clock, Target, Sparkles, Zap, BarChart3 } from "lucide-react";
+import { useIndustry, industryTemplates } from "@/lib/industryContext";
 
 interface SchedulingSuggestion {
   id: number;
@@ -40,6 +41,10 @@ interface MarketingCampaign {
 export default function AIInsights() {
   const [selectedTab, setSelectedTab] = useState("scheduling");
   const queryClient = useQueryClient();
+  const { selectedIndustry } = useIndustry();
+  
+  // Get current industry template for theming
+  const currentTemplate = industryTemplates.find(t => t.id === selectedIndustry) || industryTemplates[0];
 
   // Fetch rebooking suggestions
   const { data: rebookingSuggestions, isLoading: loadingRebooking } = useQuery({
@@ -96,46 +101,109 @@ export default function AIInsights() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Brain className="h-6 w-6 text-blue-600" />
-        <h2 className="text-2xl font-bold">AI Insights & Automation</h2>
-        <Badge variant="outline" className="bg-blue-50">Premium Feature</Badge>
-      </div>
+    <div className="space-y-8">
+      {/* Hero Header with Industry Theming */}
+      <Card className="relative overflow-hidden border-2 shadow-xl bg-gradient-to-br from-white to-slate-50/30 hover:shadow-2xl transition-all duration-300">
+        {/* Top accent line matching industry color */}
+        <div 
+          className="h-1.5 w-full"
+          style={{ backgroundColor: currentTemplate.primaryColor }}
+        />
+        
+        <CardHeader className="px-6 pt-6 pb-4">
+          <div className="flex items-center gap-3">
+            <div 
+              className="p-3 rounded-xl shadow-md hover:-translate-y-0.5 transition-transform duration-200"
+              style={{ 
+                backgroundColor: `${currentTemplate.primaryColor}15`,
+                border: `1px solid ${currentTemplate.primaryColor}30`
+              }}
+            >
+              <Brain className="h-8 w-8" style={{ color: currentTemplate.primaryColor }} />
+            </div>
+            <div className="flex-1">
+              <CardTitle 
+                className="text-2xl font-bold tracking-tight flex items-center gap-2"
+                style={{ color: currentTemplate.primaryColor }}
+              >
+                AI Business Intelligence
+                <Sparkles className="h-5 w-5" />
+              </CardTitle>
+              <CardDescription className="text-slate-600 mt-1 font-medium">
+                Grow your {currentTemplate.name.toLowerCase()} business with smart insights and automation
+              </CardDescription>
+            </div>
+            <Badge 
+              variant="outline" 
+              className="px-3 py-1 font-medium border-2"
+              style={{ 
+                borderColor: currentTemplate.primaryColor + '40',
+                backgroundColor: currentTemplate.primaryColor + '10',
+                color: currentTemplate.primaryColor
+              }}
+            >
+              Premium Feature
+            </Badge>
+          </div>
+        </CardHeader>
+      </Card>
 
+      {/* Tabs with Industry Theming */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-auto">
-          <TabsTrigger value="scheduling" className="text-xs sm:text-sm px-2 py-3">
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-slate-100 rounded-lg">
+          <TabsTrigger 
+            value="scheduling" 
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+          >
             <div className="flex flex-col items-center gap-1">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Smart Scheduling</span>
               <span className="sm:hidden">Schedule</span>
             </div>
           </TabsTrigger>
-          <TabsTrigger value="marketing" className="text-xs sm:text-sm px-2 py-3">
+          <TabsTrigger 
+            value="marketing" 
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+          >
             <div className="flex flex-col items-center gap-1">
-              <Target className="h-4 w-4" />
+              <Zap className="h-4 w-4" />
               <span className="hidden sm:inline">Marketing Automation</span>
               <span className="sm:hidden">Marketing</span>
             </div>
           </TabsTrigger>
-          <TabsTrigger value="insights" className="text-xs sm:text-sm px-2 py-3">
+          <TabsTrigger 
+            value="insights" 
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+          >
             <div className="flex flex-col items-center gap-1">
-              <Users className="h-4 w-4" />
+              <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Client Insights</span>
               <span className="sm:hidden">Insights</span>
             </div>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="scheduling" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+        <TabsContent value="scheduling" className="space-y-6">
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl transition-all duration-300">
+            {/* Accent line */}
+            <div 
+              className="h-1 w-full"
+              style={{ backgroundColor: currentTemplate.primaryColor }}
+            />
+            <CardHeader className="pb-4">
+              <CardTitle 
+                className="flex items-center gap-2 text-xl"
+                style={{ color: currentTemplate.primaryColor }}
+              >
+                <div 
+                  className="p-2 rounded-lg"
+                  style={{ backgroundColor: `${currentTemplate.primaryColor}15` }}
+                >
+                  <Calendar className="h-5 w-5" />
+                </div>
                 Scheduling Optimization
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-slate-600 font-medium">
                 AI-powered suggestions to optimize your booking schedule and increase revenue
               </CardDescription>
             </CardHeader>
