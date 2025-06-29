@@ -260,18 +260,39 @@ export default function AIInsights() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="marketing" className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
-            <Card className="h-fit">
+        <TabsContent value="marketing" className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div 
+                className="h-1 w-full"
+                style={{ backgroundColor: currentTemplate.primaryColor }}
+              />
               <CardHeader className="pb-3">
-                <CardTitle className="text-base sm:text-lg">Review Requests</CardTitle>
-                <CardDescription className="text-sm">Automated review collection</CardDescription>
+                <CardTitle 
+                  className="text-base sm:text-lg flex items-center gap-2"
+                  style={{ color: currentTemplate.primaryColor }}
+                >
+                  <div 
+                    className="p-1.5 rounded-md"
+                    style={{ backgroundColor: `${currentTemplate.primaryColor}15` }}
+                  >
+                    <Target className="h-4 w-4" />
+                  </div>
+                  Review Requests
+                </CardTitle>
+                <CardDescription className="text-sm font-medium text-slate-600">
+                  Automated review collection campaigns
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
                 <Button 
                   onClick={() => handleCreateCampaign('review_request')}
                   disabled={createCampaignMutation.isPending}
-                  className="w-full text-sm"
+                  className="w-full text-sm shadow-md hover:shadow-lg transition-all duration-200"
+                  style={{ 
+                    backgroundColor: currentTemplate.primaryColor,
+                    border: 'none'
+                  }}
                   size="sm"
                 >
                   Create Campaign
@@ -279,16 +300,38 @@ export default function AIInsights() {
               </CardContent>
             </Card>
 
-            <Card className="h-fit">
+            <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div 
+                className="h-1 w-full"
+                style={{ backgroundColor: currentTemplate.primaryColor }}
+              />
               <CardHeader className="pb-3">
-                <CardTitle className="text-base sm:text-lg">Rebooking Reminders</CardTitle>
-                <CardDescription className="text-sm">Smart rebooking automation</CardDescription>
+                <CardTitle 
+                  className="text-base sm:text-lg flex items-center gap-2"
+                  style={{ color: currentTemplate.primaryColor }}
+                >
+                  <div 
+                    className="p-1.5 rounded-md"
+                    style={{ backgroundColor: `${currentTemplate.primaryColor}15` }}
+                  >
+                    <Clock className="h-4 w-4" />
+                  </div>
+                  Rebooking Reminders
+                </CardTitle>
+                <CardDescription className="text-sm font-medium text-slate-600">
+                  Smart rebooking automation system
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
                 <Button 
                   onClick={() => handleCreateCampaign('rebook_reminder')}
                   disabled={createCampaignMutation.isPending}
-                  className="w-full"
+                  className="w-full shadow-md hover:shadow-lg transition-all duration-200"
+                  style={{ 
+                    backgroundColor: currentTemplate.primaryColor,
+                    border: 'none'
+                  }}
+                  size="sm"
                 >
                   Create Campaign
                 </Button>
