@@ -218,10 +218,18 @@ export const IndustryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const storedIndustry = localStorage.getItem('selectedIndustry');
     if (storedIndustry) {
       try {
+        // Try to parse as JSON object first (new format)
         const industry = JSON.parse(storedIndustry);
-        return industry;
+        if (industry.id && industry.name) {
+          return industry;
+        }
       } catch (e) {
-        console.error('Failed to parse stored industry:', e);
+        // If JSON parsing fails, treat as industry ID string (legacy format)
+        const industry = industryTemplates.find(ind => ind.id === storedIndustry);
+        if (industry) {
+          return industry;
+        }
+        console.error('Failed to find industry by ID:', storedIndustry);
       }
     }
     return defaultIndustry;
