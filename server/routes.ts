@@ -9,7 +9,8 @@ import { getPlatformsByIndustry, getPlatformById } from "./industry-platforms";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
-  insertContactMessageSchema 
+  insertContactMessageSchema,
+  insertInvoiceSchema
 } from "@shared/schema";
 
 // Initialize Stripe with the secret key

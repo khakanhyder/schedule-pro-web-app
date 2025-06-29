@@ -97,6 +97,9 @@ export class MemStorage implements IStorage {
   private marketingCampaigns = new Map<number, MarketingCampaign>();
   private clientInsights = new Map<number, ClientInsight>();
   private schedulingSuggestions = new Map<number, SchedulingSuggestion>();
+  private invoices = new Map<number, Invoice>();
+  private invoiceViews = new Map<number, InvoiceView>();
+  private invoiceNotifications = new Map<number, InvoiceNotification>();
   
   private userCurrentId = 1;
   private serviceCurrentId = 1;
@@ -108,6 +111,9 @@ export class MemStorage implements IStorage {
   private marketingCampaignCurrentId = 1;
   private clientInsightCurrentId = 1;
   private schedulingSuggestionCurrentId = 1;
+  private invoiceCurrentId = 1;
+  private invoiceViewCurrentId = 1;
+  private invoiceNotificationCurrentId = 1;
   
   // Track the current industry
   private currentIndustryId = "beauty";
@@ -544,6 +550,91 @@ export class MemStorage implements IStorage {
     if (suggestion) {
       suggestion.isAccepted = true;
       this.schedulingSuggestions.set(id, suggestion);
+    }
+  }
+
+  // Invoice tracking methods
+  async getInvoices(): Promise<Invoice[]> {
+    return Array.from(this.invoices.values());
+  }
+
+  async getInvoice(id: number): Promise<Invoice | undefined> {
+    return this.invoices.get(id);
+  }
+
+  async getInvoiceByPublicUrl(publicUrl: string): Promise<Invoice | undefined> {
+    const invoices = Array.from(this.invoices.values());
+    return invoices.find(invoice => invoice.publicUrl === publicUrl);
+  }
+
+  async createInvoice(insertInvoice: InsertInvoice): Promise<Invoice> {
+    const id = this.invoiceCurrentId++;
+    const invoice: Invoice = {
+      ...insertInvoice,
+      id,
+      status: insertInvoice.status || 'sent',
+      description: insertInvoice.description || null,
+      clientId: insertInvoice.clientId || null,
+      createdAt: new Date(),
+      paidAt: null
+    };
+    this.invoices.set(id, invoice);
+    return invoice;
+  }
+
+  async trackInvoiceView(insertView: InsertInvoiceView): Promise<InvoiceView> {
+    const id = this.invoiceViewCurrentId++;
+    const view: InvoiceView = {
+      ...insertView,
+      id,
+      ipAddress: insertView.ipAddress || null,
+      userAgent: insertView.userAgent || null,
+      duration: insertView.duration || null,
+      viewedAt: new Date()
+    };
+    this.invoiceViews.set(id, view);
+    return view;
+  }
+
+  async getInvoiceViewCount(invoiceId: number): Promise<number> {
+    const views = Array.from(this.invoiceViews.values());
+    return views.filter(view => view.invoiceId === invoiceId).length;
+  }
+
+  async updateInvoiceViewDuration(invoiceId: number, duration: number): Promise<void> {
+    const views = Array.from(this.invoiceViews.values());
+    const lastView = views
+      .filter(view => view.invoiceId === invoiceId)
+      .sort((a, b) => b.viewedAt.getTime() - a.viewedAt.getTime())[0];
+    
+    if (lastView) {
+      lastView.duration = duration;
+      this.invoiceViews.set(lastView.id, lastView);
+    }
+  }
+
+  async getInvoiceNotifications(): Promise<InvoiceNotification[]> {
+    return Array.from(this.invoiceNotifications.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async createInvoiceNotification(insertNotification: InsertInvoiceNotification): Promise<InvoiceNotification> {
+    const id = this.invoiceNotificationCurrentId++;
+    const notification: InvoiceNotification = {
+      ...insertNotification,
+      id,
+      isRead: false,
+      createdAt: new Date()
+    };
+    this.invoiceNotifications.set(id, notification);
+    return notification;
+  }
+
+  async markNotificationAsRead(id: number): Promise<void> {
+    const notification = this.invoiceNotifications.get(id);
+    if (notification) {
+      notification.isRead = true;
+      this.invoiceNotifications.set(id, notification);
     }
   }
 }
