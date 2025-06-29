@@ -11,7 +11,9 @@ import {
   schedulingSuggestions, type SchedulingSuggestion, type InsertSchedulingSuggestion,
   invoices, type Invoice, type InsertInvoice,
   invoiceViews, type InvoiceView, type InsertInvoiceView,
-  invoiceNotifications, type InvoiceNotification, type InsertInvoiceNotification
+  invoiceNotifications, type InvoiceNotification, type InsertInvoiceNotification,
+  reviewRequests, type ReviewRequest, type InsertReviewRequest,
+  reviewSubmissions, type ReviewSubmission, type InsertReviewSubmission
 } from "@shared/schema";
 import { type IndustryData, industryDatabase } from "./industryData";
 
@@ -84,6 +86,16 @@ export interface IStorage {
   getInvoiceNotifications(): Promise<InvoiceNotification[]>;
   createInvoiceNotification(notification: InsertInvoiceNotification): Promise<InvoiceNotification>;
   markNotificationAsRead(id: number): Promise<void>;
+  
+  // Review request management
+  getReviewRequests(): Promise<ReviewRequest[]>;
+  getReviewRequest(id: number): Promise<ReviewRequest | undefined>;
+  createReviewRequest(request: InsertReviewRequest): Promise<ReviewRequest>;
+  updateReviewRequestStatus(id: number, status: string): Promise<void>;
+  getReviewSubmissions(): Promise<ReviewSubmission[]>;
+  createReviewSubmission(submission: InsertReviewSubmission): Promise<ReviewSubmission>;
+  approveReviewSubmission(id: number, operatorNotes?: string): Promise<void>;
+  publishReviewSubmission(id: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -100,6 +112,8 @@ export class MemStorage implements IStorage {
   private invoices = new Map<number, Invoice>();
   private invoiceViews = new Map<number, InvoiceView>();
   private invoiceNotifications = new Map<number, InvoiceNotification>();
+  private reviewRequests = new Map<number, ReviewRequest>();
+  private reviewSubmissions = new Map<number, ReviewSubmission>();
   
   private userCurrentId = 1;
   private serviceCurrentId = 1;
@@ -114,6 +128,8 @@ export class MemStorage implements IStorage {
   private invoiceCurrentId = 1;
   private invoiceViewCurrentId = 1;
   private invoiceNotificationCurrentId = 1;
+  private reviewRequestCurrentId = 1;
+  private reviewSubmissionCurrentId = 1;
   
   // Track the current industry
   private currentIndustryId = "beauty";
@@ -635,6 +651,85 @@ export class MemStorage implements IStorage {
     if (notification) {
       notification.isRead = true;
       this.invoiceNotifications.set(id, notification);
+    }
+  }
+
+  // Review request management methods
+  async getReviewRequests(): Promise<ReviewRequest[]> {
+    return Array.from(this.reviewRequests.values())
+      .sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime());
+  }
+
+  async getReviewRequest(id: number): Promise<ReviewRequest | undefined> {
+    return this.reviewRequests.get(id);
+  }
+
+  async createReviewRequest(insertRequest: InsertReviewRequest): Promise<ReviewRequest> {
+    const id = this.reviewRequestCurrentId++;
+    const request: ReviewRequest = {
+      ...insertRequest,
+      id,
+      status: 'sent',
+      sentAt: new Date(),
+      openedAt: null,
+      completedAt: null
+    };
+    this.reviewRequests.set(id, request);
+    return request;
+  }
+
+  async updateReviewRequestStatus(id: number, status: string): Promise<void> {
+    const request = this.reviewRequests.get(id);
+    if (request) {
+      request.status = status;
+      if (status === 'opened' && !request.openedAt) {
+        request.openedAt = new Date();
+      }
+      if (status === 'completed' && !request.completedAt) {
+        request.completedAt = new Date();
+      }
+      this.reviewRequests.set(id, request);
+    }
+  }
+
+  async getReviewSubmissions(): Promise<ReviewSubmission[]> {
+    return Array.from(this.reviewSubmissions.values())
+      .sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
+  }
+
+  async createReviewSubmission(insertSubmission: InsertReviewSubmission): Promise<ReviewSubmission> {
+    const id = this.reviewSubmissionCurrentId++;
+    const submission: ReviewSubmission = {
+      ...insertSubmission,
+      id,
+      submittedAt: new Date(),
+      isApproved: false,
+      isPublished: false,
+      approvedAt: null,
+      publishedAt: null
+    };
+    this.reviewSubmissions.set(id, submission);
+    return submission;
+  }
+
+  async approveReviewSubmission(id: number, operatorNotes?: string): Promise<void> {
+    const submission = this.reviewSubmissions.get(id);
+    if (submission) {
+      submission.isApproved = true;
+      submission.approvedAt = new Date();
+      if (operatorNotes) {
+        submission.operatorNotes = operatorNotes;
+      }
+      this.reviewSubmissions.set(id, submission);
+    }
+  }
+
+  async publishReviewSubmission(id: number): Promise<void> {
+    const submission = this.reviewSubmissions.get(id);
+    if (submission && submission.isApproved) {
+      submission.isPublished = true;
+      submission.publishedAt = new Date();
+      this.reviewSubmissions.set(id, submission);
     }
   }
 }

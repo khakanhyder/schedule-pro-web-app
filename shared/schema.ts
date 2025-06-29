@@ -300,11 +300,63 @@ export type ClientInsight = typeof clientInsights.$inferSelect;
 export type InsertClientInsight = z.infer<typeof insertClientInsightSchema>;
 export type SchedulingSuggestion = typeof schedulingSuggestions.$inferSelect;
 export type InsertSchedulingSuggestion = z.infer<typeof insertSchedulingSuggestionSchema>;
+// Review Request Management
+export const reviewRequests = pgTable("review_requests", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").references(() => clients.id),
+  clientName: text("client_name").notNull(),
+  clientEmail: text("client_email").notNull(),
+  platform: text("platform").notNull(), // 'google', 'yelp', 'facebook', 'angi', 'bbb', 'nextdoor'
+  status: text("status").notNull().default('sent'), // 'sent', 'opened', 'completed', 'expired'
+  customMessage: text("custom_message"),
+  requestUrl: text("request_url").notNull(),
+  sentAt: timestamp("sent_at").defaultNow().notNull(),
+  openedAt: timestamp("opened_at"),
+  completedAt: timestamp("completed_at"),
+});
+
+export const reviewSubmissions = pgTable("review_submissions", {
+  id: serial("id").primaryKey(),
+  reviewRequestId: integer("review_request_id").references(() => reviewRequests.id),
+  clientName: text("client_name").notNull(),
+  platform: text("platform").notNull(),
+  rating: integer("rating").notNull(),
+  reviewText: text("review_text").notNull(),
+  submittedAt: timestamp("submitted_at").defaultNow().notNull(),
+  isApproved: boolean("is_approved").default(false),
+  isPublished: boolean("is_published").default(false),
+  approvedAt: timestamp("approved_at"),
+  publishedAt: timestamp("published_at"),
+  operatorNotes: text("operator_notes"),
+});
+
+export const insertReviewRequestSchema = createInsertSchema(reviewRequests).pick({
+  clientId: true,
+  clientName: true,
+  clientEmail: true,
+  platform: true,
+  customMessage: true,
+  requestUrl: true,
+});
+
+export const insertReviewSubmissionSchema = createInsertSchema(reviewSubmissions).pick({
+  reviewRequestId: true,
+  clientName: true,
+  platform: true,
+  rating: true,
+  reviewText: true,
+  operatorNotes: true,
+});
+
 export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type InvoiceView = typeof invoiceViews.$inferSelect;
 export type InsertInvoiceView = z.infer<typeof insertInvoiceViewSchema>;
 export type InvoiceNotification = typeof invoiceNotifications.$inferSelect;
 export type InsertInvoiceNotification = z.infer<typeof insertInvoiceNotificationSchema>;
+export type ReviewRequest = typeof reviewRequests.$inferSelect;
+export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
+export type ReviewSubmission = typeof reviewSubmissions.$inferSelect;
+export type InsertReviewSubmission = z.infer<typeof insertReviewSubmissionSchema>;
 
 
