@@ -87,32 +87,23 @@ export default function Setup() {
               Let's personalize your scheduling experience for your business
             </CardDescription>
             
-            <div className="flex justify-center items-center mt-6 space-x-2 sm:space-x-4">
+            <div className="flex justify-center items-center mt-6 space-x-4">
               <div className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                   step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
                 }`}>
                   1
                 </div>
-                <span className="ml-2 text-xs sm:text-sm">Industry</span>
+                <span className="ml-2 text-sm">Industry</span>
               </div>
-              <div className="w-4 sm:w-8 h-px bg-gray-300"></div>
+              <div className="w-8 h-px bg-gray-300"></div>
               <div className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                   step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
                 }`}>
                   2
                 </div>
-                <span className="ml-2 text-xs sm:text-sm">Business</span>
-              </div>
-              <div className="w-4 sm:w-8 h-px bg-gray-300"></div>
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
-                  3
-                </div>
-                <span className="ml-2 text-xs sm:text-sm">Images</span>
+                <span className="ml-2 text-sm">Business Details</span>
               </div>
             </div>
           </CardHeader>
