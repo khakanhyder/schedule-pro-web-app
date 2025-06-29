@@ -30,8 +30,8 @@ export const industryTemplates: Industry[] = [
     description: "Premium template for hair stylists, nail techs, aestheticians and beauty salons",
     services: ["Haircut & Styling", "Color Treatment", "Manicure & Pedicure", "Facial Treatment", "Waxing Services", "Lash Extensions"],
     icon: "✨",
-    primaryColor: "#d16ba5", // Gradient pink/purple
-    accentColor: "#b76e79",
+    primaryColor: "#ff1493", // Bright vibrant pink
+    accentColor: "#ff69b4",
     benefits: [
       "Track client style preferences and color formulas",
       "Send before & after photos to clients",
