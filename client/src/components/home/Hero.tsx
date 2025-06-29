@@ -1,48 +1,36 @@
 import { Link } from "wouter";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
-// Define hero data for each industry
+// Define hero data for each industry (mapped to industryContext IDs)
 const heroContent = {
-  hairstylist: {
-    background: "https://images.unsplash.com/photo-1600948836101-f9ffda59d250?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
+  beauty: {
+    background: "https://images.unsplash.com/photo-1562322140-8b2e83e36768?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
     heading: "Your Perfect Hair Awaits",
     subheading: "Professional styling services tailored to your unique look",
     buttonText: "Book Appointment"
   },
-  carpenter: {
-    background: "https://images.unsplash.com/photo-1594717527389-a590b56e331d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
-    heading: "Craftsmanship That Lasts",
-    subheading: "Custom woodworking from expert carpenters who care about the details",
-    buttonText: "Request a Job"
-  },
-  massage: {
+  wellness: {
     background: "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
     heading: "Relaxation & Rejuvenation",
-    subheading: "Therapeutic massage treatments to restore balance to your body and mind",
+    subheading: "Therapeutic wellness treatments to restore balance to your body and mind",
     buttonText: "Book a Session"
   },
-  nails: {
-    background: "https://images.unsplash.com/photo-1604654894610-df63bc536371?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
-    heading: "Beautiful Nails, Confident You",
-    subheading: "Express yourself with professional nail art and impeccable service",
-    buttonText: "Book Appointment"
+  home_services: {
+    background: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
+    heading: "Craftsmanship That Lasts",
+    subheading: "Professional skilled-trades services with guaranteed quality and expertise",
+    buttonText: "Request a Job"
   },
-  plumber: {
-    background: "https://images.unsplash.com/photo-1580398562556-d33864b1ad5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
-    heading: "Reliable Plumbing Solutions",
-    subheading: "Professional plumbing services with guaranteed quality and timely response",
-    buttonText: "Schedule Service"
+  pet_care: {
+    background: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
+    heading: "Loving Care for Your Pets",
+    subheading: "Professional pet services with the attention and love your furry friends deserve",
+    buttonText: "Book Pet Care"
   },
-  electrician: {
-    background: "https://images.unsplash.com/photo-1558520871-9c508f147e68?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
-    heading: "Powering Your World Safely",
-    subheading: "Licensed electricians for all your electrical needs, big or small",
-    buttonText: "Schedule Service"
-  },
-  influencer: {
-    background: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
-    heading: "Elevate Your Digital Presence",
-    subheading: "Professional content creation and social strategy for modern creators",
+  creative: {
+    background: "https://images.unsplash.com/photo-1496347646636-ea47f7d6b37b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
+    heading: "Elevate Your Creative Vision",
+    subheading: "Professional creative services and artistic collaboration for modern creators",
     buttonText: "Book a Session"
   },
   custom: {

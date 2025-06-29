@@ -96,6 +96,10 @@ export interface IStorage {
   createReviewSubmission(submission: InsertReviewSubmission): Promise<ReviewSubmission>;
   approveReviewSubmission(id: number, operatorNotes?: string): Promise<void>;
   publishReviewSubmission(id: number): Promise<void>;
+  
+  // Industry management
+  setIndustry(industryId: string): Promise<void>;
+  getCurrentIndustry(): { id: string; name: string };
 }
 
 export class MemStorage implements IStorage {
@@ -141,26 +145,7 @@ export class MemStorage implements IStorage {
     this.initializeReviews();
   }
   
-  // Implement setIndustry method
-  setIndustry(industryId: string): void {
-    if (industryDatabase[industryId]) {
-      this.currentIndustryId = industryId;
-      
-      // Reset services and professionals for the new industry
-      this.services.clear();
-      this.stylists.clear();
-      this.serviceCurrentId = 1;
-      this.stylistCurrentId = 1;
-      
-      this.initializeServices();
-      this.initializeStylists();
-    }
-  }
-  
-  // Implement getCurrentIndustry method
-  getCurrentIndustry(): IndustryData {
-    return industryDatabase[this.currentIndustryId];
-  }
+
 
   private initializeServices(): void {
     const industry = industryDatabase[this.currentIndustryId];
@@ -731,6 +716,31 @@ export class MemStorage implements IStorage {
       submission.publishedAt = new Date();
       this.reviewSubmissions.set(id, submission);
     }
+  }
+
+  // Industry management methods
+  async setIndustry(industryId: string): Promise<void> {
+    this.currentIndustryId = industryId;
+    
+    // Clear existing services and stylists
+    this.services.clear();
+    this.stylists.clear();
+    
+    // Reset counters
+    this.serviceCurrentId = 1;
+    this.stylistCurrentId = 1;
+    
+    // Reinitialize with new industry data
+    this.initializeServices();
+    this.initializeStylists();
+  }
+
+  getCurrentIndustry(): { id: string; name: string } {
+    const industry = industryDatabase[this.currentIndustryId];
+    return {
+      id: this.currentIndustryId,
+      name: industry?.name || 'Unknown Industry'
+    };
   }
 }
 

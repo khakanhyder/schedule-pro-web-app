@@ -130,15 +130,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Industry ID is required" });
       }
       
-      // Store the industry ID in storage for future API calls
-      if (typeof storage.setIndustry === 'function') {
-        storage.setIndustry(industryId);
-        res.json({ success: true, industryId });
-      } else {
-        // If setIndustry not implemented yet, tell the client
-        res.status(501).json({ message: "Industry switching not fully implemented", industryId });
-      }
+      // Update the industry and regenerate services/staff
+      await storage.setIndustry(industryId);
+      res.json({ success: true, industryId });
     } catch (error) {
+      console.error("Error setting industry:", error);
       res.status(500).json({ message: "Error setting industry" });
     }
   });
