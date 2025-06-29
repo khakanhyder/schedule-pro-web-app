@@ -44,7 +44,7 @@ export default function AIInsights() {
   const { selectedIndustry } = useIndustry();
   
   // Get current industry template for theming
-  const currentTemplate = industryTemplates.find(t => t.id === selectedIndustry) || industryTemplates[0];
+  const currentTemplate = selectedIndustry || industryTemplates[0];
 
   // Fetch rebooking suggestions
   const { data: rebookingSuggestions, isLoading: loadingRebooking } = useQuery({
@@ -153,7 +153,11 @@ export default function AIInsights() {
         <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-slate-100 rounded-lg">
           <TabsTrigger 
             value="scheduling" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            style={selectedTab === 'scheduling' ? {
+              backgroundColor: currentTemplate.primaryColor,
+              color: 'white'
+            } : {}}
           >
             <div className="flex flex-col items-center gap-1">
               <Calendar className="h-4 w-4" />
@@ -163,7 +167,11 @@ export default function AIInsights() {
           </TabsTrigger>
           <TabsTrigger 
             value="marketing" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            style={selectedTab === 'marketing' ? {
+              backgroundColor: currentTemplate.primaryColor,
+              color: 'white'
+            } : {}}
           >
             <div className="flex flex-col items-center gap-1">
               <Zap className="h-4 w-4" />
@@ -173,7 +181,11 @@ export default function AIInsights() {
           </TabsTrigger>
           <TabsTrigger 
             value="insights" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            style={selectedTab === 'insights' ? {
+              backgroundColor: currentTemplate.primaryColor,
+              color: 'white'
+            } : {}}
           >
             <div className="flex flex-col items-center gap-1">
               <BarChart3 className="h-4 w-4" />

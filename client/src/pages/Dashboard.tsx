@@ -41,7 +41,7 @@ import IndustrySpecificFeatures from "@/components/dashboard/IndustrySpecificFea
 import PredictiveInsights from "@/components/dashboard/PredictiveInsights";
 import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
 import SettingsManagement from "@/components/dashboard/SettingsManagement";
-import { useIndustry, getTerminology } from "@/lib/industryContext";
+import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
 export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -50,6 +50,9 @@ export default function Dashboard() {
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { selectedIndustry } = useIndustry();
+  
+  // Get current industry template for theming
+  const currentTemplate = industryTemplates.find(t => t.id === selectedIndustry) || industryTemplates[0];
 
   // Check if setup is completed
   useEffect(() => {
