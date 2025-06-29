@@ -41,6 +41,9 @@ import IndustrySpecificFeatures from "@/components/dashboard/IndustrySpecificFea
 import PredictiveInsights from "@/components/dashboard/PredictiveInsights";
 import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
 import SettingsManagement from "@/components/dashboard/SettingsManagement";
+import BusinessGrowthHub from "@/components/dashboard/BusinessGrowthHub";
+import DepositManager from "@/components/dashboard/DepositManager";
+import CommunicationHub from "@/components/dashboard/CommunicationHub";
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
 export default function Dashboard() {
@@ -247,7 +250,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8 h-auto p-1 bg-slate-100 rounded-lg">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 mb-8 h-auto p-1 bg-slate-100 rounded-lg">
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -299,6 +302,26 @@ export default function Dashboard() {
               AI Insights
             </TabsTrigger>
             <TabsTrigger 
+              value="growth" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'growth' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Growth
+            </TabsTrigger>
+            <TabsTrigger 
+              value="messages" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'messages' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Messages
+            </TabsTrigger>
+            <TabsTrigger 
               value="settings" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
               style={selectedTab === 'settings' ? {
@@ -337,6 +360,16 @@ export default function Dashboard() {
           {/* AI Insights Tab */}
           <TabsContent value="insights">
             <AIInsights />
+          </TabsContent>
+
+          {/* Business Growth Hub Tab */}
+          <TabsContent value="growth">
+            <BusinessGrowthHub />
+          </TabsContent>
+
+          {/* Communication Hub Tab */}
+          <TabsContent value="messages">
+            <CommunicationHub />
           </TabsContent>
 
           {/* Settings Tab */}
