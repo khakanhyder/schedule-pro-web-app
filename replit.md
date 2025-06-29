@@ -16,9 +16,18 @@ A comprehensive business management platform designed to empower service-based e
 - iOS App Store deployment targeting premium pricing ($299-499/month)
 - Focus on seamless data migration to remove adoption barriers
 
-## Recent Changes (December 29, 2024)
+## Recent Changes (June 29, 2025)
 
-### Premium AI Insights Design with Industry Theming (Latest)
+### Complete Industry Switching System (Latest)
+- ✅ Fixed industry switching to properly regenerate services on backend
+- ✅ Added cache invalidation for real-time service/staff updates when switching industries
+- ✅ Services now show correct industry-specific names (Massage Therapy, Pet Grooming, Bathroom Remodel, etc.)
+- ✅ All industry template images display correctly including fixed beauty template hero image
+- ✅ Streamlined setup flow to 2 steps: Industry Selection → Business Details (removed image customization)
+- ✅ Navigation dropdown properly reflects selected industry templates
+- ✅ App ready for deployment and hiring phase - all core functionality working perfectly
+
+### Premium AI Insights Design with Industry Theming
 - ✅ Redesigned AI Insights section to match template card aesthetic
 - ✅ Added dynamic industry-specific color theming (adapts to selected template)
 - ✅ Implemented gradient backgrounds and accent lines matching template design
