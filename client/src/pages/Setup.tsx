@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useIndustry, industryTemplates } from "@/lib/industryContext";
-import VisualPreviewCustomizer from "@/components/setup/VisualPreviewCustomizer";
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -28,23 +27,7 @@ export default function Setup() {
     });
   };
 
-  const handleBusinessDetails = () => {
-    if (!businessName.trim()) {
-      toast({
-        title: "Please enter business name",
-        description: "Enter your business name to continue.",
-        variant: "destructive"
-      });
-      return;
-    }
-    setStep(3);
-  };
-
-  const skipImageCustomization = () => {
-    handleCompleteSetup();
-  };
-  
-  const handleCompleteSetup = () => {
+  const completeSetup = () => {
     if (!selectedTemplate) {
       toast({
         title: "Please select an industry",
@@ -224,18 +207,7 @@ export default function Setup() {
               </div>
             )}
 
-            {step === 3 && (
-              <div className="space-y-6">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold tracking-tight mb-2">Visual Branding</h2>
-                  <p className="text-muted-foreground text-sm">
-                    Customize your business images or skip to use defaults
-                  </p>
-                </div>
-                
-                <VisualPreviewCustomizer />
-              </div>
-            )}
+
           </CardContent>
           
           <CardFooter className="flex justify-between">
@@ -255,27 +227,11 @@ export default function Setup() {
             <div className="space-x-2">
               {step === 2 && (
                 <Button 
-                  onClick={handleBusinessDetails}
+                  onClick={completeSetup}
                   disabled={!businessName.trim()}
                 >
-                  Next: Visual Branding
+                  Complete Setup
                 </Button>
-              )}
-              
-              {step === 3 && (
-                <>
-                  <Button 
-                    variant="outline"
-                    onClick={skipImageCustomization}
-                  >
-                    Skip & Complete
-                  </Button>
-                  <Button 
-                    onClick={handleCompleteSetup}
-                  >
-                    Save & Complete Setup
-                  </Button>
-                </>
               )}
             </div>
           </CardFooter>
