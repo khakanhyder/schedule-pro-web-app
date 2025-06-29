@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiRequest } from "@/lib/queryClient";
 import { Brain, TrendingUp, Users, Calendar, CheckCircle, Clock, Target, Sparkles, Zap, BarChart3 } from "lucide-react";
 import { useIndustry, industryTemplates } from "@/lib/industryContext";
+import IndustrySpecificInsights from "./IndustrySpecificInsights";
 
 interface SchedulingSuggestion {
   id: number;
@@ -150,7 +151,7 @@ export default function AIInsights() {
 
       {/* Tabs with Industry Theming */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-slate-100 rounded-lg">
+        <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-slate-100 rounded-lg">
           <TabsTrigger 
             value="scheduling" 
             className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
@@ -205,6 +206,20 @@ export default function AIInsights() {
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Customer Discovery</span>
               <span className="sm:hidden">Discovery</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="industry" 
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            style={selectedTab === 'industry' ? {
+              backgroundColor: currentTemplate.primaryColor,
+              color: 'white'
+            } : {}}
+          >
+            <div className="flex flex-col items-center gap-1">
+              <Target className="h-4 w-4" />
+              <span className="hidden sm:inline">Industry Intel</span>
+              <span className="sm:hidden">Intel</span>
             </div>
           </TabsTrigger>
         </TabsList>
@@ -750,6 +765,10 @@ export default function AIInsights() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="industry" className="space-y-6">
+          <IndustrySpecificInsights />
         </TabsContent>
       </Tabs>
     </div>
