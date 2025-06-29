@@ -41,20 +41,15 @@ interface AppointmentPreview {
   price?: string;
 }
 
-const SUPPORTED_PLATFORMS = [
-  { id: "csv", name: "CSV File", description: "Export from any app as CSV", icon: FileSpreadsheet },
-  { id: "glossgenius", name: "GlossGenius", description: "Direct API integration", icon: Link },
-  { id: "vagaro", name: "Vagaro", description: "Export from Vagaro Pro", icon: Calendar },
-  { id: "booksy", name: "Booksy", description: "Export your Booksy data", icon: Users },
-  { id: "square", name: "Square Appointments", description: "Export from Square", icon: Database },
-  { id: "acuity", name: "Acuity Scheduling", description: "CSV export from Acuity", icon: Calendar },
-  { id: "mindbody", name: "MindBody", description: "MindBody export files", icon: Database },
-  { id: "schedulicity", name: "Schedulicity", description: "Export from Schedulicity", icon: Calendar },
-  { id: "fresha", name: "Fresha (Shedul)", description: "Export from Fresha platform", icon: Users },
-  { id: "timely", name: "Timely", description: "Export from Timely app", icon: Calendar },
-  { id: "salon-iris", name: "Salon Iris", description: "Export from Salon Iris", icon: Database },
-  { id: "rosy", name: "Rosy Salon", description: "Export from Rosy platform", icon: Users }
-];
+// Helper function to get icon for platform
+const getPlatformIcon = (exportMethod: string, category: string) => {
+  if (exportMethod === 'api') return Link;
+  if (category.includes('Beauty')) return Users;
+  if (category.includes('Home') || category.includes('Trade')) return Database;
+  if (category.includes('Pet')) return Calendar;
+  if (category.includes('Wellness')) return Calendar;
+  return FileSpreadsheet;
+};
 
 const IMPORT_STEPS: ImportStep[] = [
   {
@@ -130,6 +125,16 @@ export default function DataImportManager() {
   const [isUploading, setIsUploading] = useState(false);
   const [previewData, setPreviewData] = useState<AppointmentPreview[]>([]);
   const { toast } = useToast();
+  const { selectedIndustry } = useIndustry();
+
+  // Fetch industry-specific platforms
+  const { data: platformsData, isLoading: loadingPlatforms } = useQuery({
+    queryKey: ['/api/platforms', selectedIndustry?.id],
+    queryFn: () => fetch(`/api/platforms/${selectedIndustry?.id || 'beauty'}`).then(res => res.json()),
+    enabled: !!selectedIndustry
+  });
+
+  const availablePlatforms = platformsData?.platforms || [];
 
   const handlePlatformSelect = (platformId: string) => {
     setSelectedPlatform(platformId);
@@ -276,30 +281,75 @@ export default function DataImportManager() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {SUPPORTED_PLATFORMS.map((platform) => {
-                  const Icon = platform.icon;
-                  return (
+              {loadingPlatforms ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-6 w-6 animate-spin" />
+                  <span className="ml-2">Loading platforms for {selectedIndustry?.name}...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <Badge variant="outline" className="mb-2">
+                      {selectedIndustry?.name} Industry
+                    </Badge>
+                    <p className="text-sm text-muted-foreground">
+                      Showing platforms popular in the {selectedIndustry?.name.toLowerCase()} industry
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Always include CSV option */}
                     <Card
-                      key={platform.id}
                       className={`cursor-pointer transition-colors hover:bg-accent ${
-                        selectedPlatform === platform.id ? 'ring-2 ring-primary' : ''
+                        selectedPlatform === 'csv' ? 'ring-2 ring-primary' : ''
                       }`}
-                      onClick={() => handlePlatformSelect(platform.id)}
+                      onClick={() => handlePlatformSelect('csv')}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
-                          <Icon className="h-8 w-8 text-primary" />
+                          <FileSpreadsheet className="h-8 w-8 text-primary" />
                           <div>
-                            <h4 className="font-medium">{platform.name}</h4>
-                            <p className="text-sm text-muted-foreground">{platform.description}</p>
+                            <h4 className="font-medium">CSV File</h4>
+                            <p className="text-sm text-muted-foreground">Export from any app as CSV</p>
+                            <Badge variant="secondary" className="mt-1 text-xs">Universal</Badge>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
-                  );
-                })}
-              </div>
+                    
+                    {/* Industry-specific platforms */}
+                    {availablePlatforms.map((platform: any) => {
+                      const Icon = getPlatformIcon(platform.exportMethod, platform.category);
+                      return (
+                        <Card
+                          key={platform.id}
+                          className={`cursor-pointer transition-colors hover:bg-accent ${
+                            selectedPlatform === platform.id ? 'ring-2 ring-primary' : ''
+                          }`}
+                          onClick={() => handlePlatformSelect(platform.id)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="text-2xl">{platform.icon}</div>
+                              <div className="flex-1">
+                                <h4 className="font-medium">{platform.name}</h4>
+                                <p className="text-sm text-muted-foreground">{platform.description}</p>
+                                <div className="flex gap-2 mt-1">
+                                  <Badge variant={platform.apiAvailable ? "default" : "secondary"} className="text-xs">
+                                    {platform.exportMethod.toUpperCase()}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs">
+                                    {platform.marketShare}% market
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -310,7 +360,10 @@ export default function DataImportManager() {
               <CardHeader>
                 <CardTitle>Export Instructions</CardTitle>
                 <CardDescription>
-                  Follow these step-by-step instructions to export your data from {SUPPORTED_PLATFORMS.find(p => p.id === selectedPlatform)?.name}
+                  Follow these step-by-step instructions to export your data from {
+                    selectedPlatform === 'csv' ? 'your current app' : 
+                    availablePlatforms.find((p: any) => p.id === selectedPlatform)?.name || 'your selected platform'
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
