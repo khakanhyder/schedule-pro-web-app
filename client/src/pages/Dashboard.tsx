@@ -52,7 +52,7 @@ export default function Dashboard() {
   const { selectedIndustry } = useIndustry();
   
   // Get current industry template for theming
-  const currentTemplate = industryTemplates.find(t => t.id === selectedIndustry) || industryTemplates[0];
+  const currentTemplate = selectedIndustry || industryTemplates[0];
 
   // Check if setup is completed
   useEffect(() => {
@@ -157,35 +157,57 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats with Template Theming */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl transition-all duration-300">
+            <div 
+              className="h-1 w-full"
+              style={{ backgroundColor: currentTemplate.primaryColor }}
+            />
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Today's Revenue</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${calculateDailyRevenue().toFixed(2)}</div>
+              <div 
+                className="text-2xl font-bold"
+                style={{ color: currentTemplate.primaryColor }}
+              >
+                ${calculateDailyRevenue().toFixed(2)}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 From {todayAppointmentsCount} {todayAppointmentsCount === 1 ? terms.appointment : terms.appointment + 's'}
               </p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl transition-all duration-300">
+            <div 
+              className="h-1 w-full"
+              style={{ backgroundColor: currentTemplate.primaryColor }}
+            />
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}s
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{todayAppointmentsCount}</div>
+              <div 
+                className="text-2xl font-bold"
+                style={{ color: currentTemplate.primaryColor }}
+              >
+                {todayAppointmentsCount}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Today's schedule
               </p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl transition-all duration-300">
+            <div 
+              className="h-1 w-full"
+              style={{ backgroundColor: currentTemplate.primaryColor }}
+            />
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Quick Actions</CardTitle>
             </CardHeader>
@@ -193,23 +215,99 @@ export default function Dashboard() {
               <Button 
                 size="sm"
                 onClick={() => setIsAddAppointmentOpen(true)}
+                style={{
+                  backgroundColor: currentTemplate.primaryColor,
+                  borderColor: currentTemplate.primaryColor,
+                  color: 'white'
+                }}
+                className="hover:opacity-90 transition-opacity"
               >
                 New {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}
               </Button>
-              <Button size="sm" variant="outline">Request Review</Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                style={{
+                  borderColor: currentTemplate.primaryColor,
+                  color: currentTemplate.primaryColor
+                }}
+                className="hover:bg-opacity-10 transition-all"
+              >
+                Request Review
+              </Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Dashboard Tabs */}
+        {/* Main Dashboard Tabs with Template Theming */}
         <Tabs defaultValue="appointments" onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8 h-auto">
-            <TabsTrigger value="appointments" className="text-xs sm:text-sm py-3">Calendar</TabsTrigger>
-            <TabsTrigger value="schedule" className="text-xs sm:text-sm py-3">Schedule</TabsTrigger>
-            <TabsTrigger value="clients" className="text-xs sm:text-sm py-3">{terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}s</TabsTrigger>
-            <TabsTrigger value="payments" className="text-xs sm:text-sm py-3">Payments</TabsTrigger>
-            <TabsTrigger value="insights" className="text-xs sm:text-sm py-3">AI Insights</TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs sm:text-sm py-3">Settings</TabsTrigger>
+          {/* Template-themed accent line */}
+          <div 
+            className="h-1 w-full rounded-full mb-4"
+            style={{ backgroundColor: currentTemplate.primaryColor }}
+          />
+          
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 mb-8 h-auto p-1 bg-slate-100 rounded-lg">
+            <TabsTrigger 
+              value="appointments" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'appointments' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Calendar
+            </TabsTrigger>
+            <TabsTrigger 
+              value="schedule" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'schedule' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Schedule
+            </TabsTrigger>
+            <TabsTrigger 
+              value="clients" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'clients' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              {terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}s
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payments" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'payments' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Payments
+            </TabsTrigger>
+            <TabsTrigger 
+              value="insights" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'insights' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              AI Insights
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'settings' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Settings
+            </TabsTrigger>
           </TabsList>
 
           {/* Calendar-Centric Dashboard */}
