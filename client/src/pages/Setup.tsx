@@ -3,8 +3,11 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useIndustry, industryTemplates } from "@/lib/industryContext";
+import ImageSelection from "@/components/setup/ImageSelection";
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -23,6 +26,22 @@ export default function Setup() {
       title: "Industry Selected",
       description: "Now customize your business details."
     });
+  };
+
+  const handleBusinessDetails = () => {
+    if (!businessName.trim()) {
+      toast({
+        title: "Please enter business name",
+        description: "Enter your business name to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setStep(3);
+  };
+
+  const skipImageCustomization = () => {
+    handleCompleteSetup();
   };
   
   const handleCompleteSetup = () => {
@@ -68,23 +87,32 @@ export default function Setup() {
               Let's personalize your scheduling experience for your business
             </CardDescription>
             
-            <div className="flex justify-center items-center mt-6 space-x-4">
+            <div className="flex justify-center items-center mt-6 space-x-2 sm:space-x-4">
               <div className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                   step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
                 }`}>
                   1
                 </div>
-                <span className="ml-2 text-sm">Industry</span>
+                <span className="ml-2 text-xs sm:text-sm">Industry</span>
               </div>
-              <div className="w-8 h-px bg-gray-300"></div>
+              <div className="w-4 sm:w-8 h-px bg-gray-300"></div>
               <div className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                   step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
                 }`}>
                   2
                 </div>
-                <span className="ml-2 text-sm">Business Details</span>
+                <span className="ml-2 text-xs sm:text-sm">Business</span>
+              </div>
+              <div className="w-4 sm:w-8 h-px bg-gray-300"></div>
+              <div className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>
+                  3
+                </div>
+                <span className="ml-2 text-xs sm:text-sm">Images</span>
               </div>
             </div>
           </CardHeader>
@@ -191,17 +219,30 @@ export default function Setup() {
                 </div>
                 
                 <div className="max-w-md mx-auto space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Business Name</label>
-                    <input
+                  <div className="space-y-2">
+                    <Label htmlFor="businessName">Business Name</Label>
+                    <Input
+                      id="businessName"
                       type="text"
                       value={businessName}
                       onChange={(e) => setBusinessName(e.target.value)}
                       placeholder="Enter your business name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-6">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl font-bold tracking-tight mb-2">Visual Branding</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Customize your business images or skip to use defaults
+                  </p>
+                </div>
+                
+                <ImageSelection />
               </div>
             )}
           </CardContent>
@@ -220,14 +261,32 @@ export default function Setup() {
               {step === 1 ? "Cancel" : "Back"}
             </Button>
             
-            {step === 2 && (
-              <Button 
-                onClick={handleCompleteSetup}
-                disabled={!businessName.trim()}
-              >
-                Complete Setup
-              </Button>
-            )}
+            <div className="space-x-2">
+              {step === 2 && (
+                <Button 
+                  onClick={handleBusinessDetails}
+                  disabled={!businessName.trim()}
+                >
+                  Next: Visual Branding
+                </Button>
+              )}
+              
+              {step === 3 && (
+                <>
+                  <Button 
+                    variant="outline"
+                    onClick={skipImageCustomization}
+                  >
+                    Skip & Complete
+                  </Button>
+                  <Button 
+                    onClick={handleCompleteSetup}
+                  >
+                    Save & Complete Setup
+                  </Button>
+                </>
+              )}
+            </div>
           </CardFooter>
         </Card>
       </div>
