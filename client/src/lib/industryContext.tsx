@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { queryClient } from './queryClient';
 
 // Define the industry data structure
 export interface Industry {
@@ -262,7 +263,11 @@ export const IndustryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
         
         await response.json();
-        // Don't reload the page during setup flow
+        
+        // Invalidate cached data to fetch new industry-specific content
+        queryClient.invalidateQueries({ queryKey: ['/api/services'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/stylists'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/reviews'] });
       } catch (error) {
         console.error('Error setting industry on server:', error);
         throw error;

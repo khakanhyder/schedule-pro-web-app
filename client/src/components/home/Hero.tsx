@@ -4,7 +4,7 @@ import { useIndustry, getTerminology } from "@/lib/industryContext";
 // Define hero data for each industry (mapped to industryContext IDs)
 const heroContent = {
   beauty: {
-    background: "https://images.unsplash.com/photo-1562322140-8b2e83e36768?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
+    background: "https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080",
     heading: "Your Perfect Hair Awaits",
     subheading: "Professional styling services tailored to your unique look",
     buttonText: "Book Appointment"
