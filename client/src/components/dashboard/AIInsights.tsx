@@ -527,6 +527,230 @@ export default function AIInsights() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="discovery" className="space-y-6">
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl transition-all duration-300">
+            {/* Accent line */}
+            <div 
+              className="h-1 w-full"
+              style={{ backgroundColor: currentTemplate.primaryColor }}
+            />
+            <CardHeader className="pb-4">
+              <CardTitle 
+                className="flex items-center gap-2 text-xl"
+                style={{ color: currentTemplate.primaryColor }}
+              >
+                <div 
+                  className="p-2 rounded-lg"
+                  style={{ backgroundColor: `${currentTemplate.primaryColor}15` }}
+                >
+                  <Users className="h-5 w-5" />
+                </div>
+                Customer Discovery Engine
+              </CardTitle>
+              <CardDescription className="text-slate-600 font-medium">
+                Powerful strategies to help customers find YOU in the {currentTemplate.name.toLowerCase()} industry
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-blue-50 to-blue-100/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="h-5 w-5 text-blue-600" />
+                    <span className="font-semibold text-blue-800">Local Search</span>
+                  </div>
+                  <p className="text-sm text-blue-700">Get found when customers search for your services nearby</p>
+                </div>
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-green-50 to-green-100/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="h-5 w-5 text-green-600" />
+                    <span className="font-semibold text-green-800">Referral Network</span>
+                  </div>
+                  <p className="text-sm text-green-700">Build partnerships with complementary businesses</p>
+                </div>
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-purple-50 to-purple-100/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="h-5 w-5 text-purple-600" />
+                    <span className="font-semibold text-purple-800">Social Proof</span>
+                  </div>
+                  <p className="text-sm text-purple-700">Showcase your work to attract new customers</p>
+                </div>
+                <div className="p-4 rounded-lg border bg-gradient-to-br from-orange-50 to-orange-100/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="h-5 w-5 text-orange-600" />
+                    <span className="font-semibold text-orange-800">Industry Authority</span>
+                  </div>
+                  <p className="text-sm text-orange-700">Become the go-to expert in your area</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold" style={{ color: currentTemplate.primaryColor }}>
+                    Quick Win Strategies for {currentTemplate.name}
+                  </h3>
+                  <Badge 
+                    className="text-white"
+                    style={{ backgroundColor: currentTemplate.primaryColor }}
+                  >
+                    Industry Specific
+                  </Badge>
+                </div>
+
+                {/* Industry-specific quick strategies */}
+                {currentTemplate.id === 'beauty' && (
+                  <div className="grid gap-3">
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-pink-50 to-purple-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-pink-600" />
+                        Beauty Influencer Partnerships
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Partner with local beauty influencers and micro-influencers for authentic exposure</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Users className="h-4 w-4 text-blue-600" />
+                        Wedding Vendor Networks
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Build relationships with wedding planners, photographers, and venues</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                  </div>
+                )}
+
+                {currentTemplate.id === 'petservices' && (
+                  <div className="grid gap-3">
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Users className="h-4 w-4 text-green-600" />
+                        Pet Community Networking
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Partner with dog parks, pet stores, and vet clinics for referrals</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Target className="h-4 w-4 text-blue-600" />
+                        Pet Event Participation
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Set up booths at adoption events, farmer's markets, and pet shows</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                  </div>
+                )}
+
+                {currentTemplate.id === 'skilledtrades' && (
+                  <div className="grid gap-3">
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-orange-50 to-red-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Users className="h-4 w-4 text-orange-600" />
+                        Contractor Referral Network
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Build relationships with electricians, plumbers, and general contractors</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-purple-50 to-indigo-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-purple-600" />
+                        Real Estate Partnerships
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Partner with real estate agents for pre-sale home improvements</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                  </div>
+                )}
+
+                {currentTemplate.id === 'wellness' && (
+                  <div className="grid gap-3">
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-green-50 to-teal-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-green-600" />
+                        Community Wellness Workshops
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Host educational workshops at gyms, studios, and health stores</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-purple-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Users className="h-4 w-4 text-blue-600" />
+                        Healthcare Provider Network
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Build referral relationships with doctors and chiropractors</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                  </div>
+                )}
+
+                {currentTemplate.id === 'homeservices' && (
+                  <div className="grid gap-3">
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Users className="h-4 w-4 text-blue-600" />
+                        Neighborhood Ambassador Program
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Turn satisfied customers into local brand ambassadors with referral rewards</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                    <div className="p-4 border rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-green-600" />
+                        Seasonal Marketing Campaigns
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">Time your marketing with seasonal home service needs and maintenance</p>
+                      <Button size="sm" variant="outline">Learn Strategy →</Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-6 p-4 bg-gradient-to-r from-slate-50 to-gray-50 rounded-lg border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="h-5 w-5" style={{ color: currentTemplate.primaryColor }} />
+                    <h4 className="font-semibold" style={{ color: currentTemplate.primaryColor }}>
+                      Universal Discovery Tactics
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Optimize Google Business Profile</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Build local directory citations</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Create social proof content</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Encourage customer reviews</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Network with local businesses</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>Share educational content</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center pt-4">
+                  <Button 
+                    className="text-white"
+                    style={{ backgroundColor: currentTemplate.primaryColor }}
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    View Complete Discovery Guide
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
