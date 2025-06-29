@@ -150,7 +150,7 @@ export default function AIInsights() {
 
       {/* Tabs with Industry Theming */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-slate-100 rounded-lg">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-slate-100 rounded-lg">
           <TabsTrigger 
             value="scheduling" 
             className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
@@ -191,6 +191,20 @@ export default function AIInsights() {
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Client Insights</span>
               <span className="sm:hidden">Insights</span>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="discovery" 
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            style={selectedTab === 'discovery' ? {
+              backgroundColor: currentTemplate.primaryColor,
+              color: 'white'
+            } : {}}
+          >
+            <div className="flex flex-col items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Customer Discovery</span>
+              <span className="sm:hidden">Discovery</span>
             </div>
           </TabsTrigger>
         </TabsList>
