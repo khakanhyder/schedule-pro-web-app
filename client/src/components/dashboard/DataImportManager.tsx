@@ -420,6 +420,68 @@ export default function DataImportManager() {
                   </div>
                 )}
 
+                {/* Dynamic platform-specific instructions */}
+                {selectedPlatform !== "csv" && selectedPlatform !== "glossgenius" && availablePlatforms.find((p: any) => p.id === selectedPlatform) && (
+                  <div className="space-y-4">
+                    {(() => {
+                      const platform = availablePlatforms.find((p: any) => p.id === selectedPlatform);
+                      if (!platform) return null;
+                      
+                      return (
+                        <>
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className="text-2xl">{platform.icon}</div>
+                            <div>
+                              <h4 className="font-medium">{platform.name} Export Instructions:</h4>
+                              <Badge variant="outline" className="text-xs mt-1">
+                                {platform.exportMethod.toUpperCase()} Export • {platform.marketShare}% Market Share
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          {platform.apiAvailable && (
+                            <Alert>
+                              <CheckCircle className="h-4 w-4" />
+                              <AlertDescription>
+                                {platform.name} supports API integration for seamless data transfer!
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                          
+                          <ol className="text-sm space-y-2 text-muted-foreground ml-4">
+                            {platform.exportInstructions.map((instruction: string, index: number) => (
+                              <li key={index}>{index + 1}. {instruction}</li>
+                            ))}
+                          </ol>
+                          
+                          {platform.csvFields && (
+                            <div className="mt-4">
+                              <h5 className="font-medium text-sm mb-2">Expected CSV Fields:</h5>
+                              <div className="flex flex-wrap gap-1">
+                                {platform.csvFields.map((field: string, index: number) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    {field}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {platform.website && (
+                            <div className="mt-4">
+                              <Button variant="outline" size="sm" asChild>
+                                <a href={platform.website} target="_blank" rel="noopener noreferrer">
+                                  Visit {platform.name} Website
+                                </a>
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
+
                 {selectedPlatform === "vagaro" && (
                   <div className="space-y-4">
                     <h4 className="font-medium">Vagaro Export Instructions:</h4>
