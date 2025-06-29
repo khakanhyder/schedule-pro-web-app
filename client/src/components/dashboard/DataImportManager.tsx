@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import {
   Database
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useIndustry } from "@/lib/industryContext";
 
 interface ImportStep {
   id: string;

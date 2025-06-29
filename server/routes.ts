@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { aiSchedulingService, marketingAutomationService } from "./ai-service";
 import { GlossGeniusIntegration, validateGlossGeniusCredentials } from "./glossgenius-integration";
 import { CSVImporter } from "./csv-import";
+import { getPlatformsByIndustry, getPlatformById } from "./industry-platforms";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
@@ -670,6 +671,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Suggestion accepted" });
     } catch (error: any) {
       res.status(500).json({ message: "Error accepting suggestion" });
+    }
+  });
+
+  // Get industry-specific scheduling platforms
+  app.get("/api/platforms/:industryId", async (req, res) => {
+    try {
+      const { industryId } = req.params;
+      const platforms = getPlatformsByIndustry(industryId);
+      res.json({ platforms });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching platforms: " + error.message });
+    }
+  });
+
+  // Get platform details by ID
+  app.get("/api/platform/:platformId", async (req, res) => {
+    try {
+      const { platformId } = req.params;
+      const platform = getPlatformById(platformId);
+      if (!platform) {
+        return res.status(404).json({ message: "Platform not found" });
+      }
+      res.json({ platform });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching platform: " + error.message });
     }
   });
 
