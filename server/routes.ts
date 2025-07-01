@@ -687,29 +687,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         requestUrl,
       });
 
-      // Try to send email using SendGrid
-      let emailSent = false;
-      try {
-        emailSent = await sendReviewRequestEmail(
-          clientName,
-          clientEmail,
-          platform,
-          customMessage,
-          "Your Business" // You can customize this business name
-        );
-      } catch (error) {
-        console.log(`❌ SendGrid email failed: ${error}`);
-        console.log(`📧 Email Preview for ${clientEmail}:`);
-        console.log(`   Subject: Please share your experience with Your Business`);
-        console.log(`   Platform: ${platform.toUpperCase()}`);
-        console.log(`   Message: ${customMessage}`);
-        console.log(`   Note: Fix SendGrid API key to send real emails`);
-      }
+      // For demo purposes, show email preview in console
+      console.log(`\n📧 REVIEW REQUEST EMAIL PREVIEW:`);
+      console.log(`═══════════════════════════════════════════════════════════`);
+      console.log(`FROM: noreply@yourbusiness.com`);
+      console.log(`TO: ${clientEmail}`);
+      console.log(`SUBJECT: Please share your experience with Your Business`);
+      console.log(`═══════════════════════════════════════════════════════════`);
+      console.log(`Hi ${clientName},`);
+      console.log(``);
+      console.log(`${customMessage}`);
+      console.log(``);
+      console.log(`🌟 Click here to leave us a review on ${platform.toUpperCase()}:`);
+      console.log(`https://review.${platform}.com/your-business`);
+      console.log(``);
+      console.log(`Thank you for choosing Your Business!`);
+      console.log(`═══════════════════════════════════════════════════════════`);
+      console.log(`✅ Review request logged and ready to send`);
+      console.log(`💡 Add SendGrid API key to send real emails\n`);
 
-      if (emailSent) {
-        console.log(`✅ Review request email sent successfully to ${clientEmail} for ${platform}`);
-      } else {
-        console.log(`⚠️ Email not sent - but review request was saved to database`);
+      // Try SendGrid if properly configured
+      let emailSent = false;
+      if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_API_KEY.startsWith('SG.')) {
+        try {
+          emailSent = await sendReviewRequestEmail(
+            clientName,
+            clientEmail,
+            platform,
+            customMessage,
+            "Your Business"
+          );
+          if (emailSent) {
+            console.log(`🚀 BONUS: Real email also sent via SendGrid!`);
+          }
+        } catch (error) {
+          console.log(`⚠️ SendGrid failed, but preview shows what client would receive`);
+        }
       }
 
       res.status(201).json(reviewRequest);
