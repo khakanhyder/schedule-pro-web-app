@@ -30,6 +30,8 @@ interface Client {
   createdAt: string;
   lastVisit?: string;
   reviewHistory?: ReviewRequest[];
+  availablePlatforms?: ReviewPlatform[];
+  suggestedPlatform?: ReviewPlatform;
 }
 
 interface ReviewRequest {
@@ -263,7 +265,7 @@ export default function ReviewRequestManager() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Review Platform</label>
                   <div className="grid grid-cols-1 gap-2">
-                    {selectedClient.availablePlatforms.map((platform) => {
+                    {(selectedClient.availablePlatforms || []).map((platform: ReviewPlatform) => {
                       const isRecommended = getRecommendedPlatform(selectedClient)?.id === platform.id;
                       return (
                         <div

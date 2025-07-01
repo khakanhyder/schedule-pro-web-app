@@ -47,11 +47,12 @@ export default function BusinessGrowthTools() {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="seo">SEO & Discovery</TabsTrigger>
-          <TabsTrigger value="referrals">Referral Program</TabsTrigger>
-          <TabsTrigger value="social">Social Media</TabsTrigger>
-          <TabsTrigger value="loyalty">Client Retention</TabsTrigger>
+          <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          <TabsTrigger value="referrals">Referrals</TabsTrigger>
+          <TabsTrigger value="social">Social</TabsTrigger>
+          <TabsTrigger value="loyalty">Retention</TabsTrigger>
         </TabsList>
 
         <TabsContent value="seo" className="space-y-4">
@@ -191,6 +192,10 @@ export default function BusinessGrowthTools() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="reviews" className="space-y-4">
+          <ReviewRequestManager />
         </TabsContent>
 
         <TabsContent value="referrals" className="space-y-4">
