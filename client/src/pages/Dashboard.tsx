@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link, useLocation } from "wouter";
 import { 
@@ -11,18 +11,26 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   PlusCircle,
   AlertCircle,
   Settings,
-  ArrowRight
+  ArrowRight,
+  Star,
+  Send
 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-  DialogDescription
+  DialogDescription,
+  DialogHeader,
+  DialogTrigger
 } from "@/components/ui/dialog";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   type Service, 
@@ -50,6 +58,11 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTab, setSelectedTab] = useState("appointments");
   const [isAddAppointmentOpen, setIsAddAppointmentOpen] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<string>('');
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('');
+  const [customMessage, setCustomMessage] = useState('');
+  const { toast } = useToast();
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { selectedIndustry } = useIndustry();
@@ -95,6 +108,34 @@ export default function Dashboard() {
     queryKey: ['/api/appointments', today],
     queryFn: () => fetch(`/api/appointments?date=${today}`).then(res => res.json())
   });
+
+  // Fetch clients for review requests
+  const { data: clients = [] } = useQuery({
+    queryKey: ['/api/clients']
+  });
+
+  // Review request mutation
+  const sendReviewRequestMutation = useMutation({
+    mutationFn: (requestData: any) => apiRequest('POST', '/api/review-requests', requestData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/review-requests'] });
+      setShowReviewDialog(false);
+      setSelectedClient('');
+      setSelectedPlatform('');
+      setCustomMessage('');
+      toast({
+        title: "Review Request Sent",
+        description: "Your customer will receive a personalized review request.",
+      });
+    },
+  });
+
+  // Review platforms
+  const reviewPlatforms = [
+    { id: 'google', name: 'Google Business', icon: '🔍' },
+    { id: 'yelp', name: 'Yelp', icon: '⭐' },
+    { id: 'facebook', name: 'Facebook', icon: '👥' },
+  ];
 
   // Calculate stats
   const todayAppointmentsCount = todayAppointments.length;
@@ -227,17 +268,101 @@ export default function Dashboard() {
               >
                 New {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}
               </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                style={{
-                  borderColor: currentTemplate.primaryColor,
-                  color: currentTemplate.primaryColor
-                }}
-                className="hover:bg-opacity-10 transition-all"
-              >
-                Request Review
-              </Button>
+              <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+                <DialogTrigger asChild>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    style={{
+                      borderColor: currentTemplate.primaryColor,
+                      color: currentTemplate.primaryColor
+                    }}
+                    className="hover:bg-opacity-10 transition-all"
+                  >
+                    <Star className="h-4 w-4 mr-1" />
+                    Request Review
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Send Review Request</DialogTitle>
+                    <DialogDescription>
+                      Send a review request to one of your clients
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select Client</label>
+                      <Select value={selectedClient} onValueChange={setSelectedClient}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a client..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {clients.map((client: any) => (
+                            <SelectItem key={client.id} value={client.id.toString()}>
+                              {client.name} - {client.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {selectedClient && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Review Platform</label>
+                        <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose platform..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {reviewPlatforms.map((platform) => (
+                              <SelectItem key={platform.id} value={platform.id}>
+                                <div className="flex items-center gap-2">
+                                  <span>{platform.icon}</span>
+                                  <span>{platform.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {selectedClient && selectedPlatform && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Custom Message (Optional)</label>
+                        <Textarea
+                          placeholder={`Hi! Thank you for choosing our services. Would you mind sharing a quick review on ${reviewPlatforms.find(p => p.id === selectedPlatform)?.name}?`}
+                          value={customMessage}
+                          onChange={(e) => setCustomMessage(e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+                    )}
+
+                    <Button 
+                      onClick={() => {
+                        if (!selectedClient || !selectedPlatform) return;
+                        const client = clients.find((c: any) => c.id.toString() === selectedClient);
+                        const requestData = {
+                          clientId: parseInt(selectedClient),
+                          clientName: client?.name,
+                          clientEmail: client?.email,
+                          platform: selectedPlatform,
+                          customMessage: customMessage || `Hi ${client?.name}! Thank you for choosing our services. Would you mind sharing a quick review on ${reviewPlatforms.find(p => p.id === selectedPlatform)?.name}?`,
+                        };
+                        sendReviewRequestMutation.mutate(requestData);
+                      }}
+                      disabled={!selectedClient || !selectedPlatform || sendReviewRequestMutation.isPending}
+                      className="w-full"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      {sendReviewRequestMutation.isPending ? 'Sending...' : 'Send Review Request'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>
