@@ -1,11 +1,22 @@
 import { MailService } from '@sendgrid/mail';
 
 if (!process.env.SENDGRID_API_KEY) {
+  console.error("❌ SENDGRID_API_KEY environment variable not set");
   throw new Error("SENDGRID_API_KEY environment variable must be set");
 }
 
+if (!process.env.SENDGRID_API_KEY.startsWith('SG.')) {
+  console.error("❌ SendGrid API key must start with 'SG.' - current key format is invalid");
+  console.error("Your key starts with:", process.env.SENDGRID_API_KEY.substring(0, 10) + "...");
+}
+
 const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY);
+try {
+  mailService.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log("✅ SendGrid API key configured successfully");
+} catch (error) {
+  console.error("❌ Failed to configure SendGrid:", error);
+}
 
 interface EmailParams {
   to: string;

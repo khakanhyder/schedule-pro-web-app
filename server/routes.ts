@@ -687,20 +687,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         requestUrl,
       });
 
-      // Send actual email using SendGrid
-      const emailSent = await sendReviewRequestEmail(
-        clientName,
-        clientEmail,
-        platform,
-        customMessage,
-        "Your Business" // You can customize this business name
-      );
+      // Try to send email using SendGrid
+      let emailSent = false;
+      try {
+        emailSent = await sendReviewRequestEmail(
+          clientName,
+          clientEmail,
+          platform,
+          customMessage,
+          "Your Business" // You can customize this business name
+        );
+      } catch (error) {
+        console.log(`❌ SendGrid email failed: ${error}`);
+        console.log(`📧 Email Preview for ${clientEmail}:`);
+        console.log(`   Subject: Please share your experience with Your Business`);
+        console.log(`   Platform: ${platform.toUpperCase()}`);
+        console.log(`   Message: ${customMessage}`);
+        console.log(`   Note: Fix SendGrid API key to send real emails`);
+      }
 
       if (emailSent) {
         console.log(`✅ Review request email sent successfully to ${clientEmail} for ${platform}`);
       } else {
-        console.log(`❌ Failed to send review request email to ${clientEmail}`);
-        // Still return success since the request was saved, just email failed
+        console.log(`⚠️ Email not sent - but review request was saved to database`);
       }
 
       res.status(201).json(reviewRequest);
