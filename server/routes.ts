@@ -706,21 +706,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Review request logged and ready to send`);
       console.log(`💡 Add SendGrid API key to send real emails\n`);
 
-      // Send real email using SendGrid
+      // Test simple email first, then full review email
       let emailSent = false;
+      
+      // Try basic email test
       try {
-        emailSent = await sendReviewRequestEmail(
-          clientName,
-          clientEmail,
-          platform,
-          customMessage,
-          "Your Business"
-        );
+        console.log(`🧪 Testing basic email to ${clientEmail}...`);
+        emailSent = await sendEmail({
+          to: clientEmail,
+          from: 'test@sendgrid.net', // SendGrid sandbox domain
+          subject: 'Test Email from Your Business',
+          text: `Hi ${clientName}, this is a test email to verify our email system is working.`,
+          html: `<p>Hi ${clientName},</p><p>This is a test email to verify our email system is working.</p>`
+        });
+        
         if (emailSent) {
-          console.log(`🚀 SUCCESS: Real email sent via SendGrid to ${clientEmail}!`);
+          console.log(`✅ Basic email test successful!`);
+          
+          // Now try the full review email
+          emailSent = await sendReviewRequestEmail(
+            clientName,
+            clientEmail,
+            platform,
+            customMessage,
+            "Your Business"
+          );
+          
+          if (emailSent) {
+            console.log(`🚀 SUCCESS: Review request email sent to ${clientEmail}!`);
+          }
         }
       } catch (error) {
-        console.log(`⚠️ SendGrid failed: ${error}`);
+        console.log(`❌ Email test failed:`, error);
       }
 
       res.status(201).json(reviewRequest);
