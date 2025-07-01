@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { apiRequest } from "@/lib/queryClient";
+import ReviewRequestManager from "./ReviewRequestManager";
 import { 
   Search, 
   TrendingUp, 

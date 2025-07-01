@@ -129,10 +129,7 @@ export default function ReviewRequestManager() {
   });
 
   const sendReviewRequestMutation = useMutation({
-    mutationFn: (requestData: any) => apiRequest('/api/review-requests', {
-      method: 'POST',
-      body: requestData,
-    }),
+    mutationFn: (requestData: any) => apiRequest('POST', '/api/review-requests', requestData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/review-requests'] });
       setShowRequestDialog(false);

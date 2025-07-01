@@ -660,6 +660,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Review Requests
+  app.get("/api/review-requests", async (req, res) => {
+    try {
+      const reviewRequests = await storage.getReviewRequests();
+      res.json(reviewRequests);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching review requests" });
+    }
+  });
+
+  app.post("/api/review-requests", async (req, res) => {
+    try {
+      const { clientId, clientName, clientEmail, platform, customMessage } = req.body;
+      
+      // Generate review request URL (mock for demo)
+      const requestUrl = `https://review.${platform}.com/request/${Math.random().toString(36).substr(2, 9)}`;
+      
+      const reviewRequest = await storage.createReviewRequest({
+        clientId,
+        clientName,
+        clientEmail,
+        platform,
+        customMessage,
+        requestUrl,
+      });
+
+      // Send actual email/SMS here (for now, just log)
+      console.log(`📧 Review request sent to ${clientEmail} for ${platform}:`, customMessage);
+      console.log(`📱 SMS backup sent to client (if phone number available)`);
+      console.log(`🔗 Review URL: ${requestUrl}`);
+
+      res.status(201).json(reviewRequest);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error sending review request" });
+    }
+  });
+
+  app.patch("/api/review-requests/:id/status", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      await storage.updateReviewRequestStatus(id, status);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error updating review request status" });
+    }
+  });
+
   // Accept scheduling suggestion
   app.post("/api/ai/accept-suggestion/:id", async (req, res) => {
     try {
