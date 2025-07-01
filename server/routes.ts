@@ -6,6 +6,7 @@ import { aiSchedulingService, marketingAutomationService } from "./ai-service";
 import { GlossGeniusIntegration, validateGlossGeniusCredentials } from "./glossgenius-integration";
 import { CSVImporter } from "./csv-import";
 import { getPlatformsByIndustry, getPlatformById } from "./industry-platforms";
+import { sendReviewRequestEmail } from "./sendgrid";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
@@ -686,13 +687,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         requestUrl,
       });
 
-      // Send actual email/SMS here (for now, just log)
-      console.log(`📧 Review request sent to ${clientEmail} for ${platform}:`, customMessage);
-      console.log(`📱 SMS backup sent to client (if phone number available)`);
-      console.log(`🔗 Review URL: ${requestUrl}`);
+      // Send actual email using SendGrid
+      const emailSent = await sendReviewRequestEmail(
+        clientName,
+        clientEmail,
+        platform,
+        customMessage,
+        "Your Business" // You can customize this business name
+      );
+
+      if (emailSent) {
+        console.log(`✅ Review request email sent successfully to ${clientEmail} for ${platform}`);
+      } else {
+        console.log(`❌ Failed to send review request email to ${clientEmail}`);
+        // Still return success since the request was saved, just email failed
+      }
 
       res.status(201).json(reviewRequest);
     } catch (error: any) {
+      console.error('Review request error:', error);
       res.status(500).json({ message: "Error sending review request" });
     }
   });
