@@ -34,8 +34,13 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
       html: params.html || params.text || '',
     });
     
-    console.log(`✅ Resend response:`, result.data?.id);
-    return true;
+    if (result.data?.id) {
+      console.log(`✅ Resend email sent successfully! ID:`, result.data.id);
+      return true;
+    } else {
+      console.log(`⚠️ Resend response unclear:`, result);
+      return false;
+    }
   } catch (error: any) {
     console.error('❌ Resend email error details:');
     console.error('Message:', error.message);
@@ -106,7 +111,7 @@ If you have any questions, please contact us directly.
 
   return await sendEmail({
     to: clientEmail,
-    from: 'noreply@yourdomain.com', // Must be verified domain or SendGrid will reject
+    from: 'onboarding@resend.dev', // Resend's verified sending domain
     subject: `Please share your experience with ${businessName}`,
     text: textContent,
     html: htmlContent

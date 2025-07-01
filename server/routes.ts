@@ -714,7 +714,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`🧪 Testing basic email to ${clientEmail}...`);
         emailSent = await sendEmail({
           to: clientEmail,
-          from: 'test@sendgrid.net', // SendGrid sandbox domain
+          from: 'onboarding@resend.dev', // Resend verified domain
           subject: 'Test Email from Your Business',
           text: `Hi ${clientName}, this is a test email to verify our email system is working.`,
           html: `<p>Hi ${clientName},</p><p>This is a test email to verify our email system is working.</p>`
