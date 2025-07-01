@@ -1,13 +1,12 @@
-import { MailService } from '@sendgrid/mail';
+import { Resend } from 'resend';
 
-// Configure SendGrid with proper API key
-const mailService = new MailService();
+// Switch to Resend - much more reliable than SendGrid
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_API_KEY.startsWith('SG.')) {
-  mailService.setApiKey(process.env.SENDGRID_API_KEY);
-  console.log("✅ SendGrid email service configured successfully");
+if (resend) {
+  console.log("✅ Resend email service configured successfully");
 } else {
-  console.log("⚠️ Valid SendGrid API key not found - email previews only");
+  console.log("⚠️ RESEND_API_KEY not found - email previews only");
 }
 
 interface EmailParams {
@@ -19,31 +18,27 @@ interface EmailParams {
 }
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
-  if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_API_KEY.startsWith('SG.')) {
-    console.log("⚠️ SendGrid not configured - showing preview only");
+  if (!resend) {
+    console.log("⚠️ Resend not configured - showing preview only");
     return false;
   }
 
   try {
     console.log(`📧 Attempting to send email to ${params.to} from ${params.from}`);
     
-    const result = await mailService.send({
-      to: params.to,
+    const result = await resend.emails.send({
       from: params.from,
+      to: params.to,
       subject: params.subject,
       text: params.text || '',
-      html: params.html || '',
+      html: params.html || params.text || '',
     });
     
-    console.log(`✅ SendGrid response:`, result[0].statusCode);
+    console.log(`✅ Resend response:`, result.data?.id);
     return true;
   } catch (error: any) {
-    console.error('❌ SendGrid email error details:');
-    console.error('Status:', error.code);
+    console.error('❌ Resend email error details:');
     console.error('Message:', error.message);
-    if (error.response?.body?.errors) {
-      console.error('Errors:', error.response.body.errors);
-    }
     return false;
   }
 }
