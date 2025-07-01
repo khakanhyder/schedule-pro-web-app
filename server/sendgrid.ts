@@ -25,16 +25,25 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
   }
 
   try {
-    await mailService.send({
+    console.log(`📧 Attempting to send email to ${params.to} from ${params.from}`);
+    
+    const result = await mailService.send({
       to: params.to,
       from: params.from,
       subject: params.subject,
       text: params.text || '',
       html: params.html || '',
     });
+    
+    console.log(`✅ SendGrid response:`, result[0].statusCode);
     return true;
-  } catch (error) {
-    console.error('SendGrid email error:', error);
+  } catch (error: any) {
+    console.error('❌ SendGrid email error details:');
+    console.error('Status:', error.code);
+    console.error('Message:', error.message);
+    if (error.response?.body?.errors) {
+      console.error('Errors:', error.response.body.errors);
+    }
     return false;
   }
 }
@@ -102,7 +111,7 @@ If you have any questions, please contact us directly.
 
   return await sendEmail({
     to: clientEmail,
-    from: 'noreply@scheduled.app', // Default sender - can be customized
+    from: 'noreply@yourdomain.com', // Must be verified domain or SendGrid will reject
     subject: `Please share your experience with ${businessName}`,
     text: textContent,
     html: htmlContent
