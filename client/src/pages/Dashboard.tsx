@@ -110,7 +110,7 @@ export default function Dashboard() {
   });
 
   // Fetch clients for review requests
-  const { data: clients = [] } = useQuery({
+  const { data: clients = [] } = useQuery<any[]>({
     queryKey: ['/api/clients']
   });
 
@@ -294,18 +294,25 @@ export default function Dashboard() {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Select Client</label>
-                      <Select value={selectedClient} onValueChange={setSelectedClient}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose a client..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {clients.map((client: any) => (
-                            <SelectItem key={client.id} value={client.id.toString()}>
-                              {client.name} - {client.email}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {clients.length === 0 ? (
+                        <div className="p-4 border rounded-lg bg-gray-50 text-center">
+                          <p className="text-sm text-gray-600 mb-2">No clients found</p>
+                          <p className="text-xs text-gray-500">Go to the Clients tab to add clients first</p>
+                        </div>
+                      ) : (
+                        <Select value={selectedClient} onValueChange={setSelectedClient}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a client..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {clients.map((client: any) => (
+                              <SelectItem key={client.id} value={client.id.toString()}>
+                                {client.name} - {client.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
 
                     {selectedClient && (
