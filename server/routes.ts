@@ -6,7 +6,7 @@ import { aiSchedulingService, marketingAutomationService } from "./ai-service";
 import { GlossGeniusIntegration, validateGlossGeniusCredentials } from "./glossgenius-integration";
 import { CSVImporter } from "./csv-import";
 import { getPlatformsByIndustry, getPlatformById } from "./industry-platforms";
-import { sendReviewRequestEmail } from "./sendgrid";
+import { sendReviewRequestEmail, sendEmail } from "./sendgrid";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
