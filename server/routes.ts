@@ -706,9 +706,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Review request logged and ready to send`);
       console.log(`💡 Add SendGrid API key to send real emails\n`);
 
-      // Try SendGrid if properly configured
+      // Try Resend if configured (much better than SendGrid)
       let emailSent = false;
-      if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_API_KEY.startsWith('SG.')) {
+      if (process.env.RESEND_API_KEY) {
         try {
           emailSent = await sendReviewRequestEmail(
             clientName,
@@ -718,10 +718,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "Your Business"
           );
           if (emailSent) {
-            console.log(`🚀 BONUS: Real email also sent via SendGrid!`);
+            console.log(`🚀 BONUS: Real email also sent via Resend!`);
           }
         } catch (error) {
-          console.log(`⚠️ SendGrid failed, but preview shows what client would receive`);
+          console.log(`⚠️ Email service failed, but preview shows what client would receive`);
         }
       }
 
