@@ -7,6 +7,7 @@ import { GlossGeniusIntegration, validateGlossGeniusCredentials } from "./glossg
 import { CSVImporter } from "./csv-import";
 import { getPlatformsByIndustry, getPlatformById } from "./industry-platforms";
 import { sendReviewRequestEmail, sendEmail } from "./sendgrid";
+import { testResendConnection } from "./email-test";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
@@ -83,6 +84,10 @@ Hi ${confirmationDetails.clientName}! Your appointment with ${confirmationDetail
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Test Resend connection on startup
+  setTimeout(() => {
+    testResendConnection();
+  }, 2000);
   // Stripe payment processing endpoint
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
@@ -755,6 +760,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ message: "Error updating review request status" });
+    }
+  });
+
+  // Test Resend connection endpoint
+  app.post("/api/test-email", async (req, res) => {
+    try {
+      await testResendConnection();
+      res.json({ message: "Email test initiated - check console logs" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Email test failed: " + error.message });
     }
   });
 
