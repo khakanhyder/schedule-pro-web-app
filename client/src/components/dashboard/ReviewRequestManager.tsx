@@ -143,6 +143,14 @@ export default function ReviewRequestManager() {
         description: "Your customer will receive a personalized review request.",
       });
     },
+    onError: (error: any) => {
+      console.error('Review request failed:', error);
+      toast({
+        title: "Failed to Send Review Request",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
   // Get clients who haven't been asked for reviews on specific platforms
