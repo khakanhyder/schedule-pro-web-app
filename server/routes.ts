@@ -8,6 +8,7 @@ import { CSVImporter } from "./csv-import";
 import { getPlatformsByIndustry, getPlatformById } from "./industry-platforms";
 import { sendReviewRequestEmail, sendEmail } from "./sendgrid";
 import { testResendConnection } from "./email-test";
+import { sendCoderInvitation } from "./coder-invitation";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
@@ -770,6 +771,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Email test initiated - check console logs" });
     } catch (error: any) {
       res.status(500).json({ message: "Email test failed: " + error.message });
+    }
+  });
+
+  // Send coder invitation endpoint
+  app.post("/api/send-coder-invitation", async (req, res) => {
+    try {
+      const {
+        coderName,
+        coderEmail,
+        projectName,
+        projectDescription,
+        estimatedBudget,
+        timeline,
+        techStack,
+        contactEmail,
+        contactName
+      } = req.body;
+
+      if (!coderName || !coderEmail || !projectName || !projectDescription || !contactEmail || !contactName) {
+        return res.status(400).json({ 
+          message: "Missing required fields: coderName, coderEmail, projectName, projectDescription, contactEmail, contactName" 
+        });
+      }
+
+      const invitationSent = await sendCoderInvitation({
+        coderName,
+        coderEmail,
+        projectName,
+        projectDescription,
+        estimatedBudget,
+        timeline,
+        techStack,
+        contactEmail,
+        contactName
+      });
+
+      if (invitationSent) {
+        res.json({ 
+          message: "Coder invitation sent successfully",
+          success: true 
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Failed to send coder invitation",
+          success: false 
+        });
+      }
+    } catch (error: any) {
+      console.error('Coder invitation error:', error);
+      res.status(500).json({ message: "Error sending coder invitation: " + error.message });
     }
   });
 
