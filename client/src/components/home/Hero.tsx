@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
+import { useCustomImages } from "@/hooks/useCustomImages";
 
 // Define hero data for each industry (mapped to industryContext IDs)
 const heroContent = {
@@ -43,10 +44,14 @@ const heroContent = {
 
 export default function Hero() {
   const { selectedIndustry } = useIndustry();
+  const { customImages } = useCustomImages();
   const terms = getTerminology(selectedIndustry);
   
   // Get the content for the selected industry
   const content = heroContent[selectedIndustry.id as keyof typeof heroContent] || heroContent.custom;
+  
+  // Use custom hero image if available, otherwise fall back to template
+  const backgroundImage = customImages.heroImage || content.background;
   
   // Create a button text based on terminology
   const buttonText = terms.appointment === "appointment" ? "Book Appointment" :
@@ -57,7 +62,7 @@ export default function Hero() {
   return (
     <section 
       className="relative h-[500px] bg-cover bg-center" 
-      style={{ backgroundImage: `url('${content.background}')` }}
+      style={{ backgroundImage: `url('${backgroundImage}')` }}
     >
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       <div className="container mx-auto px-4 h-full flex flex-col justify-center items-center relative z-10 text-center">

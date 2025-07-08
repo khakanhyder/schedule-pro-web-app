@@ -1,7 +1,9 @@
 import { useIndustry } from "@/lib/industryContext";
+import { useCustomImages } from "@/hooks/useCustomImages";
 
 export default function Gallery() {
   const { selectedIndustry } = useIndustry();
+  const { customImages } = useCustomImages();
 
   // Industry-specific gallery images
   const industryGalleryImages = {
@@ -91,10 +93,14 @@ export default function Gallery() {
     ]
   };
 
-  // Get gallery images for the current industry
-  const galleryImages = industryGalleryImages[selectedIndustry.id as keyof typeof industryGalleryImages] || industryGalleryImages.custom;
+  // Get the gallery images for the selected industry
+  const defaultGalleryImages = industryGalleryImages[selectedIndustry.id as keyof typeof industryGalleryImages] || industryGalleryImages.custom;
   
-  // Industry-specific section titles
+  // Use custom gallery images if available, otherwise fall back to template images
+  const galleryImages = customImages.galleryImages.length > 0 
+    ? customImages.galleryImages.map((url, index) => ({ url, alt: `Gallery image ${index + 1}` }))
+    : defaultGalleryImages;
+
   const sectionTitles = {
     beauty: "Our Salon",
     wellness: "Our Wellness Center",

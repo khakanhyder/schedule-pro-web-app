@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { type Service } from "@shared/schema";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
+import { useCustomImages } from "@/hooks/useCustomImages";
 
 // Industry-specific service images
 const industryServiceImages = {
@@ -117,6 +118,7 @@ const defaultServiceImages = [
 
 export default function Services() {
   const { selectedIndustry } = useIndustry();
+  const { customImages } = useCustomImages();
   const terms = getTerminology(selectedIndustry);
   const { data: services, isLoading, error } = useQuery<Service[]>({
     queryKey: ["/api/services"],
@@ -204,6 +206,8 @@ function ServiceCard({
   accentColor: string,
   terms: ReturnType<typeof getTerminology>
 }) {
+  const { customImages } = useCustomImages();
+  
   // Get the appropriate service images for this industry based on the service name
   const currentIndustryId = industryId || 'beauty';
   const serviceImages = industryServiceImages[currentIndustryId as keyof typeof industryServiceImages] || defaultServiceImages;
@@ -257,7 +261,7 @@ function ServiceCard({
       )}
       <div className={`${isPopular ? 'pt-7' : ''}`}>
         <img 
-          src={serviceImages[imageIndex]} 
+          src={customImages.serviceShowcaseImages?.[index] || serviceImages[imageIndex]} 
           alt={service.name} 
           className="w-full h-48 object-cover"
         />

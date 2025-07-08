@@ -7,10 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useIndustry, industryTemplates } from "@/lib/industryContext";
+import ImageUploadManager, { type CustomImages } from "@/components/setup/ImageUploadManager";
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [businessName, setBusinessName] = useState<string>("");
+  const [customImages, setCustomImages] = useState<CustomImages>({
+    heroImage: undefined,
+    galleryImages: [],
+    serviceShowcaseImages: []
+  });
   const [step, setStep] = useState(1);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -25,6 +31,27 @@ export default function Setup() {
       title: "Industry Selected",
       description: "Now customize your business details."
     });
+  };
+
+  const handleBusinessDetails = () => {
+    if (!businessName.trim()) {
+      toast({
+        title: "Please enter business name",
+        description: "Enter your business name to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setStep(3);
+    
+    toast({
+      title: "Business Details Saved",
+      description: "Now customize your images to make your template unique."
+    });
+  };
+
+  const handleImagesUpdate = (images: CustomImages) => {
+    setCustomImages(images);
   };
 
   const completeSetup = () => {
@@ -46,17 +73,19 @@ export default function Setup() {
       return;
     }
     
+    // Save all setup data including custom images
     localStorage.setItem('setupCompleted', 'true');
     localStorage.setItem('hasServices', 'true');
     localStorage.setItem('hasStaff', 'true');
     localStorage.setItem('selectedIndustry', selectedTemplate);
     localStorage.setItem('businessName', businessName);
+    localStorage.setItem('customImages', JSON.stringify(customImages));
     
     setLocation("/dashboard");
     
     toast({
       title: "Setup Complete!",
-      description: "Your business profile has been configured successfully."
+      description: "Your personalized business profile has been configured successfully."
     });
   };
 
@@ -87,6 +116,15 @@ export default function Setup() {
                   2
                 </div>
                 <span className="ml-2 text-sm">Business Details</span>
+              </div>
+              <div className="w-8 h-px bg-gray-300"></div>
+              <div className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                  step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>
+                  3
+                </div>
+                <span className="ml-2 text-sm">Custom Images</span>
               </div>
             </div>
           </CardHeader>
@@ -207,33 +245,56 @@ export default function Setup() {
               </div>
             )}
 
+            {step === 3 && selectedTemplate && (
+              <div className="space-y-6">
+                <ImageUploadManager 
+                  selectedIndustry={industryTemplates.find(t => t.id === selectedTemplate)!}
+                  onImagesUpdate={handleImagesUpdate}
+                />
+              </div>
+            )}
+
 
           </CardContent>
           
           <CardFooter className="flex justify-between">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                if (step === 1) {
-                  setLocation("/");
-                } else {
-                  setStep(step - 1);
-                }
-              }}
-            >
-              {step === 1 ? "Cancel" : "Back"}
-            </Button>
-            
-            <div className="space-x-2">
-              {step === 2 && (
-                <Button 
-                  onClick={completeSetup}
-                  disabled={!businessName.trim()}
-                >
-                  Complete Setup
+            {step === 1 && (
+              <>
+                <Button variant="outline" onClick={() => setLocation("/")}>
+                  Back to Home
                 </Button>
-              )}
-            </div>
+                <div className="text-sm text-muted-foreground">
+                  Select an industry template to continue
+                </div>
+              </>
+            )}
+            
+            {step === 2 && (
+              <>
+                <Button variant="outline" onClick={() => setStep(1)}>
+                  Back to Industry
+                </Button>
+                <Button onClick={handleBusinessDetails}>
+                  Continue to Images
+                </Button>
+              </>
+            )}
+            
+            {step === 3 && (
+              <>
+                <Button variant="outline" onClick={() => setStep(2)}>
+                  Back to Details
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={completeSetup}>
+                    Skip Images
+                  </Button>
+                  <Button onClick={completeSetup}>
+                    Complete Setup
+                  </Button>
+                </div>
+              </>
+            )}
           </CardFooter>
         </Card>
       </div>
