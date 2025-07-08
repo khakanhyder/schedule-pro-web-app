@@ -359,4 +359,80 @@ export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
 export type ReviewSubmission = typeof reviewSubmissions.$inferSelect;
 export type InsertReviewSubmission = z.infer<typeof insertReviewSubmissionSchema>;
 
+// 3D Room Visualization for Skilled Trades
+export const roomProjects = pgTable("room_projects", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").references(() => clients.id),
+  clientName: text("client_name").notNull(),
+  clientEmail: text("client_email").notNull(),
+  projectName: text("project_name").notNull(),
+  projectType: text("project_type").notNull(), // 'kitchen', 'bathroom', 'living_room', 'bedroom', 'custom'
+  roomLength: real("room_length").notNull(), // in feet
+  roomWidth: real("room_width").notNull(), // in feet
+  roomHeight: real("room_height").notNull(), // in feet
+  doorPositions: text("door_positions"), // JSON array of door positions
+  windowPositions: text("window_positions"), // JSON array of window positions
+  currentMaterials: text("current_materials"), // JSON object of current materials
+  selectedMaterials: text("selected_materials"), // JSON object of selected materials
+  photos: text("photos").array(), // Array of photo URLs
+  notes: text("notes"),
+  estimatedCost: real("estimated_cost"),
+  status: text("status").notNull().default('draft'), // 'draft', 'approved', 'in_progress', 'completed'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const roomMaterials = pgTable("room_materials", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category").notNull(), // 'flooring', 'paint', 'tiles', 'fixtures', 'cabinets'
+  subcategory: text("subcategory"), // 'hardwood', 'laminate', 'ceramic', 'granite', etc.
+  color: text("color").notNull(),
+  texture: text("texture"), // URL to texture image
+  price: real("price"), // per square foot or unit
+  unit: text("unit").notNull(), // 'sq_ft', 'linear_ft', 'unit'
+  brand: text("brand"),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertRoomProjectSchema = createInsertSchema(roomProjects).pick({
+  clientId: true,
+  clientName: true,
+  clientEmail: true,
+  projectName: true,
+  projectType: true,
+  roomLength: true,
+  roomWidth: true,
+  roomHeight: true,
+  doorPositions: true,
+  windowPositions: true,
+  currentMaterials: true,
+  selectedMaterials: true,
+  photos: true,
+  notes: true,
+  estimatedCost: true,
+  status: true,
+});
+
+export const insertRoomMaterialSchema = createInsertSchema(roomMaterials).pick({
+  name: true,
+  category: true,
+  subcategory: true,
+  color: true,
+  texture: true,
+  price: true,
+  unit: true,
+  brand: true,
+  description: true,
+  imageUrl: true,
+  isActive: true,
+});
+
+export type RoomProject = typeof roomProjects.$inferSelect;
+export type InsertRoomProject = z.infer<typeof insertRoomProjectSchema>;
+export type RoomMaterial = typeof roomMaterials.$inferSelect;
+export type InsertRoomMaterial = z.infer<typeof insertRoomMaterialSchema>;
+
 

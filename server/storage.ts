@@ -13,7 +13,9 @@ import {
   invoiceViews, type InvoiceView, type InsertInvoiceView,
   invoiceNotifications, type InvoiceNotification, type InsertInvoiceNotification,
   reviewRequests, type ReviewRequest, type InsertReviewRequest,
-  reviewSubmissions, type ReviewSubmission, type InsertReviewSubmission
+  reviewSubmissions, type ReviewSubmission, type InsertReviewSubmission,
+  roomProjects, type RoomProject, type InsertRoomProject,
+  roomMaterials, type RoomMaterial, type InsertRoomMaterial
 } from "@shared/schema";
 import { type IndustryData, industryDatabase } from "./industryData";
 
@@ -100,6 +102,21 @@ export interface IStorage {
   // Industry management
   setIndustry(industryId: string): Promise<void>;
   getCurrentIndustry(): { id: string; name: string };
+  
+  // Room Projects (3D Visualization)
+  getRoomProjects(): Promise<RoomProject[]>;
+  getRoomProject(id: number): Promise<RoomProject | undefined>;
+  createRoomProject(project: InsertRoomProject): Promise<RoomProject>;
+  updateRoomProject(id: number, updates: Partial<InsertRoomProject>): Promise<RoomProject>;
+  deleteRoomProject(id: number): Promise<void>;
+  
+  // Room Materials
+  getRoomMaterials(): Promise<RoomMaterial[]>;
+  getRoomMaterial(id: number): Promise<RoomMaterial | undefined>;
+  createRoomMaterial(material: InsertRoomMaterial): Promise<RoomMaterial>;
+  updateRoomMaterial(id: number, updates: Partial<InsertRoomMaterial>): Promise<RoomMaterial>;
+  deleteRoomMaterial(id: number): Promise<void>;
+  getRoomMaterialsByCategory(category: string): Promise<RoomMaterial[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -118,6 +135,8 @@ export class MemStorage implements IStorage {
   private invoiceNotifications = new Map<number, InvoiceNotification>();
   private reviewRequests = new Map<number, ReviewRequest>();
   private reviewSubmissions = new Map<number, ReviewSubmission>();
+  private roomProjects = new Map<number, RoomProject>();
+  private roomMaterials = new Map<number, RoomMaterial>();
   
   private userCurrentId = 1;
   private serviceCurrentId = 1;
@@ -134,6 +153,8 @@ export class MemStorage implements IStorage {
   private invoiceNotificationCurrentId = 1;
   private reviewRequestCurrentId = 1;
   private reviewSubmissionCurrentId = 1;
+  private roomProjectCurrentId = 1;
+  private roomMaterialCurrentId = 1;
   
   // Track the current industry
   private currentIndustryId = "beauty";
@@ -143,6 +164,7 @@ export class MemStorage implements IStorage {
     this.initializeServices();
     this.initializeStylists();
     this.initializeReviews();
+    this.initializeRoomMaterials();
   }
   
 
@@ -741,6 +763,133 @@ export class MemStorage implements IStorage {
       id: this.currentIndustryId,
       name: industry?.name || 'Unknown Industry'
     };
+  }
+
+  // Room Projects Implementation
+  async getRoomProjects(): Promise<RoomProject[]> {
+    return Array.from(this.roomProjects.values());
+  }
+
+  async getRoomProject(id: number): Promise<RoomProject | undefined> {
+    return this.roomProjects.get(id);
+  }
+
+  async createRoomProject(project: InsertRoomProject): Promise<RoomProject> {
+    const id = this.roomProjectCurrentId++;
+    const newProject: RoomProject = {
+      ...project,
+      id,
+      status: project.status || 'draft',
+      notes: project.notes || null,
+      clientId: project.clientId || null,
+      doorPositions: project.doorPositions || null,
+      windowPositions: project.windowPositions || null,
+      selectedMaterials: project.selectedMaterials || null,
+      estimatedCost: project.estimatedCost || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.roomProjects.set(id, newProject);
+    return newProject;
+  }
+
+  async updateRoomProject(id: number, updates: Partial<InsertRoomProject>): Promise<RoomProject> {
+    const project = this.roomProjects.get(id);
+    if (!project) {
+      throw new Error(`Room project ${id} not found`);
+    }
+    const updatedProject = { ...project, ...updates, updatedAt: new Date() };
+    this.roomProjects.set(id, updatedProject);
+    return updatedProject;
+  }
+
+  async deleteRoomProject(id: number): Promise<void> {
+    this.roomProjects.delete(id);
+  }
+
+  // Room Materials Implementation
+  async getRoomMaterials(): Promise<RoomMaterial[]> {
+    return Array.from(this.roomMaterials.values());
+  }
+
+  async getRoomMaterial(id: number): Promise<RoomMaterial | undefined> {
+    return this.roomMaterials.get(id);
+  }
+
+  async createRoomMaterial(material: InsertRoomMaterial): Promise<RoomMaterial> {
+    const id = this.roomMaterialCurrentId++;
+    const newMaterial: RoomMaterial = { 
+      ...material, 
+      id,
+      texture: material.texture || null,
+      brand: material.brand || null,
+      description: material.description || null,
+      imageUrl: material.imageUrl || null,
+      subcategory: material.subcategory || null,
+      price: material.price || null,
+      isActive: material.isActive !== undefined ? material.isActive : true
+    };
+    this.roomMaterials.set(id, newMaterial);
+    return newMaterial;
+  }
+
+  async updateRoomMaterial(id: number, updates: Partial<InsertRoomMaterial>): Promise<RoomMaterial> {
+    const material = this.roomMaterials.get(id);
+    if (!material) {
+      throw new Error(`Room material ${id} not found`);
+    }
+    const updatedMaterial = { ...material, ...updates };
+    this.roomMaterials.set(id, updatedMaterial);
+    return updatedMaterial;
+  }
+
+  async deleteRoomMaterial(id: number): Promise<void> {
+    this.roomMaterials.delete(id);
+  }
+
+  async getRoomMaterialsByCategory(category: string): Promise<RoomMaterial[]> {
+    return Array.from(this.roomMaterials.values()).filter(m => m.category === category);
+  }
+
+  // Initialize room materials with sample data
+  private initializeRoomMaterials(): void {
+    const sampleMaterials = [
+      // Flooring
+      { name: "Oak Hardwood", category: "flooring", subcategory: "hardwood", color: "Natural Oak", price: 8.5, unit: "sq_ft", brand: "Armstrong", description: "Classic oak hardwood flooring", imageUrl: "/materials/oak-hardwood.jpg", isActive: true },
+      { name: "Marble Tile", category: "flooring", subcategory: "tile", color: "Carrara White", price: 12.0, unit: "sq_ft", brand: "Daltile", description: "Elegant marble tile flooring", imageUrl: "/materials/marble-tile.jpg", isActive: true },
+      { name: "Luxury Vinyl", category: "flooring", subcategory: "vinyl", color: "Rustic Brown", price: 4.5, unit: "sq_ft", brand: "Shaw", description: "Waterproof luxury vinyl planks", imageUrl: "/materials/luxury-vinyl.jpg", isActive: true },
+      
+      // Paint
+      { name: "Premium Interior Paint", category: "paint", subcategory: "interior", color: "Warm White", price: 45.0, unit: "gallon", brand: "Sherwin Williams", description: "High-quality interior paint", imageUrl: "/materials/paint-white.jpg", isActive: true },
+      { name: "Premium Interior Paint", category: "paint", subcategory: "interior", color: "Sage Green", price: 45.0, unit: "gallon", brand: "Sherwin Williams", description: "High-quality interior paint", imageUrl: "/materials/paint-green.jpg", isActive: true },
+      
+      // Tiles
+      { name: "Subway Tiles", category: "tiles", subcategory: "ceramic", color: "Classic White", price: 3.5, unit: "sq_ft", brand: "American Olean", description: "Timeless subway tiles", imageUrl: "/materials/subway-tiles.jpg", isActive: true },
+      { name: "Mosaic Tiles", category: "tiles", subcategory: "glass", color: "Ocean Blue", price: 15.0, unit: "sq_ft", brand: "Bisazza", description: "Premium glass mosaic tiles", imageUrl: "/materials/mosaic-tiles.jpg", isActive: true },
+      
+      // Fixtures
+      { name: "Modern Faucet", category: "fixtures", subcategory: "faucets", color: "Brushed Nickel", price: 185.0, unit: "unit", brand: "Moen", description: "Contemporary kitchen faucet", imageUrl: "/materials/modern-faucet.jpg", isActive: true },
+      { name: "LED Light Fixture", category: "fixtures", subcategory: "lighting", color: "Warm White", price: 95.0, unit: "unit", brand: "Philips", description: "Energy-efficient LED ceiling light", imageUrl: "/materials/led-light.jpg", isActive: true },
+      
+      // Cabinets
+      { name: "Shaker Cabinets", category: "cabinets", subcategory: "kitchen", color: "Navy Blue", price: 125.0, unit: "linear_ft", brand: "KraftMaid", description: "Classic shaker style kitchen cabinets", imageUrl: "/materials/shaker-cabinets.jpg", isActive: true },
+      { name: "Modern Cabinets", category: "cabinets", subcategory: "bathroom", color: "Espresso", price: 95.0, unit: "linear_ft", brand: "Thomasville", description: "Contemporary bathroom vanity", imageUrl: "/materials/modern-cabinets.jpg", isActive: true }
+    ];
+
+    sampleMaterials.forEach(material => {
+      const id = this.roomMaterialCurrentId++;
+      this.roomMaterials.set(id, { 
+        ...material, 
+        id,
+        texture: null,
+        brand: material.brand || null,
+        description: material.description || null,
+        imageUrl: material.imageUrl || null,
+        subcategory: material.subcategory || null,
+        price: material.price || null,
+        isActive: material.isActive !== undefined ? material.isActive : true
+      });
+    });
   }
 }
 

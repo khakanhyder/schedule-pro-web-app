@@ -13,7 +13,9 @@ import {
   insertAppointmentSchema, 
   insertReviewSchema, 
   insertContactMessageSchema,
-  insertInvoiceSchema
+  insertInvoiceSchema,
+  insertRoomProjectSchema,
+  insertRoomMaterialSchema
 } from "@shared/schema";
 
 // Initialize Stripe with the secret key
@@ -1118,6 +1120,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+
+  // Room Projects API (3D Visualization)
+  app.get("/api/room-projects", async (req, res) => {
+    try {
+      const projects = await storage.getRoomProjects();
+      res.json(projects);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching room projects: " + error.message });
+    }
+  });
+
+  app.get("/api/room-projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const project = await storage.getRoomProject(id);
+      if (!project) {
+        res.status(404).json({ message: "Room project not found" });
+        return;
+      }
+      res.json(project);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching room project: " + error.message });
+    }
+  });
+
+  app.post("/api/room-projects", async (req, res) => {
+    try {
+      const validatedData = insertRoomProjectSchema.parse(req.body);
+      const project = await storage.createRoomProject(validatedData);
+      res.status(201).json(project);
+    } catch (error: any) {
+      res.status(400).json({ message: "Error creating room project: " + error.message });
+    }
+  });
+
+  app.patch("/api/room-projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const project = await storage.updateRoomProject(id, updates);
+      res.json(project);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error updating room project: " + error.message });
+    }
+  });
+
+  app.delete("/api/room-projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteRoomProject(id);
+      res.json({ message: "Room project deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error deleting room project: " + error.message });
+    }
+  });
+
+  // Room Materials API
+  app.get("/api/room-materials", async (req, res) => {
+    try {
+      const { category } = req.query;
+      let materials;
+      if (category) {
+        materials = await storage.getRoomMaterialsByCategory(category as string);
+      } else {
+        materials = await storage.getRoomMaterials();
+      }
+      res.json(materials);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching room materials: " + error.message });
+    }
+  });
+
+  app.post("/api/room-materials", async (req, res) => {
+    try {
+      const validatedData = insertRoomMaterialSchema.parse(req.body);
+      const material = await storage.createRoomMaterial(validatedData);
+      res.status(201).json(material);
+    } catch (error: any) {
+      res.status(400).json({ message: "Error creating room material: " + error.message });
+    }
+  });
 
   return httpServer;
 }

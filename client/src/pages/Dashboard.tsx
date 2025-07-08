@@ -48,10 +48,11 @@ import AdvancedFeatures from "@/components/dashboard/AdvancedFeatures";
 import IndustrySpecificFeatures from "@/components/dashboard/IndustrySpecificFeatures";
 import PredictiveInsights from "@/components/dashboard/PredictiveInsights";
 import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
+import RoomProjectManager from "@/components/dashboard/RoomProjectManager";
 import SettingsManagement from "@/components/dashboard/SettingsManagement";
 import BusinessGrowthHub from "@/components/dashboard/BusinessGrowthHub";
-import DepositManager from "@/components/dashboard/DepositManager";
 import CommunicationHub from "@/components/dashboard/CommunicationHub";
+import DepositManager from "@/components/dashboard/DepositManager";
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
 export default function Dashboard() {
@@ -382,7 +383,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 mb-8 h-auto p-1 bg-slate-100 rounded-lg">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 mb-8 h-auto p-1 bg-slate-100 rounded-lg">
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -454,6 +455,16 @@ export default function Dashboard() {
               Messages
             </TabsTrigger>
             <TabsTrigger 
+              value="room-projects" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'room-projects' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              3D Projects
+            </TabsTrigger>
+            <TabsTrigger 
               value="settings" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
               style={selectedTab === 'settings' ? {
@@ -502,6 +513,11 @@ export default function Dashboard() {
           {/* Communication Hub Tab */}
           <TabsContent value="messages">
             <CommunicationHub />
+          </TabsContent>
+
+          {/* 3D Room Projects Tab */}
+          <TabsContent value="room-projects">
+            <RoomProjectManager />
           </TabsContent>
 
           {/* Settings Tab */}
