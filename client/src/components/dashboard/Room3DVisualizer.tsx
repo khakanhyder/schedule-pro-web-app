@@ -360,14 +360,14 @@ export default function Room3DVisualizer({
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="flooring" className="w-full">
-              <TabsList className="grid grid-cols-2 lg:grid-cols-1 gap-1">
+              <TabsList className="flex flex-col w-full h-auto p-1 bg-gray-100">
                 {materialPreviews.map(({ category, visible }) => (
                   <TabsTrigger 
                     key={category} 
                     value={category}
-                    className="flex items-center justify-between w-full"
+                    className="flex items-center justify-between w-full h-10 px-3 py-2 mb-1 last:mb-0 data-[state=active]:bg-white data-[state=active]:shadow-sm"
                   >
-                    <span className="capitalize">{category}</span>
+                    <span className="capitalize font-medium">{category}</span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -375,7 +375,7 @@ export default function Room3DVisualizer({
                         e.stopPropagation();
                         toggleMaterialVisibility(category);
                       }}
-                      className="h-6 w-6 p-0"
+                      className="h-6 w-6 p-0 ml-2"
                     >
                       {visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                     </Button>
@@ -384,27 +384,32 @@ export default function Room3DVisualizer({
               </TabsList>
 
               {materialPreviews.map(({ category }) => (
-                <TabsContent key={category} value={category} className="space-y-3">
-                  <Select
-                    value={selectedMaterials[category]?.toString() || ""}
-                    onValueChange={(value) => onMaterialChange(category, Number(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={`Select ${category}`} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getMaterialsByCategory(category).map((material) => (
-                        <SelectItem key={material.id} value={material.id.toString()}>
-                          <div className="flex items-center justify-between w-full">
-                            <span>{material.name}</span>
-                            <Badge variant="secondary">
-                              ${material.price?.toFixed(2) || '0.00'}/{material.unit}
-                            </Badge>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <TabsContent key={category} value={category} className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 capitalize">
+                      Choose {category}
+                    </label>
+                    <Select
+                      value={selectedMaterials[category]?.toString() || ""}
+                      onValueChange={(value) => onMaterialChange(category, Number(value))}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder={`Select ${category}...`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getMaterialsByCategory(category).map((material) => (
+                          <SelectItem key={material.id} value={material.id.toString()}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{material.name}</span>
+                              <Badge variant="secondary">
+                                ${material.price?.toFixed(2) || '0.00'}/{material.unit}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   {selectedMaterials[category] && (
                     <div className="p-3 bg-gray-50 rounded-lg">

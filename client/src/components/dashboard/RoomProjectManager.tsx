@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Eye, Edit, Trash2, Home, Calculator } from 'lucide-react';
 import Room3DVisualizer from './Room3DVisualizer';
+import MaterialSelectionDemo from './MaterialSelectionDemo';
 import { apiRequest } from '@/lib/queryClient';
 import type { RoomProject, RoomMaterial, InsertRoomProject } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
@@ -244,9 +245,10 @@ export default function RoomProjectManager() {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="details">Project Details</TabsTrigger>
                   <TabsTrigger value="room">Room Design</TabsTrigger>
+                  <TabsTrigger value="demo">How It Works</TabsTrigger>
                   <TabsTrigger value="cost">Cost Estimate</TabsTrigger>
                 </TabsList>
 
@@ -321,6 +323,10 @@ export default function RoomProjectManager() {
                     onMaterialChange={handleMaterialChange}
                     materials={materials}
                   />
+                </TabsContent>
+
+                <TabsContent value="demo" className="space-y-4">
+                  <MaterialSelectionDemo />
                 </TabsContent>
 
                 <TabsContent value="cost" className="space-y-4">
