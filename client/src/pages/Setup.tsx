@@ -7,16 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useIndustry, industryTemplates } from "@/lib/industryContext";
-import ImageUploadManager, { type CustomImages } from "@/components/setup/ImageUploadManager";
+// ImageUploadManager removed - now using click-to-edit interface
 
 export default function Setup() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [businessName, setBusinessName] = useState<string>("");
-  const [customImages, setCustomImages] = useState<CustomImages>({
-    heroImage: undefined,
-    galleryImages: [],
-    serviceShowcaseImages: []
-  });
+  // Custom images now handled via click-to-edit
   const [step, setStep] = useState(1);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -42,17 +38,10 @@ export default function Setup() {
       });
       return;
     }
-    setStep(3);
-    
-    toast({
-      title: "Business Details Saved",
-      description: "Now customize your images to make your template unique."
-    });
+    completeSetup();
   };
 
-  const handleImagesUpdate = (images: CustomImages) => {
-    setCustomImages(images);
-  };
+  // Image handling moved to click-to-edit interface
 
   const completeSetup = () => {
     if (!selectedTemplate) {
@@ -79,7 +68,7 @@ export default function Setup() {
     localStorage.setItem('hasStaff', 'true');
     localStorage.setItem('selectedIndustry', selectedTemplate);
     localStorage.setItem('businessName', businessName);
-    localStorage.setItem('customImages', JSON.stringify(customImages));
+    // Custom images handled via click-to-edit
     
     setLocation("/dashboard");
     
@@ -117,15 +106,7 @@ export default function Setup() {
                 </div>
                 <span className="ml-2 text-sm">Business Details</span>
               </div>
-              <div className="w-8 h-px bg-gray-300"></div>
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                  step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
-                  3
-                </div>
-                <span className="ml-2 text-sm">Custom Images</span>
-              </div>
+
             </div>
           </CardHeader>
           
@@ -275,24 +256,8 @@ export default function Setup() {
                   Back to Industry
                 </Button>
                 <Button onClick={handleBusinessDetails}>
-                  Continue to Images
+                  Complete Setup
                 </Button>
-              </>
-            )}
-            
-            {step === 3 && (
-              <>
-                <Button variant="outline" onClick={() => setStep(2)}>
-                  Back to Details
-                </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={completeSetup}>
-                    Skip Images
-                  </Button>
-                  <Button onClick={completeSetup}>
-                    Complete Setup
-                  </Button>
-                </div>
               </>
             )}
           </CardFooter>

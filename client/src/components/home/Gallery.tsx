@@ -1,9 +1,13 @@
 import { useIndustry } from "@/lib/industryContext";
 import { useCustomImages } from "@/hooks/useCustomImages";
+import { ImageEditor } from "@/components/ui/image-editor";
+import { useState } from "react";
+import { Edit3 } from "lucide-react";
 
 export default function Gallery() {
   const { selectedIndustry } = useIndustry();
-  const { customImages } = useCustomImages();
+  const { customImages, updateCustomImages } = useCustomImages();
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   // Industry-specific gallery images
   const industryGalleryImages = {
@@ -120,15 +124,46 @@ export default function Gallery() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {galleryImages.map((image, index) => (
-            <img 
+            <div
               key={index}
-              src={image.url} 
-              alt={image.alt} 
-              className="w-full h-64 object-cover rounded-lg shadow-md"
-            />
+              className="relative group cursor-pointer"
+              onClick={() => setEditingIndex(index)}
+            >
+              <img 
+                src={image.url} 
+                alt={image.alt} 
+                className="w-full h-64 object-cover rounded-lg shadow-md"
+              />
+              
+              {/* Edit Button - appears on hover */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                  <Edit3 className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
+      
+      {/* Image Editor Modal */}
+      {editingIndex !== null && (
+        <ImageEditor
+          isOpen={editingIndex !== null}
+          onClose={() => setEditingIndex(null)}
+          currentImage={galleryImages[editingIndex].url}
+          onSave={(newImageUrl) => {
+            const newGalleryImages = [...customImages.galleryImages];
+            newGalleryImages[editingIndex] = newImageUrl;
+            updateCustomImages({
+              ...customImages,
+              galleryImages: newGalleryImages
+            });
+            setEditingIndex(null);
+          }}
+          title={`Gallery Image ${editingIndex + 1}`}
+        />
+      )}
     </section>
   );
 }

@@ -8,6 +8,9 @@ import { Link } from "wouter";
 import { type Service } from "@shared/schema";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 import { useCustomImages } from "@/hooks/useCustomImages";
+import { ImageEditor } from "@/components/ui/image-editor";
+import { useState } from "react";
+import { Edit3 } from "lucide-react";
 
 // Industry-specific service images
 const industryServiceImages = {
@@ -206,7 +209,8 @@ function ServiceCard({
   accentColor: string,
   terms: ReturnType<typeof getTerminology>
 }) {
-  const { customImages } = useCustomImages();
+  const { customImages, updateCustomImages } = useCustomImages();
+  const [isEditing, setIsEditing] = useState(false);
   
   // Get the appropriate service images for this industry based on the service name
   const currentIndustryId = industryId || 'beauty';
@@ -259,12 +263,20 @@ function ServiceCard({
           Most Popular
         </div>
       )}
-      <div className={`${isPopular ? 'pt-7' : ''}`}>
+      <div className={`${isPopular ? 'pt-7' : ''} relative group cursor-pointer`}>
         <img 
           src={customImages.serviceShowcaseImages?.[index] || serviceImages[imageIndex]} 
           alt={service.name} 
           className="w-full h-48 object-cover"
+          onClick={() => setIsEditing(true)}
         />
+        
+        {/* Edit Button - appears on hover */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+            <Edit3 className="h-4 w-4 text-white" />
+          </div>
+        </div>
       </div>
       <CardContent className="p-6">
         <h3 
@@ -304,6 +316,23 @@ function ServiceCard({
           </Link>
         </div>
       </CardContent>
+      
+      {/* Image Editor Modal */}
+      <ImageEditor
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+        currentImage={customImages.serviceShowcaseImages?.[index] || serviceImages[imageIndex]}
+        onSave={(newImageUrl) => {
+          const newServiceImages = [...(customImages.serviceShowcaseImages || [])];
+          newServiceImages[index] = newImageUrl;
+          updateCustomImages({
+            ...customImages,
+            serviceShowcaseImages: newServiceImages
+          });
+          setIsEditing(false);
+        }}
+        title={`${service.name} Image`}
+      />
     </Card>
   );
 }

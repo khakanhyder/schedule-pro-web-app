@@ -1,6 +1,9 @@
 import { Link } from "wouter";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 import { useCustomImages } from "@/hooks/useCustomImages";
+import { ImageEditor } from "@/components/ui/image-editor";
+import { useState } from "react";
+import { Edit3 } from "lucide-react";
 
 // Define hero data for each industry (mapped to industryContext IDs)
 const heroContent = {
@@ -44,7 +47,8 @@ const heroContent = {
 
 export default function Hero() {
   const { selectedIndustry } = useIndustry();
-  const { customImages } = useCustomImages();
+  const { customImages, updateCustomImages } = useCustomImages();
+  const [isEditing, setIsEditing] = useState(false);
   const terms = getTerminology(selectedIndustry);
   
   // Get the content for the selected industry
@@ -52,6 +56,13 @@ export default function Hero() {
   
   // Use custom hero image if available, otherwise fall back to template
   const backgroundImage = customImages.heroImage || content.background;
+
+  const handleImageSave = (newImageUrl: string) => {
+    updateCustomImages({
+      ...customImages,
+      heroImage: newImageUrl
+    });
+  };
   
   // Create a button text based on terminology
   const buttonText = terms.appointment === "appointment" ? "Book Appointment" :
@@ -61,10 +72,19 @@ export default function Hero() {
   
   return (
     <section 
-      className="relative h-[500px] bg-cover bg-center" 
+      className="relative h-[500px] bg-cover bg-center group cursor-pointer" 
       style={{ backgroundImage: `url('${backgroundImage}')` }}
+      onClick={() => setIsEditing(true)}
     >
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+      
+      {/* Edit Button - appears on hover */}
+      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 flex items-center gap-2 text-white">
+          <Edit3 className="h-4 w-4" />
+          <span className="text-sm font-medium">Edit Image</span>
+        </div>
+      </div>
       <div className="container mx-auto px-4 h-full flex flex-col justify-center items-center relative z-10 text-center">
         <h1 
           className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-4"
@@ -90,6 +110,15 @@ export default function Hero() {
           </div>
         </Link>
       </div>
+      
+      {/* Image Editor Modal */}
+      <ImageEditor
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+        currentImage={backgroundImage}
+        onSave={handleImageSave}
+        title="Hero Image"
+      />
     </section>
   );
 }
