@@ -254,8 +254,7 @@ export class MemStorage implements IStorage {
 
     sampleReviews.forEach(review => {
       const insertReview: InsertReview = {
-        ...review,
-        date: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000) // Random date in the last 30 days
+        ...review
       };
       this.createReview(insertReview);
     });
@@ -291,7 +290,11 @@ export class MemStorage implements IStorage {
 
   async createService(insertService: InsertService): Promise<Service> {
     const id = this.serviceCurrentId++;
-    const service: Service = { ...insertService, id };
+    const service: Service = { 
+      ...insertService, 
+      id,
+      category: insertService.category || null
+    };
     this.services.set(id, service);
     return service;
   }
@@ -786,6 +789,8 @@ export class MemStorage implements IStorage {
       windowPositions: project.windowPositions || null,
       selectedMaterials: project.selectedMaterials || null,
       estimatedCost: project.estimatedCost || null,
+      currentMaterials: project.currentMaterials || null,
+      photos: project.photos || null,
       createdAt: new Date(),
       updatedAt: new Date()
     };

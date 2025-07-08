@@ -53,6 +53,8 @@ import SettingsManagement from "@/components/dashboard/SettingsManagement";
 import BusinessGrowthHub from "@/components/dashboard/BusinessGrowthHub";
 import CommunicationHub from "@/components/dashboard/CommunicationHub";
 import DepositManager from "@/components/dashboard/DepositManager";
+import NotificationCenter from "@/components/dashboard/NotificationCenter";
+import QuickStats from "@/components/dashboard/QuickStats";
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
 export default function Dashboard() {
@@ -179,6 +181,7 @@ export default function Dashboard() {
           </div>
           
           <div className="flex gap-2">
+            <NotificationCenter />
             <Button 
               variant="outline"
               onClick={() => {
@@ -374,6 +377,9 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Quick Stats Overview */}
+        <QuickStats />
 
         {/* Main Dashboard Tabs with Template Theming */}
         <Tabs defaultValue="appointments" onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
