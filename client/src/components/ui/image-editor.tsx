@@ -53,19 +53,19 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
   };
 
   const handleSave = () => {
-    if (selectedImage) {
-      onSave(selectedImage);
-    } else {
-      onSave(currentImage);
-    }
-    onClose();
-    setSelectedImage(null);
+    const imageToSave = selectedImage || currentImage;
+    onSave(imageToSave);
+    handleClose();
   };
 
   const handleKeepCurrent = () => {
     onSave(currentImage);
-    onClose();
+    handleClose();
+  };
+
+  const handleClose = () => {
     setSelectedImage(null);
+    onClose();
   };
 
   const handleUploadClick = () => {
@@ -73,7 +73,7 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit {title}</DialogTitle>
@@ -113,7 +113,7 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
 
           {/* Save/Cancel Buttons */}
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={handleClose}>
               Cancel
             </Button>
             <Button onClick={handleSave}>

@@ -153,7 +153,12 @@ export default function Gallery() {
           onClose={() => setEditingIndex(null)}
           currentImage={galleryImages[editingIndex].url}
           onSave={(newImageUrl) => {
-            const newGalleryImages = [...customImages.galleryImages];
+            const currentGalleryImages = customImages.galleryImages || [];
+            const newGalleryImages = [...currentGalleryImages];
+            // Ensure array is long enough
+            while (newGalleryImages.length <= editingIndex) {
+              newGalleryImages.push('');
+            }
             newGalleryImages[editingIndex] = newImageUrl;
             updateCustomImages({
               ...customImages,

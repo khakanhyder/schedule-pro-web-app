@@ -323,7 +323,12 @@ function ServiceCard({
         onClose={() => setIsEditing(false)}
         currentImage={customImages.serviceShowcaseImages?.[index] || serviceImages[imageIndex]}
         onSave={(newImageUrl) => {
-          const newServiceImages = [...(customImages.serviceShowcaseImages || [])];
+          const currentServiceImages = customImages.serviceShowcaseImages || [];
+          const newServiceImages = [...currentServiceImages];
+          // Ensure array is long enough
+          while (newServiceImages.length <= index) {
+            newServiceImages.push('');
+          }
           newServiceImages[index] = newImageUrl;
           updateCustomImages({
             ...customImages,
