@@ -94,6 +94,9 @@ export default function Dashboard() {
   };
   
   const terms = selectedIndustry ? getTerminology(selectedIndustry) : defaultTerms;
+  
+  // Check if current industry should have 3D room projects (skilled trades only)
+  const isSkillledTradesIndustry = selectedIndustry && selectedIndustry.id === 'home_services';
 
   // Fetch services
   const { data: services = [] } = useQuery<Service[]>({
@@ -389,7 +392,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 mb-8 h-auto p-1 bg-slate-100 rounded-lg">
+          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isSkillledTradesIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-8'}`}>
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -460,16 +463,18 @@ export default function Dashboard() {
             >
               Messages
             </TabsTrigger>
-            <TabsTrigger 
-              value="room-projects" 
-              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
-              style={selectedTab === 'room-projects' ? {
-                backgroundColor: currentTemplate.primaryColor,
-                color: 'white'
-              } : {}}
-            >
-              3D Projects
-            </TabsTrigger>
+            {isSkillledTradesIndustry && (
+              <TabsTrigger 
+                value="room-projects" 
+                className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+                style={selectedTab === 'room-projects' ? {
+                  backgroundColor: currentTemplate.primaryColor,
+                  color: 'white'
+                } : {}}
+              >
+                3D Projects
+              </TabsTrigger>
+            )}
             <TabsTrigger 
               value="settings" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -521,10 +526,12 @@ export default function Dashboard() {
             <CommunicationHub />
           </TabsContent>
 
-          {/* 3D Room Projects Tab */}
-          <TabsContent value="room-projects">
-            <RoomProjectManager />
-          </TabsContent>
+          {/* 3D Room Projects Tab - Skilled Trades Only */}
+          {isSkillledTradesIndustry && (
+            <TabsContent value="room-projects">
+              <RoomProjectManager />
+            </TabsContent>
+          )}
 
           {/* Settings Tab */}
           <TabsContent value="settings">

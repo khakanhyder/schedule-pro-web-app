@@ -32,6 +32,8 @@ A comprehensive business management platform designed to empower service-based e
 - ✅ Added demo mode for 3D projects - no real email required for testing
 - ✅ Pre-filled sample data with materials and room dimensions
 - ✅ Quick demo button with visual feedback and instructions
+- ✅ Made 3D Projects tab industry-specific - only shows for Skilled Trades businesses
+- ✅ Proper conditional rendering prevents confusion for beauty/wellness/pet care businesses
 
 ### Complete Review Request Email System (July 1, 2025)
 - ✅ Implemented real email functionality with Resend API integration
