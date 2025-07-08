@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Eye, Edit, Trash2, Home, Calculator } from 'lucide-react';
 import Room3DVisualizer from './Room3DVisualizer';
 import MaterialSelectionDemo from './MaterialSelectionDemo';
+import QuickDemoButton from './QuickDemoButton';
 import { apiRequest } from '@/lib/queryClient';
 import type { RoomProject, RoomMaterial, InsertRoomProject } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
@@ -47,6 +48,29 @@ export default function RoomProjectManager() {
     notes: '',
     estimatedCost: 0
   });
+
+  const fillDemoData = () => {
+    setFormData({
+      clientName: 'Demo Client',
+      clientEmail: 'demo@example.com',
+      projectName: 'Kitchen Renovation Demo',
+      projectType: 'kitchen',
+      roomLength: 12,
+      roomWidth: 10,
+      roomHeight: 9,
+      notes: 'Sample project for demonstration purposes - full kitchen renovation with modern materials',
+      estimatedCost: 0
+    });
+    
+    // Pre-select some demo materials
+    setSelectedMaterials({
+      flooring: 1, // Oak Hardwood
+      paint: 4,    // Warm White
+      tiles: 2,    // Carrara White
+      fixtures: 8, // Brushed Nickel
+      cabinets: 10 // Espresso
+    });
+  };
 
   // Fetch room projects
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
@@ -225,6 +249,9 @@ export default function RoomProjectManager() {
 
   return (
     <div className="space-y-6">
+      {/* Demo Mode Banner */}
+      <QuickDemoButton onDemoStart={fillDemoData} />
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -240,7 +267,18 @@ export default function RoomProjectManager() {
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New 3D Room Project</DialogTitle>
+              <DialogTitle className="flex items-center justify-between">
+                Create New 3D Room Project
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="sm"
+                  onClick={fillDemoData}
+                  className="ml-4"
+                >
+                  Fill Demo Data
+                </Button>
+              </DialogTitle>
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -253,6 +291,11 @@ export default function RoomProjectManager() {
                 </TabsList>
 
                 <TabsContent value="details" className="space-y-4">
+                  <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-700">
+                      💡 <strong>Demo Mode:</strong> Click "Fill Demo Data" above to quickly populate with sample information and test the 3D visualization without entering real email addresses.
+                    </p>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="clientName">Client Name</Label>

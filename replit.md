@@ -29,6 +29,9 @@ A comprehensive business management platform designed to empower service-based e
 - ✅ Added quick stats overview showing appointments, clients, revenue, and ratings
 - ✅ Professional notification system with priority levels and timestamps
 - ✅ All enhancements added without modifying existing working functionality
+- ✅ Added demo mode for 3D projects - no real email required for testing
+- ✅ Pre-filled sample data with materials and room dimensions
+- ✅ Quick demo button with visual feedback and instructions
 
 ### Complete Review Request Email System (July 1, 2025)
 - ✅ Implemented real email functionality with Resend API integration
