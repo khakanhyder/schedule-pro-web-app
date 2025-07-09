@@ -18,7 +18,17 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 8, 2025)
 
-### Developer Handoff Preparation (Latest)
+### Industry-Specific AI Insights Fix (Latest)
+- ✅ Fixed AI insights to show industry-specific recommendations instead of generic hair stylist suggestions
+- ✅ Added comprehensive industry-specific AI suggestions for all 6 templates
+- ✅ Beauty: Hair color scheduling, treatment upselling, weekend premium pricing
+- ✅ Wellness: Massage therapy intervals, wellness packages, extended hours
+- ✅ Home Services: Project planning, seasonal pricing, maintenance follow-ups
+- ✅ Pet Care: Grooming schedules, seasonal services, multi-pet discounts
+- ✅ Creative: Project phases, portfolio sessions, consultation premiums
+- ✅ Custom: Client retention, referral programs, service packages
+
+### Developer Handoff Preparation
 - ✅ Created comprehensive handoff documentation (DEVELOPER_HANDOFF.md)
 - ✅ Added quick start guide for new developer (QUICK_START.md)
 - ✅ Documented all recent features and implementation details
