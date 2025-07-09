@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Upload, Image as ImageIcon, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { IndustryTips } from "./industry-tips";
 
 interface ImageEditorProps {
   isOpen: boolean;
@@ -55,6 +56,10 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
   const handleSave = () => {
     const imageToSave = selectedImage || currentImage;
     onSave(imageToSave);
+    toast({
+      title: "Image Updated!",
+      description: "Your image has been successfully saved.",
+    });
     handleClose();
   };
 
@@ -94,7 +99,7 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
             <Button
               onClick={handleUploadClick}
               disabled={isUploading}
-              className="w-full"
+              className="w-full h-12 text-base"
               variant="outline"
             >
               <Upload className="mr-2 h-4 w-4" />
@@ -104,7 +109,7 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
             <Button
               onClick={handleKeepCurrent}
               variant="outline"
-              className="w-full"
+              className="w-full h-12 text-base"
             >
               <ImageIcon className="mr-2 h-4 w-4" />
               Keep Current Image
@@ -121,6 +126,9 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
             </Button>
           </div>
         </div>
+
+        {/* Industry Tips */}
+        <IndustryTips />
 
         {/* Hidden File Input */}
         <input

@@ -79,10 +79,17 @@ export default function Hero() {
       <div className="absolute inset-0 bg-black bg-opacity-50"></div>
       
       {/* Edit Button - appears on hover */}
-      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 flex items-center gap-2 text-white">
+      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200">
+        <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 flex items-center gap-2 text-white hover:bg-white/30 transition-colors">
           <Edit3 className="h-4 w-4" />
           <span className="text-sm font-medium">Edit Image</span>
+        </div>
+      </div>
+      
+      {/* Subtle edit indicator - always visible */}
+      <div className="absolute top-4 left-4 opacity-20 group-hover:opacity-0 transition-opacity duration-200">
+        <div className="bg-white/10 backdrop-blur-sm rounded-full p-1.5">
+          <Edit3 className="h-3 w-3 text-white" />
         </div>
       </div>
       <div className="container mx-auto px-4 h-full flex flex-col justify-center items-center relative z-10 text-center">

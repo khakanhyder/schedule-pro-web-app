@@ -136,9 +136,16 @@ export default function Gallery() {
               />
               
               {/* Edit Button - appears on hover */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 hover:bg-white/30 transition-colors">
                   <Edit3 className="h-4 w-4 text-white" />
+                </div>
+              </div>
+              
+              {/* Subtle edit indicator - always visible */}
+              <div className="absolute top-2 left-2 opacity-15 group-hover:opacity-0 transition-opacity duration-200">
+                <div className="bg-white/10 backdrop-blur-sm rounded-full p-1">
+                  <Edit3 className="h-3 w-3 text-white" />
                 </div>
               </div>
             </div>
