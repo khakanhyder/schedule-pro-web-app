@@ -18,7 +18,19 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 8, 2025)
 
-### Industry-Specific AI Insights Fix (Latest)
+### Pet Care Professional Enhancements (Latest)
+- ✅ Created adaptive pet care system that adjusts for groomers vs pet sitters
+- ✅ Added specialization selector (Groomer/Pet Sitter/Both) with dynamic content
+- ✅ Built comprehensive pet profile system with health tracking and special needs
+- ✅ Implemented vaccination reminder system with status tracking
+- ✅ Added seasonal service suggestions specific to grooming vs sitting
+- ✅ Created emergency contact and veterinarian information storage
+- ✅ Added "Pet Care+" tab that only appears for pet care industry
+- ✅ Groomer features: De-shedding treatments, cooling baths, dry skin care
+- ✅ Sitter features: Vacation care, dog walking, holiday premium rates
+- ✅ Universal features: Paw protection, multi-pet discounts, health tracking
+
+### Industry-Specific AI Insights Fix
 - ✅ Fixed AI insights to show industry-specific recommendations instead of generic hair stylist suggestions
 - ✅ Added comprehensive industry-specific AI suggestions for all 6 templates
 - ✅ Beauty: Hair color scheduling, treatment upselling, weekend premium pricing

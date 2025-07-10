@@ -55,6 +55,7 @@ import CommunicationHub from "@/components/dashboard/CommunicationHub";
 import DepositManager from "@/components/dashboard/DepositManager";
 import NotificationCenter from "@/components/dashboard/NotificationCenter";
 import QuickStats from "@/components/dashboard/QuickStats";
+import PetCareEnhancements from "@/components/dashboard/PetCareEnhancements";
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
 export default function Dashboard() {
@@ -97,6 +98,9 @@ export default function Dashboard() {
   
   // Check if current industry should have 3D room projects (skilled trades only)
   const isSkillledTradesIndustry = selectedIndustry && selectedIndustry.id === 'home_services';
+  
+  // Check if current industry should have pet care enhancements (pet care only)
+  const isPetCareIndustry = selectedIndustry && selectedIndustry.id === 'pet_care';
 
   // Fetch services
   const { data: services = [] } = useQuery<Service[]>({
@@ -392,7 +396,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isSkillledTradesIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-8'}`}>
+          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isSkillledTradesIndustry || isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-8'}`}>
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -475,6 +479,18 @@ export default function Dashboard() {
                 3D Projects
               </TabsTrigger>
             )}
+            {isPetCareIndustry && (
+              <TabsTrigger 
+                value="pet-care" 
+                className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+                style={selectedTab === 'pet-care' ? {
+                  backgroundColor: currentTemplate.primaryColor,
+                  color: 'white'
+                } : {}}
+              >
+                Pet Care+
+              </TabsTrigger>
+            )}
             <TabsTrigger 
               value="settings" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -530,6 +546,13 @@ export default function Dashboard() {
           {isSkillledTradesIndustry && (
             <TabsContent value="room-projects">
               <RoomProjectManager />
+            </TabsContent>
+          )}
+
+          {/* Pet Care Enhancements Tab - Pet Care Only */}
+          {isPetCareIndustry && (
+            <TabsContent value="pet-care">
+              <PetCareEnhancements />
             </TabsContent>
           )}
 
