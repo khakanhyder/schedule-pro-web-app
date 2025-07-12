@@ -16,6 +16,7 @@ interface Room3DVisualizerProps {
   roomHeight: number;
   doorPosition: string;
   doorWidth: number;
+  projectType?: string;
   onRoomChange: (dimensions: { length: number; width: number; height: number }) => void;
   onDoorChange: (doorPosition: string, doorWidth: number) => void;
   selectedMaterials: Record<string, number>;
@@ -29,6 +30,7 @@ export default function Room3DVisualizer({
   roomHeight = 9,
   doorPosition = 'front',
   doorWidth = 3,
+  projectType = 'custom',
   onRoomChange,
   onDoorChange,
   selectedMaterials,
@@ -174,12 +176,69 @@ export default function Room3DVisualizer({
     rightWall.rotation.y = -Math.PI / 2;
     roomGroup.add(rightWall);
 
+    // Add kitchen-specific elements for kitchen projects
+    if (projectType === 'kitchen') {
+      addKitchenElements(roomGroup, length, width, height);
+    }
+
     // Create door
     const door = createDoor(length, width, height, doorPosition, doorWidth);
     roomGroup.add(door);
     setDoorObject(door);
 
     scene.add(roomGroup);
+  };
+
+  const addKitchenElements = (roomGroup: THREE.Group, length: number, width: number, height: number) => {
+    // Kitchen Island
+    const islandGeometry = new THREE.BoxGeometry(4, 3, 2);
+    const islandMaterial = new THREE.MeshLambertMaterial({ 
+      color: getColorForCategory('cabinets') || 0x8B4513
+    });
+    const island = new THREE.Mesh(islandGeometry, islandMaterial);
+    island.position.set(0, 1.5, 0);
+    island.castShadow = true;
+    roomGroup.add(island);
+
+    // Counter along back wall
+    const counterGeometry = new THREE.BoxGeometry(length * 0.8, 3, 2);
+    const counterMaterial = new THREE.MeshLambertMaterial({ 
+      color: getColorForCategory('cabinets') || 0x8B4513
+    });
+    const counter = new THREE.Mesh(counterGeometry, counterMaterial);
+    counter.position.set(0, 1.5, -width / 2 + 1);
+    counter.castShadow = true;
+    roomGroup.add(counter);
+
+    // Countertop
+    const countertopGeometry = new THREE.BoxGeometry(length * 0.8, 0.2, 2.2);
+    const countertopMaterial = new THREE.MeshLambertMaterial({ 
+      color: getColorForCategory('tiles') || 0xF8F8FF
+    });
+    const countertop = new THREE.Mesh(countertopGeometry, countertopMaterial);
+    countertop.position.set(0, 3.1, -width / 2 + 1);
+    countertop.castShadow = true;
+    roomGroup.add(countertop);
+
+    // Upper cabinets
+    const upperCabGeometry = new THREE.BoxGeometry(length * 0.6, 2, 1.5);
+    const upperCabMaterial = new THREE.MeshLambertMaterial({ 
+      color: getColorForCategory('cabinets') || 0x8B4513
+    });
+    const upperCab = new THREE.Mesh(upperCabGeometry, upperCabMaterial);
+    upperCab.position.set(0, 6, -width / 2 + 0.75);
+    upperCab.castShadow = true;
+    roomGroup.add(upperCab);
+
+    // Appliances (refrigerator)
+    const fridgeGeometry = new THREE.BoxGeometry(2.5, 6, 2.5);
+    const fridgeMaterial = new THREE.MeshLambertMaterial({ 
+      color: getColorForCategory('fixtures') || 0xC0C0C0
+    });
+    const fridge = new THREE.Mesh(fridgeGeometry, fridgeMaterial);
+    fridge.position.set(length / 2 - 1.5, 3, -width / 2 + 1.25);
+    fridge.castShadow = true;
+    roomGroup.add(fridge);
   };
 
   const createDoor = (roomLength: number, roomWidth: number, roomHeight: number, position: string, width: number): THREE.Group => {
@@ -259,6 +318,26 @@ export default function Room3DVisualizer({
 
   const getMaterialsByCategory = (category: string) => {
     return materials.filter(m => m.category === category);
+  };
+
+  const getMaterialColor = (materialName: string): string => {
+    const colorMap: Record<string, string> = {
+      'Oak Hardwood': '#D2B48C',
+      'Maple Hardwood': '#DEB887',
+      'Carrara White': '#F8F8FF',
+      'Rustic Brown': '#8B4513',
+      'Warm White': '#FFFDD0',
+      'Sage Green': '#9CAF88',
+      'Classic White': '#FFFFFF',
+      'Ocean Blue': '#4682B4',
+      'Charcoal': '#36454F',
+      'Brushed Nickel': '#C0C0C0',
+      'Espresso': '#3C2414',
+      'Subway White': '#F5F5F5',
+      'Marble Grey': '#E6E6E6',
+      'Granite Black': '#2F4F4F'
+    };
+    return colorMap[materialName] || '#CCCCCC';
   };
 
   return (
@@ -419,6 +498,29 @@ export default function Room3DVisualizer({
                 {['flooring', 'paint', 'tiles', 'fixtures', 'cabinets'].map((category) => (
                   <div key={category} className="space-y-2">
                     <Label className="capitalize font-medium">{category}</Label>
+                    
+                    {/* Visual Material Swatches */}
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      {getMaterialsByCategory(category).slice(0, 6).map((material) => (
+                        <button
+                          key={material.id}
+                          onClick={() => onMaterialChange(category, material.id)}
+                          className={`p-2 rounded-lg border-2 transition-all ${
+                            selectedMaterials[category] === material.id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div 
+                            className="w-full h-8 rounded mb-1"
+                            style={{ backgroundColor: getMaterialColor(material.name) }}
+                          />
+                          <div className="text-xs font-medium truncate">{material.name}</div>
+                          <div className="text-xs text-gray-500">${material.price?.toFixed(0) || '0'}</div>
+                        </button>
+                      ))}
+                    </div>
+
                     <Select
                       value={selectedMaterials[category]?.toString() || ""}
                       onValueChange={(value) => onMaterialChange(category, Number(value))}

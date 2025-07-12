@@ -409,6 +409,7 @@ export default function RoomProjectManager() {
                     roomHeight={formData.roomHeight}
                     doorPosition={formData.doorPosition}
                     doorWidth={formData.doorWidth}
+                    projectType={formData.projectType}
                     onRoomChange={(dimensions) => {
                       setFormData(prev => ({
                         ...prev,
@@ -570,7 +571,17 @@ export default function RoomProjectManager() {
               roomLength={selectedProject.roomLength}
               roomWidth={selectedProject.roomWidth}
               roomHeight={selectedProject.roomHeight}
+              doorPosition={selectedProject.doorPosition || 'front'}
+              doorWidth={selectedProject.doorWidth || 3}
+              projectType={selectedProject.projectType}
               onRoomChange={handleRoomChange}
+              onDoorChange={(position, width) => {
+                setSelectedProject({
+                  ...selectedProject,
+                  doorPosition: position,
+                  doorWidth: width
+                });
+              }}
               selectedMaterials={selectedMaterials}
               onMaterialChange={handleMaterialChange}
               materials={materials}
