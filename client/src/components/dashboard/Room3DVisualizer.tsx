@@ -151,6 +151,20 @@ export default function Room3DVisualizer({
     }
   }, [roomLength, roomWidth, roomHeight, doorPosition, doorWidth]);
 
+  // Update materials when selection changes
+  useEffect(() => {
+    if (sceneRef.current) {
+      // Clear existing room
+      const roomObjects = sceneRef.current.children.filter(child => 
+        child.userData.isRoom
+      );
+      roomObjects.forEach(obj => sceneRef.current?.remove(obj));
+
+      // Create new room with updated materials
+      createRoom(sceneRef.current, roomLength, roomWidth, roomHeight);
+    }
+  }, [selectedMaterials]);
+
   // Update cursor style for measurement and annotation modes
   useEffect(() => {
     if (rendererRef.current) {
@@ -333,16 +347,61 @@ export default function Room3DVisualizer({
     
     if (material) {
       const colorMap: Record<string, number> = {
+        // Flooring Colors
+        'White Oak Engineered': 0xF5E6D3,
+        'European Oak Wide Plank': 0xD4A574,
+        'Walnut Luxury Vinyl': 0x6B4423,
+        'Hickory Hardwood': 0xC49A73,
+        'Bamboo Strand Woven': 0xE8D5A3,
+        'Maple Hardwood': 0xF2E4C7,
         'Oak Hardwood': 0xD2B48C,
-        'Carrara White': 0xF8F8FF,
-        'Rustic Brown': 0x8B4513,
-        'Warm White': 0xFFFDD0,
-        'Sage Green': 0x9CAF88,
+        
+        // Paint Colors
+        'Sage Green': 0x87A96B,
+        'Warm Beige': 0xE8DCC0,
+        'Soft Blue': 0xA8C5D1,
         'Classic White': 0xFFFFFF,
+        'Charcoal Gray': 0x4A5568,
+        'Terracotta': 0xCC7A6B,
+        'Warm White': 0xFFFDD0,
+        
+        // Countertop Colors
+        'Calacatta Quartz': 0xF8F6F0,
+        'Carrara Marble': 0xE8E8E8,
+        'Granite Midnight': 0x2D3748,
+        'Butcher Block': 0xD69E2E,
+        'Concrete Gray': 0xA0AEC0,
+        'Quartzite White': 0xF7FAFC,
+        'Carrara White': 0xF8F8FF,
+        
+        // Cabinet Colors
+        'Espresso': 0x3C2414,
+        'Shaker White': 0xF7FAFC,
+        'Navy Blue': 0x2B6CB0,
+        'Sage Cabinet': 0x68A063,
+        'Gray Stain': 0x6B7280,
+        'Natural Wood': 0xC49A73,
+        'Rustic Brown': 0x8B4513,
+        
+        // Fixture Colors
+        'Brushed Gold': 0xD4AF37,
+        'Matte Black': 0x1A202C,
+        'Brushed Nickel': 0xC5C7C7,
+        'Chrome': 0xE2E8F0,
+        'Oil Rubbed Bronze': 0x4A5568,
+        'Brass': 0xB7791F,
+        
+        // Tile Colors
+        'Subway White': 0xF7FAFC,
+        'Marble Hexagon': 0xE2E8F0,
+        'Travertine Beige': 0xD6BCB1,
+        'Porcelain Gray': 0x9CA3AF,
+        'Natural Stone': 0x8B7355,
+        'Ceramic Black': 0x2D3748,
+        
+        // Legacy colors
         'Ocean Blue': 0x4682B4,
-        'Charcoal': 0x36454F,
-        'Brushed Nickel': 0xC0C0C0,
-        'Espresso': 0x3C2414
+        'Charcoal': 0x36454F
       };
       return colorMap[material.name] || 0xCCCCCC;
     }
@@ -574,7 +633,7 @@ export default function Room3DVisualizer({
         <CardContent>
           <div
             ref={mountRef}
-            className={`w-full ${isClientView ? 'h-[600px]' : 'h-[400px]'} bg-gray-50 rounded-lg border relative transition-all duration-300`}
+            className={`w-full ${isClientView ? 'h-[700px]' : 'h-[550px]'} bg-gray-50 rounded-lg border relative transition-all duration-300`}
           >
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center">
