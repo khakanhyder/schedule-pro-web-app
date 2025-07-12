@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Eye, Edit, Trash2, Home, Calculator, Palette, Square, Wrench, Box } from 'lucide-react';
 import SimpleRoom3D from './SimpleRoom3D';
-import MaterialSelectionDemo from './MaterialSelectionDemo';
+
 import ContractorMaterialSelector from './ContractorMaterialSelector';
 
 import { apiRequest } from '@/lib/queryClient';
@@ -518,34 +518,51 @@ export default function RoomProjectManager() {
 
       {/* 3D Viewer Dialog */}
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedProject?.projectName} - 3D Preview
             </DialogTitle>
           </DialogHeader>
           
-          {selectedProject && (
-            <Room3DVisualizer
-              roomLength={selectedProject.roomLength}
-              roomWidth={selectedProject.roomWidth}
-              roomHeight={selectedProject.roomHeight}
-              doorPosition={selectedProject.doorPosition || 'front'}
-              doorWidth={selectedProject.doorWidth || 3}
-              projectType={selectedProject.projectType}
-              onRoomChange={handleRoomChange}
-              onDoorChange={(position, width) => {
-                setSelectedProject({
-                  ...selectedProject,
-                  doorPosition: position,
-                  doorWidth: width
-                });
-              }}
+          <div className="space-y-6">
+            {/* Project info */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div>
+                <h3 className="font-semibold">{selectedProject?.clientName}</h3>
+                <p className="text-sm text-gray-600">{selectedProject?.clientEmail}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Room Size</p>
+                <p className="font-semibold">
+                  {selectedProject?.roomLength}' × {selectedProject?.roomWidth}' × {selectedProject?.roomHeight}'
+                </p>
+              </div>
+            </div>
+
+            {/* 3D Viewer */}
+            {selectedProject && (
+              <SimpleRoom3D
+                roomLength={selectedProject.roomLength}
+                roomWidth={selectedProject.roomWidth}
+                roomHeight={selectedProject.roomHeight}
+                selectedMaterials={selectedMaterials}
+                materials={materials}
+              />
+            )}
+
+            {/* Material Selection */}
+            <ContractorMaterialSelector
+              materials={materials}
               selectedMaterials={selectedMaterials}
               onMaterialChange={handleMaterialChange}
-              materials={materials}
+              roomDimensions={{
+                length: selectedProject?.roomLength || 12,
+                width: selectedProject?.roomWidth || 10,
+                height: selectedProject?.roomHeight || 9
+              }}
             />
-          )}
+          </div>
         </DialogContent>
       </Dialog>
 
