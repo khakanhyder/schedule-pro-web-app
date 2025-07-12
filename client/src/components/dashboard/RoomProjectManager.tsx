@@ -87,7 +87,7 @@ export default function RoomProjectManager() {
   // Create project mutation
   const createProjectMutation = useMutation({
     mutationFn: (data: InsertRoomProject) => 
-      apiRequest('/api/room-projects', { method: 'POST', body: data }),
+      apiRequest('POST', '/api/room-projects', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/room-projects'] });
       setIsCreateDialogOpen(false);
@@ -109,7 +109,7 @@ export default function RoomProjectManager() {
   // Delete project mutation
   const deleteProjectMutation = useMutation({
     mutationFn: (id: number) => 
-      apiRequest(`/api/room-projects/${id}`, { method: 'DELETE' }),
+      apiRequest('DELETE', `/api/room-projects/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/room-projects'] });
       toast({
