@@ -83,7 +83,7 @@ export default function Room3DVisualizer({
       0.1,
       1000
     );
-    camera.position.set(25, 20, 25);
+    camera.position.set(15, 12, 15);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -97,6 +97,8 @@ export default function Room3DVisualizer({
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    controls.minDistance = 8;
+    controls.maxDistance = 40;
     controlsRef.current = controls;
 
     // Add click event listener for measurements and annotations
@@ -177,8 +179,14 @@ export default function Room3DVisualizer({
     const roomGroup = new THREE.Group();
     roomGroup.userData.isRoom = true;
 
+    // Scale up the room for better visibility
+    const scale = 1.5;
+    const scaledLength = length * scale;
+    const scaledWidth = width * scale;
+    const scaledHeight = height * scale;
+
     // Floor
-    const floorGeometry = new THREE.PlaneGeometry(length, width);
+    const floorGeometry = new THREE.PlaneGeometry(scaledLength, scaledWidth);
     const floorMaterial = new THREE.MeshLambertMaterial({ 
       color: getColorForCategory('flooring'),
       transparent: true,
@@ -197,40 +205,40 @@ export default function Room3DVisualizer({
     });
 
     // Back wall
-    const backWallGeometry = new THREE.PlaneGeometry(length, height);
+    const backWallGeometry = new THREE.PlaneGeometry(scaledLength, scaledHeight);
     const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
-    backWall.position.set(0, height / 2, -width / 2);
+    backWall.position.set(0, scaledHeight / 2, -scaledWidth / 2);
     roomGroup.add(backWall);
 
     // Front wall (partial for visibility)
-    const frontWallGeometry = new THREE.PlaneGeometry(length, height);
+    const frontWallGeometry = new THREE.PlaneGeometry(scaledLength, scaledHeight);
     const frontWall = new THREE.Mesh(frontWallGeometry, wallMaterial.clone());
     frontWall.material.opacity = 0.3;
-    frontWall.position.set(0, height / 2, width / 2);
+    frontWall.position.set(0, scaledHeight / 2, scaledWidth / 2);
     frontWall.rotation.y = Math.PI;
     roomGroup.add(frontWall);
 
     // Left wall
-    const leftWallGeometry = new THREE.PlaneGeometry(width, height);
+    const leftWallGeometry = new THREE.PlaneGeometry(scaledWidth, scaledHeight);
     const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
-    leftWall.position.set(-length / 2, height / 2, 0);
+    leftWall.position.set(-scaledLength / 2, scaledHeight / 2, 0);
     leftWall.rotation.y = Math.PI / 2;
     roomGroup.add(leftWall);
 
     // Right wall
-    const rightWallGeometry = new THREE.PlaneGeometry(width, height);
+    const rightWallGeometry = new THREE.PlaneGeometry(scaledWidth, scaledHeight);
     const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial);
-    rightWall.position.set(length / 2, height / 2, 0);
+    rightWall.position.set(scaledLength / 2, scaledHeight / 2, 0);
     rightWall.rotation.y = -Math.PI / 2;
     roomGroup.add(rightWall);
 
     // Add kitchen-specific elements for kitchen projects
     if (projectType === 'kitchen') {
-      addKitchenElements(roomGroup, length, width, height);
+      addKitchenElements(roomGroup, scaledLength, scaledWidth, scaledHeight);
     }
 
     // Create door
-    const door = createDoor(length, width, height, doorPosition, doorWidth);
+    const door = createDoor(scaledLength, scaledWidth, scaledHeight, doorPosition, doorWidth * scale);
     roomGroup.add(door);
     setDoorObject(door);
 
@@ -239,22 +247,22 @@ export default function Room3DVisualizer({
 
   const addKitchenElements = (roomGroup: THREE.Group, length: number, width: number, height: number) => {
     // Kitchen Island
-    const islandGeometry = new THREE.BoxGeometry(4, 3, 2);
+    const islandGeometry = new THREE.BoxGeometry(6, 4.5, 3);
     const islandMaterial = new THREE.MeshLambertMaterial({ 
       color: getColorForCategory('cabinets') || 0x8B4513
     });
     const island = new THREE.Mesh(islandGeometry, islandMaterial);
-    island.position.set(0, 1.5, 0);
+    island.position.set(0, 2.25, 0);
     island.castShadow = true;
     roomGroup.add(island);
 
     // Counter along back wall
-    const counterGeometry = new THREE.BoxGeometry(length * 0.8, 3, 2);
+    const counterGeometry = new THREE.BoxGeometry(length * 0.8, 4.5, 3);
     const counterMaterial = new THREE.MeshLambertMaterial({ 
       color: getColorForCategory('cabinets') || 0x8B4513
     });
     const counter = new THREE.Mesh(counterGeometry, counterMaterial);
-    counter.position.set(0, 1.5, -width / 2 + 1);
+    counter.position.set(0, 2.25, -width / 2 + 1.5);
     counter.castShadow = true;
     roomGroup.add(counter);
 
