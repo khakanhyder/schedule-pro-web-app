@@ -15,7 +15,10 @@ interface Room3DVisualizerProps {
   roomLength: number;
   roomWidth: number;
   roomHeight: number;
+  doorPosition: string;
+  doorWidth: number;
   onRoomChange: (dimensions: { length: number; width: number; height: number }) => void;
+  onDoorChange: (doorPosition: string, doorWidth: number) => void;
   selectedMaterials: Record<string, number>;
   onMaterialChange: (category: string, materialId: number) => void;
   materials: RoomMaterial[];
@@ -31,7 +34,10 @@ export default function Room3DVisualizer({
   roomLength = 12,
   roomWidth = 10,
   roomHeight = 9,
+  doorPosition = 'front',
+  doorWidth = 3,
   onRoomChange,
+  onDoorChange,
   selectedMaterials,
   onMaterialChange,
   materials
@@ -42,6 +48,10 @@ export default function Room3DVisualizer({
   const controlsRef = useRef<OrbitControls | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'3d' | 'wireframe'>('3d');
+  const [isDraggingDoor, setIsDraggingDoor] = useState(false);
+  const [doorObject, setDoorObject] = useState<THREE.Group | null>(null);
+  const [isClientView, setIsClientView] = useState(false);
+  const [showMeasurements, setShowMeasurements] = useState(true);
   const [materialPreviews, setMaterialPreviews] = useState<MaterialPreview[]>([
     { category: 'flooring', material: null, visible: true },
     { category: 'paint', material: null, visible: true },
@@ -82,6 +92,106 @@ export default function Room3DVisualizer({
     controls.dampingFactor = 0.05;
     controlsRef.current = controls;
 
+    // Mouse interaction for door dragging
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let selectedDoor: THREE.Group | null = null;
+    let isDragging = false;
+
+    const onMouseDown = (event: MouseEvent) => {
+      mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+      mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+      
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true);
+      
+      if (intersects.length > 0) {
+        const intersect = intersects[0];
+        if (intersect.object.parent && intersect.object.parent.userData.isDoor) {
+          selectedDoor = intersect.object.parent as THREE.Group;
+          isDragging = true;
+          controls.enabled = false;
+          setIsDraggingDoor(true);
+        }
+      }
+    };
+
+    const onMouseMove = (event: MouseEvent) => {
+      if (!isDragging || !selectedDoor) return;
+      
+      mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+      mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+      
+      raycaster.setFromCamera(mouse, camera);
+      
+      // Project mouse position onto the floor plane
+      const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      const intersection = new THREE.Vector3();
+      raycaster.ray.intersectPlane(floorPlane, intersection);
+      
+      if (intersection) {
+        // Constrain door position to room boundaries
+        const halfLength = roomLength / 2;
+        const halfWidth = roomWidth / 2;
+        
+        // Determine which wall the door should snap to
+        if (Math.abs(intersection.x) > Math.abs(intersection.z)) {
+          // Left or right wall
+          if (intersection.x > 0) {
+            selectedDoor.position.set(halfLength, selectedDoor.position.y, Math.max(-halfWidth + 1, Math.min(halfWidth - 1, intersection.z)));
+            selectedDoor.rotation.y = -Math.PI / 2;
+          } else {
+            selectedDoor.position.set(-halfLength, selectedDoor.position.y, Math.max(-halfWidth + 1, Math.min(halfWidth - 1, intersection.z)));
+            selectedDoor.rotation.y = Math.PI / 2;
+          }
+        } else {
+          // Front or back wall
+          if (intersection.z > 0) {
+            selectedDoor.position.set(Math.max(-halfLength + 1, Math.min(halfLength - 1, intersection.x)), selectedDoor.position.y, halfWidth);
+            selectedDoor.rotation.y = Math.PI;
+          } else {
+            selectedDoor.position.set(Math.max(-halfLength + 1, Math.min(halfLength - 1, intersection.x)), selectedDoor.position.y, -halfWidth);
+            selectedDoor.rotation.y = 0;
+          }
+        }
+      }
+    };
+
+    const onMouseUp = () => {
+      if (isDragging && selectedDoor) {
+        // Determine final door position and notify parent
+        const position = selectedDoor.position;
+        let wallPosition = 'front';
+        
+        if (Math.abs(position.x) > Math.abs(position.z)) {
+          wallPosition = position.x > 0 ? 'right' : 'left';
+        } else {
+          wallPosition = position.z > 0 ? 'front' : 'back';
+        }
+        
+        onDoorChange(wallPosition, doorWidth);
+      }
+      
+      isDragging = false;
+      selectedDoor = null;
+      controls.enabled = true;
+      setIsDraggingDoor(false);
+    };
+
+    // Add event listeners
+    renderer.domElement.addEventListener('mousedown', onMouseDown);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('mouseup', onMouseUp);
+    
+    // Store cleanup function
+    const cleanup = () => {
+      renderer.domElement.removeEventListener('mousedown', onMouseDown);
+      renderer.domElement.removeEventListener('mousemove', onMouseMove);
+      renderer.domElement.removeEventListener('mouseup', onMouseUp);
+    };
+    
+    controlsRef.current.cleanup = cleanup;
+
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
@@ -108,6 +218,9 @@ export default function Room3DVisualizer({
 
     // Cleanup
     return () => {
+      if (controlsRef.current?.cleanup) {
+        controlsRef.current.cleanup();
+      }
       if (mountRef.current && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
@@ -199,7 +312,64 @@ export default function Room3DVisualizer({
       roomGroup.add(cabinet);
     }
 
+    // Create door
+    const door = createDoor(length, width, height, doorPosition, doorWidth);
+    roomGroup.add(door);
+    setDoorObject(door);
+
     scene.add(roomGroup);
+  };
+
+  const createDoor = (roomLength: number, roomWidth: number, roomHeight: number, position: string, width: number): THREE.Group => {
+    const doorGroup = new THREE.Group();
+    doorGroup.userData.isDoor = true;
+    doorGroup.userData.draggable = true;
+
+    // Door frame
+    const frameGeometry = new THREE.BoxGeometry(width, roomHeight * 0.8, 0.1);
+    const frameMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+    const doorFrame = new THREE.Mesh(frameGeometry, frameMaterial);
+    
+    // Door panel
+    const panelGeometry = new THREE.BoxGeometry(width * 0.9, roomHeight * 0.75, 0.08);
+    const panelMaterial = new THREE.MeshLambertMaterial({ color: 0xD2B48C });
+    const doorPanel = new THREE.Mesh(panelGeometry, panelMaterial);
+    
+    // Door handle
+    const handleGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+    const handleMaterial = new THREE.MeshLambertMaterial({ color: 0xFFD700 });
+    const doorHandle = new THREE.Mesh(handleGeometry, handleMaterial);
+    doorHandle.position.set(width * 0.35, 0, 0.1);
+
+    // Add shadow casting for realism
+    doorFrame.castShadow = true;
+    doorPanel.castShadow = true;
+    doorHandle.castShadow = true;
+
+    doorGroup.add(doorFrame);
+    doorGroup.add(doorPanel);
+    doorGroup.add(doorHandle);
+
+    // Position door based on wall selection
+    switch (position) {
+      case 'front':
+        doorGroup.position.set(0, roomHeight * 0.4, roomWidth / 2);
+        doorGroup.rotation.y = Math.PI;
+        break;
+      case 'back':
+        doorGroup.position.set(0, roomHeight * 0.4, -roomWidth / 2);
+        break;
+      case 'left':
+        doorGroup.position.set(-roomLength / 2, roomHeight * 0.4, 0);
+        doorGroup.rotation.y = Math.PI / 2;
+        break;
+      case 'right':
+        doorGroup.position.set(roomLength / 2, roomHeight * 0.4, 0);
+        doorGroup.rotation.y = -Math.PI / 2;
+        break;
+    }
+
+    return doorGroup;
   };
 
   const getColorForCategory = (category: string): number => {
@@ -263,7 +433,7 @@ export default function Room3DVisualizer({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className={`${isClientView ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'} grid gap-6`}>
       {/* 3D Viewer */}
       <div className="lg:col-span-2">
         <Card>
@@ -274,6 +444,15 @@ export default function Room3DVisualizer({
             </CardTitle>
             <div className="flex gap-2">
               <Button
+                variant={isClientView ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsClientView(!isClientView)}
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                {isClientView ? 'Exit Client View' : 'Client Presentation'}
+              </Button>
+              <Button
                 variant="outline"
                 size="sm"
                 onClick={toggleViewMode}
@@ -282,20 +461,44 @@ export default function Room3DVisualizer({
                 <Camera className="h-4 w-4" />
                 {viewMode === '3d' ? 'Wireframe' : '3D View'}
               </Button>
-              <Button size="sm" className="flex items-center gap-2">
-                <Save className="h-4 w-4" />
-                Save View
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMeasurements(!showMeasurements)}
+                className="flex items-center gap-2"
+              >
+                <Calculator className="h-4 w-4" />
+                {showMeasurements ? 'Hide' : 'Show'} Measurements
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             <div
               ref={mountRef}
-              className="w-full h-[400px] bg-gray-50 rounded-lg border relative"
+              className={`w-full ${isClientView ? 'h-[600px]' : 'h-[400px]'} bg-gray-50 rounded-lg border relative transition-all duration-300`}
             >
               {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-gray-500">Loading 3D preview...</div>
+                </div>
+              )}
+              
+              {/* Client View Overlay */}
+              {isClientView && (
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                  <h3 className="font-semibold text-gray-800 mb-2">Your Project Preview</h3>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div>Room: {roomLength} × {roomWidth} × {roomHeight} ft</div>
+                    <div>Floor Area: {roomLength * roomWidth} sq ft</div>
+                    <div>Door: {doorWidth} ft wide ({doorPosition} wall)</div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Drag Status for Operators */}
+              {isDraggingDoor && !isClientView && (
+                <div className="absolute top-4 right-4 bg-blue-500 text-white px-3 py-2 rounded-lg shadow-lg">
+                  🔄 Positioning Door - Release to Place
                 </div>
               )}
             </div>
@@ -352,15 +555,16 @@ export default function Room3DVisualizer({
         </Card>
       </div>
 
-      {/* Material Selection Panel */}
-      <div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Material Selection</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="flooring" className="w-full">
-              <TabsList className="flex flex-col w-full h-auto p-1 bg-gray-100">
+      {/* Material Selection Panel - Hidden in Client View */}
+      {!isClientView && (
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Material Selection</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="flooring" className="w-full">
+                <TabsList className="flex flex-col w-full h-auto p-1 bg-gray-100">
                 {materialPreviews.map(({ category, visible }) => (
                   <TabsTrigger 
                     key={category} 
@@ -381,9 +585,9 @@ export default function Room3DVisualizer({
                     </Button>
                   </TabsTrigger>
                 ))}
-              </TabsList>
+                </TabsList>
 
-              {materialPreviews.map(({ category }) => (
+                {materialPreviews.map(({ category }) => (
                 <TabsContent key={category} value={category} className="space-y-4 mt-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700 capitalize">
@@ -436,11 +640,58 @@ export default function Room3DVisualizer({
                     </div>
                   )}
                 </TabsContent>
-              ))}
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+                ))}
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      {/* Client View: Project Summary */}
+      {isClientView && (
+        <div className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center">Project Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="bg-gray-50 p-3 rounded">
+                    <strong>Room Dimensions:</strong>
+                    <br />
+                    {roomLength} × {roomWidth} × {roomHeight} ft
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <strong>Floor Area:</strong>
+                    <br />
+                    {roomLength * roomWidth} sq ft
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <strong>Door Placement:</strong>
+                    <br />
+                    {doorWidth} ft wide on {doorPosition} wall
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <strong>Wall Coverage:</strong>
+                    <br />
+                    {2 * (roomLength + roomWidth) * roomHeight} sq ft
+                  </div>
+                </div>
+                
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-600 mb-2">
+                    💡 Use your mouse to rotate and zoom the 3D preview above
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    This interactive preview shows how your finished project will look
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

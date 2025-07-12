@@ -27,6 +27,8 @@ interface FormData {
   roomHeight: number;
   notes: string;
   estimatedCost: number;
+  doorPosition: string;
+  doorWidth: number;
 }
 
 export default function RoomProjectManager() {
@@ -46,7 +48,9 @@ export default function RoomProjectManager() {
     roomWidth: 10,
     roomHeight: 9,
     notes: '',
-    estimatedCost: 0
+    estimatedCost: 0,
+    doorPosition: 'front',
+    doorWidth: 3
   });
 
   const fillDemoData = () => {
@@ -59,7 +63,9 @@ export default function RoomProjectManager() {
       roomWidth: 10,
       roomHeight: 9,
       notes: 'Sample project for demonstration purposes - full kitchen renovation with modern materials',
-      estimatedCost: 0
+      estimatedCost: 0,
+      doorPosition: 'front',
+      doorWidth: 3
     });
     
     // Pre-select some demo materials
@@ -357,11 +363,103 @@ export default function RoomProjectManager() {
                 </TabsContent>
 
                 <TabsContent value="room">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <Label htmlFor="roomLength">Room Length (ft)</Label>
+                        <Input
+                          id="roomLength"
+                          type="number"
+                          value={formData.roomLength}
+                          onChange={(e) => setFormData(prev => ({ ...prev, roomLength: Number(e.target.value) }))}
+                          min="8"
+                          max="30"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="roomWidth">Room Width (ft)</Label>
+                        <Input
+                          id="roomWidth"
+                          type="number"
+                          value={formData.roomWidth}
+                          onChange={(e) => setFormData(prev => ({ ...prev, roomWidth: Number(e.target.value) }))}
+                          min="8"
+                          max="30"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="roomHeight">Room Height (ft)</Label>
+                        <Input
+                          id="roomHeight"
+                          type="number"
+                          value={formData.roomHeight}
+                          onChange={(e) => setFormData(prev => ({ ...prev, roomHeight: Number(e.target.value) }))}
+                          min="8"
+                          max="12"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg">
+                      <div>
+                        <Label htmlFor="doorPosition">Door Position</Label>
+                        <Select
+                          value={formData.doorPosition}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, doorPosition: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="front">Front Wall</SelectItem>
+                            <SelectItem value="back">Back Wall</SelectItem>
+                            <SelectItem value="left">Left Wall</SelectItem>
+                            <SelectItem value="right">Right Wall</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="doorWidth">Door Width (ft)</Label>
+                        <Input
+                          id="doorWidth"
+                          type="number"
+                          value={formData.doorWidth}
+                          onChange={(e) => setFormData(prev => ({ ...prev, doorWidth: Number(e.target.value) }))}
+                          min="2"
+                          max="5"
+                          step="0.5"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-sm text-green-700">
+                        💡 <strong>Interactive Door Placement:</strong> Click and drag the door in the 3D preview to position it anywhere along the walls. The door will snap to the nearest wall automatically.
+                      </p>
+                    </div>
+                  </div>
+                  
                   <Room3DVisualizer
                     roomLength={formData.roomLength}
                     roomWidth={formData.roomWidth}
                     roomHeight={formData.roomHeight}
-                    onRoomChange={handleRoomChange}
+                    doorPosition={formData.doorPosition}
+                    doorWidth={formData.doorWidth}
+                    onRoomChange={(dimensions) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        roomLength: dimensions.length,
+                        roomWidth: dimensions.width,
+                        roomHeight: dimensions.height
+                      }));
+                    }}
+                    onDoorChange={(doorPosition, doorWidth) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        doorPosition,
+                        doorWidth
+                      }));
+                    }}
                     selectedMaterials={selectedMaterials}
                     onMaterialChange={handleMaterialChange}
                     materials={materials}
