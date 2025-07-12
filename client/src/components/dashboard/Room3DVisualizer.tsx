@@ -316,9 +316,92 @@ export default function Room3DVisualizer({
             )}
           </div>
           
+          {/* Room Dimension Controls */}
+          <div className="mt-4 space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="length">Length (ft)</Label>
+                <Input
+                  id="length"
+                  type="number"
+                  min="8"
+                  max="30"
+                  value={roomLength}
+                  onChange={(e) => onRoomChange({ 
+                    length: Number(e.target.value), 
+                    width: roomWidth, 
+                    height: roomHeight 
+                  })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="width">Width (ft)</Label>
+                <Input
+                  id="width"
+                  type="number"
+                  min="8"
+                  max="30"
+                  value={roomWidth}
+                  onChange={(e) => onRoomChange({ 
+                    length: roomLength, 
+                    width: Number(e.target.value), 
+                    height: roomHeight 
+                  })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="height">Height (ft)</Label>
+                <Input
+                  id="height"
+                  type="number"
+                  min="8"
+                  max="12"
+                  value={roomHeight}
+                  onChange={(e) => onRoomChange({ 
+                    length: roomLength, 
+                    width: roomWidth, 
+                    height: Number(e.target.value) 
+                  })}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="doorPosition">Door Position</Label>
+                <Select
+                  value={doorPosition}
+                  onValueChange={(value) => onDoorChange(value, doorWidth)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="front">Front Wall</SelectItem>
+                    <SelectItem value="back">Back Wall</SelectItem>
+                    <SelectItem value="left">Left Wall</SelectItem>
+                    <SelectItem value="right">Right Wall</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="doorWidth">Door Width (ft)</Label>
+                <Input
+                  id="doorWidth"
+                  type="number"
+                  min="2"
+                  max="5"
+                  step="0.5"
+                  value={doorWidth}
+                  onChange={(e) => onDoorChange(doorPosition, Number(e.target.value))}
+                />
+              </div>
+            </div>
+          </div>
+          
           <div className="mt-4 text-center p-3 bg-green-50 rounded-lg">
             <p className="text-sm text-green-700">
-              💡 <strong>Interactive Controls:</strong> Use mouse to rotate and zoom the 3D view. Door placement can be adjusted using the controls above.
+              💡 <strong>Interactive Controls:</strong> Use mouse to rotate and zoom the 3D view. Adjust room dimensions and door placement using the controls above.
             </p>
           </div>
         </CardContent>
