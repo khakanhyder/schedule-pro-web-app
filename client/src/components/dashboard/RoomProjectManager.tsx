@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Eye, Edit, Trash2, Home, Calculator, Palette, Square, Wrench, Box } from 'lucide-react';
-import Room3DVisualizer from './Room3DVisualizer';
+import SimpleRoom3D from './SimpleRoom3D';
 import MaterialSelectionDemo from './MaterialSelectionDemo';
-import EnhancedMaterialSelector from './EnhancedMaterialSelector';
+import ContractorMaterialSelector from './ContractorMaterialSelector';
 
 import { apiRequest } from '@/lib/queryClient';
 import type { RoomProject, RoomMaterial, InsertRoomProject } from '@shared/schema';
@@ -259,11 +259,9 @@ export default function RoomProjectManager() {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="details">Project Details</TabsTrigger>
-                  <TabsTrigger value="room">Room Design</TabsTrigger>
-                  <TabsTrigger value="materials">Materials</TabsTrigger>
-                  <TabsTrigger value="demo">How It Works</TabsTrigger>
+                  <TabsTrigger value="room">Room & Materials</TabsTrigger>
                   <TabsTrigger value="cost">Cost Estimate</TabsTrigger>
                 </TabsList>
 
@@ -327,11 +325,13 @@ export default function RoomProjectManager() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="room">
+                <TabsContent value="room" className="space-y-6">
+                  {/* Room Dimensions */}
                   <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Room Dimensions</h3>
                     <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
                       <div>
-                        <Label htmlFor="roomLength">Room Length (ft)</Label>
+                        <Label htmlFor="roomLength">Length (ft)</Label>
                         <Input
                           id="roomLength"
                           type="number"
@@ -342,7 +342,7 @@ export default function RoomProjectManager() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="roomWidth">Room Width (ft)</Label>
+                        <Label htmlFor="roomWidth">Width (ft)</Label>
                         <Input
                           id="roomWidth"
                           type="number"
@@ -353,7 +353,7 @@ export default function RoomProjectManager() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="roomHeight">Room Height (ft)</Label>
+                        <Label htmlFor="roomHeight">Height (ft)</Label>
                         <Input
                           id="roomHeight"
                           type="number"
@@ -364,89 +364,34 @@ export default function RoomProjectManager() {
                         />
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg">
-                      <div>
-                        <Label htmlFor="doorPosition">Door Position</Label>
-                        <Select
-                          value={formData.doorPosition}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, doorPosition: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="front">Front Wall</SelectItem>
-                            <SelectItem value="back">Back Wall</SelectItem>
-                            <SelectItem value="left">Left Wall</SelectItem>
-                            <SelectItem value="right">Right Wall</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="doorWidth">Door Width (ft)</Label>
-                        <Input
-                          id="doorWidth"
-                          type="number"
-                          value={formData.doorWidth}
-                          onChange={(e) => setFormData(prev => ({ ...prev, doorWidth: Number(e.target.value) }))}
-                          min="2"
-                          max="5"
-                          step="0.5"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                      <p className="text-sm text-green-700">
-                        💡 <strong>Interactive Door Placement:</strong> Click and drag the door in the 3D preview to position it anywhere along the walls. The door will snap to the nearest wall automatically.
-                      </p>
-                    </div>
                   </div>
-                  
-                  <Room3DVisualizer
-                    roomLength={formData.roomLength}
-                    roomWidth={formData.roomWidth}
-                    roomHeight={formData.roomHeight}
-                    doorPosition={formData.doorPosition}
-                    doorWidth={formData.doorWidth}
-                    projectType={formData.projectType}
-                    onRoomChange={(dimensions) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        roomLength: dimensions.length,
-                        roomWidth: dimensions.width,
-                        roomHeight: dimensions.height
-                      }));
-                    }}
-                    onDoorChange={(doorPosition, doorWidth) => {
-                      setFormData(prev => ({
-                        ...prev,
-                        doorPosition,
-                        doorWidth
-                      }));
-                    }}
-                    selectedMaterials={selectedMaterials}
-                    onMaterialChange={handleMaterialChange}
-                    materials={materials}
-                  />
-                </TabsContent>
 
-                <TabsContent value="materials" className="space-y-4">
-                  <EnhancedMaterialSelector
-                    materials={materials}
-                    selectedMaterials={selectedMaterials}
-                    onMaterialChange={handleMaterialChange}
-                    roomDimensions={{
-                      length: formData.roomLength,
-                      width: formData.roomWidth,
-                      height: formData.roomHeight
-                    }}
-                  />
-                </TabsContent>
+                  {/* 3D Preview */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">3D Room Preview</h3>
+                    <SimpleRoom3D
+                      roomLength={formData.roomLength}
+                      roomWidth={formData.roomWidth}
+                      roomHeight={formData.roomHeight}
+                      selectedMaterials={selectedMaterials}
+                      materials={materials}
+                    />
+                  </div>
 
-                <TabsContent value="demo" className="space-y-4">
-                  <MaterialSelectionDemo />
+                  {/* Material Selection */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Choose Materials</h3>
+                    <ContractorMaterialSelector
+                      materials={materials}
+                      selectedMaterials={selectedMaterials}
+                      onMaterialChange={handleMaterialChange}
+                      roomDimensions={{
+                        length: formData.roomLength,
+                        width: formData.roomWidth,
+                        height: formData.roomHeight
+                      }}
+                    />
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="cost" className="space-y-4">
