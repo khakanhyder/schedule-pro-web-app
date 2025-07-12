@@ -60,7 +60,7 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
       title: "Image Updated!",
       description: "Your image has been successfully saved.",
     });
-    handleClose();
+    // Don't call handleClose here, let the parent handle it
   };
 
   const handleKeepCurrent = () => {

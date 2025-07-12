@@ -123,7 +123,10 @@ export default function Hero() {
         isOpen={isEditing}
         onClose={() => setIsEditing(false)}
         currentImage={backgroundImage}
-        onSave={handleImageSave}
+        onSave={(newImageUrl) => {
+          handleImageSave(newImageUrl);
+          setIsEditing(false);
+        }}
         title="Hero Image"
       />
     </section>
