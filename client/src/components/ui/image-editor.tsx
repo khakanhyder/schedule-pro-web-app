@@ -78,10 +78,20 @@ export function ImageEditor({ isOpen, onClose, currentImage, onSave, title }: Im
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit {title}</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            Edit {title}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
