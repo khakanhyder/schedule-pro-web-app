@@ -83,7 +83,7 @@ export default function Room3DVisualizer({
       0.1,
       1000
     );
-    camera.position.set(15, 10, 15);
+    camera.position.set(25, 20, 25);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -356,22 +356,55 @@ export default function Room3DVisualizer({
 
   const getMaterialColor = (materialName: string): string => {
     const colorMap: Record<string, string> = {
-      'Oak Hardwood': '#D2B48C',
-      'Maple Hardwood': '#DEB887',
-      'Carrara White': '#F8F8FF',
-      'Rustic Brown': '#8B4513',
-      'Warm White': '#FFFDD0',
-      'Sage Green': '#9CAF88',
+      // Flooring Colors (2024 Trends)
+      'White Oak Engineered': '#F5E6D3',
+      'European Oak Wide Plank': '#D4A574',
+      'Walnut Luxury Vinyl': '#6B4423',
+      'Hickory Hardwood': '#C49A73',
+      'Bamboo Strand Woven': '#E8D5A3',
+      'Maple Hardwood': '#F2E4C7',
+      
+      // Paint Colors (2024 Trends)
+      'Sage Green': '#87A96B',
+      'Warm Beige': '#E8DCC0',
+      'Soft Blue': '#A8C5D1',
       'Classic White': '#FFFFFF',
-      'Ocean Blue': '#4682B4',
-      'Charcoal': '#36454F',
-      'Brushed Nickel': '#C0C0C0',
+      'Charcoal Gray': '#4A5568',
+      'Terracotta': '#CC7A6B',
+      
+      // Countertop Colors
+      'Calacatta Quartz': '#F8F6F0',
+      'Carrara Marble': '#E8E8E8',
+      'Granite Midnight': '#2D3748',
+      'Butcher Block': '#D69E2E',
+      'Concrete Gray': '#A0AEC0',
+      'Quartzite White': '#F7FAFC',
+      
+      // Tile Colors
+      'Subway White': '#F7FAFC',
+      'Marble Hexagon': '#E2E8F0',
+      'Travertine Beige': '#D6BCB1',
+      'Porcelain Gray': '#9CA3AF',
+      'Natural Stone': '#8B7355',
+      'Ceramic Black': '#2D3748',
+      
+      // Fixture Colors
+      'Brushed Gold': '#D4AF37',
+      'Matte Black': '#1A202C',
+      'Brushed Nickel': '#C5C7C7',
+      'Chrome': '#E2E8F0',
+      'Oil Rubbed Bronze': '#4A5568',
+      'Brass': '#B7791F',
+      
+      // Cabinet Colors
       'Espresso': '#3C2414',
-      'Subway White': '#F5F5F5',
-      'Marble Grey': '#E6E6E6',
-      'Granite Black': '#2F4F4F'
+      'Shaker White': '#F7FAFC',
+      'Navy Blue': '#2B6CB0',
+      'Sage Cabinet': '#68A063',
+      'Gray Stain': '#6B7280',
+      'Natural Wood': '#C49A73'
     };
-    return colorMap[materialName] || '#CCCCCC';
+    return colorMap[materialName] || '#D1D5DB';
   };
 
   // Measurement and annotation functions
