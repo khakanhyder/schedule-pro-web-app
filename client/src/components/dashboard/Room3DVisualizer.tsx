@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Palette, Camera, Eye, EyeOff, Ruler, Navigation, StickyNote, Move3D } from 'lucide-react';
+import { Palette, Camera, Eye, EyeOff, Ruler, Navigation, StickyNote, Move3D, Calculator } from 'lucide-react';
 import type { RoomMaterial } from '@shared/schema';
 
 interface Room3DVisualizerProps {

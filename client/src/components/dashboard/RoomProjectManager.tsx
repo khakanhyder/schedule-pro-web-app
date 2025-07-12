@@ -251,9 +251,8 @@ export default function RoomProjectManager() {
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center justify-between">
+              <DialogTitle>
                 Create New 3D Room Project
-
               </DialogTitle>
             </DialogHeader>
             
