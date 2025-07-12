@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Palette, Camera, Eye, EyeOff } from 'lucide-react';
+import { Palette, Camera, Eye, EyeOff, Ruler, Navigation, StickyNote, Move3D } from 'lucide-react';
 import type { RoomMaterial } from '@shared/schema';
 
 interface Room3DVisualizerProps {
@@ -43,6 +43,27 @@ export default function Room3DVisualizer({
   const controlsRef = useRef<OrbitControls | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isClientView, setIsClientView] = useState(false);
+  
+  // Measurement and annotation states
+  const [measurementMode, setMeasurementMode] = useState(false);
+  const [walkthroughMode, setWalkthroughMode] = useState(false);
+  const [annotationMode, setAnnotationMode] = useState(false);
+  const [measurements, setMeasurements] = useState<Array<{
+    id: string;
+    start: THREE.Vector3;
+    end: THREE.Vector3;
+    distance: number;
+    label: string;
+  }>>([]);
+  const [annotations, setAnnotations] = useState<Array<{
+    id: string;
+    position: THREE.Vector3;
+    note: string;
+    type: 'issue' | 'note' | 'progress';
+  }>>([]);
+  const [measurementPoints, setMeasurementPoints] = useState<THREE.Vector3[]>([]);
+  const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
+  const mouseRef = useRef<THREE.Vector2>(new THREE.Vector2());
   const [isDraggingDoor, setIsDraggingDoor] = useState(false);
   const [doorObject, setDoorObject] = useState<THREE.Group | null>(null);
 
@@ -78,6 +99,10 @@ export default function Room3DVisualizer({
     controls.dampingFactor = 0.05;
     controlsRef.current = controls;
 
+    // Add click event listener for measurements and annotations
+    const canvas = renderer.domElement;
+    canvas.addEventListener('click', handleCanvasClick);
+
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
@@ -105,6 +130,7 @@ export default function Room3DVisualizer({
     // Cleanup
     return () => {
       if (mountRef.current && renderer.domElement) {
+        renderer.domElement.removeEventListener('click', handleCanvasClick);
         mountRef.current.removeChild(renderer.domElement);
       }
       renderer.dispose();
@@ -124,6 +150,14 @@ export default function Room3DVisualizer({
       createRoom(sceneRef.current, roomLength, roomWidth, roomHeight);
     }
   }, [roomLength, roomWidth, roomHeight, doorPosition, doorWidth]);
+
+  // Update cursor style for measurement and annotation modes
+  useEffect(() => {
+    if (rendererRef.current) {
+      const canvas = rendererRef.current.domElement;
+      canvas.style.cursor = measurementMode || annotationMode ? 'crosshair' : 'default';
+    }
+  }, [measurementMode, annotationMode]);
 
   const createRoom = (scene: THREE.Scene, length: number, width: number, height: number) => {
     const roomGroup = new THREE.Group();
@@ -340,6 +374,139 @@ export default function Room3DVisualizer({
     return colorMap[materialName] || '#CCCCCC';
   };
 
+  // Measurement and annotation functions
+  const addMeasurementLine = (start: THREE.Vector3, end: THREE.Vector3, scene: THREE.Scene) => {
+    const distance = start.distanceTo(end);
+    const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 3 });
+    const line = new THREE.Line(geometry, material);
+    
+    // Add measurement label
+    const midPoint = start.clone().add(end).divideScalar(2);
+    const labelGeometry = new THREE.PlaneGeometry(2, 0.5);
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 64;
+    const context = canvas.getContext('2d')!;
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#000000';
+    context.font = '24px Arial';
+    context.textAlign = 'center';
+    context.fillText(`${distance.toFixed(2)} ft`, canvas.width / 2, canvas.height / 2 + 8);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    const labelMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+    const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
+    labelMesh.position.copy(midPoint);
+    labelMesh.lookAt(0, 0, 0);
+    
+    scene.add(line);
+    scene.add(labelMesh);
+    
+    return { line, label: labelMesh, distance };
+  };
+
+  const addAnnotation = (position: THREE.Vector3, note: string, type: 'issue' | 'note' | 'progress', scene: THREE.Scene) => {
+    const geometry = new THREE.SphereGeometry(0.2, 8, 8);
+    const color = type === 'issue' ? 0xff0000 : type === 'progress' ? 0x00ff00 : 0x0000ff;
+    const material = new THREE.MeshBasicMaterial({ color });
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.copy(position);
+    
+    // Add note label
+    const labelGeometry = new THREE.PlaneGeometry(4, 1);
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 128;
+    const context = canvas.getContext('2d')!;
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = '#000000';
+    context.font = '20px Arial';
+    context.textAlign = 'center';
+    context.fillText(note, canvas.width / 2, canvas.height / 2 + 6);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    const labelMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+    const labelMesh = new THREE.Mesh(labelGeometry, labelMaterial);
+    labelMesh.position.copy(position);
+    labelMesh.position.y += 1;
+    labelMesh.lookAt(0, 0, 0);
+    
+    scene.add(sphere);
+    scene.add(labelMesh);
+    
+    return { marker: sphere, label: labelMesh };
+  };
+
+  const handleCanvasClick = (event: MouseEvent) => {
+    if (!sceneRef.current || !rendererRef.current) return;
+
+    const canvas = rendererRef.current.domElement;
+    const rect = canvas.getBoundingClientRect();
+    
+    mouseRef.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouseRef.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycasterRef.current.setFromCamera(mouseRef.current, new THREE.PerspectiveCamera(75, rect.width / rect.height, 0.1, 1000));
+    
+    // Find intersection with room surfaces
+    const intersects = raycasterRef.current.intersectObjects(sceneRef.current.children, true);
+    
+    if (intersects.length > 0) {
+      const point = intersects[0].point;
+      
+      if (measurementMode) {
+        const newPoints = [...measurementPoints, point];
+        setMeasurementPoints(newPoints);
+        
+        if (newPoints.length === 2) {
+          const { distance } = addMeasurementLine(newPoints[0], newPoints[1], sceneRef.current);
+          const newMeasurement = {
+            id: Date.now().toString(),
+            start: newPoints[0],
+            end: newPoints[1],
+            distance,
+            label: `${distance.toFixed(2)} ft`
+          };
+          setMeasurements(prev => [...prev, newMeasurement]);
+          setMeasurementPoints([]);
+        }
+      } else if (annotationMode) {
+        const note = prompt('Enter note:');
+        if (note) {
+          const type = prompt('Type (issue/note/progress):') as 'issue' | 'note' | 'progress' || 'note';
+          addAnnotation(point, note, type, sceneRef.current);
+          const newAnnotation = {
+            id: Date.now().toString(),
+            position: point,
+            note,
+            type
+          };
+          setAnnotations(prev => [...prev, newAnnotation]);
+        }
+      }
+    }
+  };
+
+  const enableWalkthroughMode = () => {
+    if (controlsRef.current) {
+      controlsRef.current.enablePan = true;
+      controlsRef.current.enableRotate = true;
+      controlsRef.current.enableZoom = true;
+      controlsRef.current.maxPolarAngle = Math.PI / 2.1; // Prevent going underground
+      controlsRef.current.minDistance = 2;
+      controlsRef.current.maxDistance = 30;
+    }
+  };
+
+  const disableWalkthroughMode = () => {
+    if (controlsRef.current) {
+      controlsRef.current.reset();
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Client Presentation Mode Toggle */}
@@ -491,7 +658,58 @@ export default function Room3DVisualizer({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Material Selection</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>Material Selection</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={measurementMode ? "default" : "outline"}
+                    onClick={() => {
+                      setMeasurementMode(!measurementMode);
+                      setAnnotationMode(false);
+                    }}
+                    className="flex items-center gap-1"
+                    size="sm"
+                  >
+                    <Ruler className="h-3 w-3" />
+                    Measure
+                  </Button>
+                  
+                  <Button
+                    variant={annotationMode ? "default" : "outline"}
+                    onClick={() => {
+                      setAnnotationMode(!annotationMode);
+                      setMeasurementMode(false);
+                    }}
+                    className="flex items-center gap-1"
+                    size="sm"
+                  >
+                    <StickyNote className="h-3 w-3" />
+                    Notes
+                  </Button>
+                  
+                  <Button
+                    variant={walkthroughMode ? "default" : "outline"}
+                    onClick={() => {
+                      setWalkthroughMode(!walkthroughMode);
+                      if (!walkthroughMode) {
+                        enableWalkthroughMode();
+                      } else {
+                        disableWalkthroughMode();
+                      }
+                    }}
+                    className="flex items-center gap-1"
+                    size="sm"
+                  >
+                    <Navigation className="h-3 w-3" />
+                    Walkthrough
+                  </Button>
+                </div>
+              </CardTitle>
+              <div className="text-sm text-gray-600">
+                {measurementMode ? 'Click two points in the 3D view to measure distances' : 
+                 annotationMode ? 'Click in the 3D view to add project notes' : 
+                 'Click material swatches to see real-time changes'}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -566,6 +784,49 @@ export default function Room3DVisualizer({
                     {2 * (roomLength + roomWidth) * roomHeight} sq ft
                   </div>
                 </div>
+
+                {/* Measurements Summary */}
+                {measurements.length > 0 && (
+                  <div className="border-t pt-3">
+                    <div className="font-semibold flex items-center gap-2 mb-2">
+                      <Ruler className="h-4 w-4" />
+                      Measurements ({measurements.length})
+                    </div>
+                    <div className="space-y-1">
+                      {measurements.map((measurement, index) => (
+                        <div key={measurement.id} className="flex justify-between text-sm bg-blue-50 p-2 rounded">
+                          <span>Measurement {index + 1}:</span>
+                          <span className="font-mono font-semibold">{measurement.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Annotations Summary */}
+                {annotations.length > 0 && (
+                  <div className="border-t pt-3">
+                    <div className="font-semibold flex items-center gap-2 mb-2">
+                      <StickyNote className="h-4 w-4" />
+                      Project Notes ({annotations.length})
+                    </div>
+                    <div className="space-y-2">
+                      {annotations.map((annotation, index) => (
+                        <div key={annotation.id} className="text-sm bg-gray-50 p-2 rounded">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-2 h-2 rounded-full ${
+                              annotation.type === 'issue' ? 'bg-red-500' : 
+                              annotation.type === 'progress' ? 'bg-green-500' : 
+                              'bg-blue-500'
+                            }`} />
+                            <span className="font-medium capitalize">{annotation.type}</span>
+                          </div>
+                          <div className="text-gray-600 ml-4">{annotation.note}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
