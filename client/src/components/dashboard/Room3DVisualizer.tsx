@@ -355,59 +355,39 @@ export default function Room3DVisualizer({
     
     if (material) {
       const colorMap: Record<string, number> = {
-        // Flooring Colors
-        'White Oak Engineered': 0xF5E6D3,
-        'European Oak Wide Plank': 0xD4A574,
-        'Walnut Luxury Vinyl': 0x6B4423,
-        'Hickory Hardwood': 0xC49A73,
-        'Bamboo Strand Woven': 0xE8D5A3,
-        'Maple Hardwood': 0xF2E4C7,
-        'Oak Hardwood': 0xD2B48C,
+        // Flooring Colors - Match database material names
+        'White Oak Engineered': 0xE8D4B0,
+        'Luxury Vinyl Plank': 0x8B4513,
+        'Hickory Hardwood': 0xC19A6B,
+        'Walnut Engineered': 0x5D4037,
+        'Wood-Look Porcelain': 0x8E8E93,
         
-        // Paint Colors
-        'Sage Green': 0x87A96B,
-        'Warm Beige': 0xE8DCC0,
-        'Soft Blue': 0xA8C5D1,
-        'Classic White': 0xFFFFFF,
-        'Charcoal Gray': 0x4A5568,
-        'Terracotta': 0xCC7A6B,
-        'Warm White': 0xFFFDD0,
+        // Paint Colors - Match database material names
+        'Sage Green Paint': 0x9CAF88,
+        'Navy Blue Paint': 0x1B365D,
+        'Warm Cream Paint': 0xF5F5DC,
+        'Olive Green Paint': 0x808000,
+        'Terracotta Paint': 0xCC8E70,
         
-        // Countertop Colors
-        'Calacatta Quartz': 0xF8F6F0,
-        'Carrara Marble': 0xE8E8E8,
-        'Granite Midnight': 0x2D3748,
-        'Butcher Block': 0xD69E2E,
-        'Concrete Gray': 0xA0AEC0,
-        'Quartzite White': 0xF7FAFC,
-        'Carrara White': 0xF8F8FF,
+        // Countertop/Tiles Colors - Match database material names
+        'Calacatta Quartz': 0xF8F8FF,
+        'Carrara Marble': 0xFFFFFF,
+        'Warm Gray Quartz': 0x8E8E93,
+        'Granite Veined': 0xF0F0F0,
+        'Marble-Look Porcelain': 0xFAFAFA,
         
-        // Cabinet Colors
-        'Espresso': 0x3C2414,
-        'Shaker White': 0xF7FAFC,
-        'Navy Blue': 0x2B6CB0,
-        'Sage Cabinet': 0x68A063,
-        'Gray Stain': 0x6B7280,
-        'Natural Wood': 0xC49A73,
-        'Rustic Brown': 0x8B4513,
+        // Cabinet Colors - Match database material names
+        'Sage Green Shaker': 0x9CAF88,
+        'Navy Blue Shaker': 0x1B365D,
+        'Warm White Shaker': 0xF5F5DC,
+        'Natural Wood Cabinets': 0xD2B48C,
         
-        // Fixture Colors
-        'Brushed Gold': 0xD4AF37,
-        'Matte Black': 0x1A202C,
-        'Brushed Nickel': 0xC5C7C7,
-        'Chrome': 0xE2E8F0,
-        'Oil Rubbed Bronze': 0x4A5568,
-        'Brass': 0xB7791F,
+        // Fixture Colors - Match database material names
+        'Matte Black Faucet': 0x2C2C2C,
+        'Brushed Gold Faucet': 0xD4AF37,
+        'Stainless Steel Appliances': 0xC0C0C0,
         
-        // Tile Colors
-        'Subway White': 0xF7FAFC,
-        'Marble Hexagon': 0xE2E8F0,
-        'Travertine Beige': 0xD6BCB1,
-        'Porcelain Gray': 0x9CA3AF,
-        'Natural Stone': 0x8B7355,
-        'Ceramic Black': 0x2D3748,
-        
-        // Legacy colors
+        // Legacy/fallback colors
         'Ocean Blue': 0x4682B4,
         'Charcoal': 0x36454F
       };

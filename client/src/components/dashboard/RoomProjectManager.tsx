@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Eye, Edit, Trash2, Home, Calculator } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Home, Calculator, Palette, Square, Wrench, Box } from 'lucide-react';
 import Room3DVisualizer from './Room3DVisualizer';
 import MaterialSelectionDemo from './MaterialSelectionDemo';
+import EnhancedMaterialSelector from './EnhancedMaterialSelector';
 
 import { apiRequest } from '@/lib/queryClient';
 import type { RoomProject, RoomMaterial, InsertRoomProject } from '@shared/schema';
@@ -258,9 +259,10 @@ export default function RoomProjectManager() {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <Tabs defaultValue="details" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="details">Project Details</TabsTrigger>
                   <TabsTrigger value="room">Room Design</TabsTrigger>
+                  <TabsTrigger value="materials">Materials</TabsTrigger>
                   <TabsTrigger value="demo">How It Works</TabsTrigger>
                   <TabsTrigger value="cost">Cost Estimate</TabsTrigger>
                 </TabsList>
@@ -427,6 +429,19 @@ export default function RoomProjectManager() {
                     selectedMaterials={selectedMaterials}
                     onMaterialChange={handleMaterialChange}
                     materials={materials}
+                  />
+                </TabsContent>
+
+                <TabsContent value="materials" className="space-y-4">
+                  <EnhancedMaterialSelector
+                    materials={materials}
+                    selectedMaterials={selectedMaterials}
+                    onMaterialChange={handleMaterialChange}
+                    roomDimensions={{
+                      length: formData.roomLength,
+                      width: formData.roomWidth,
+                      height: formData.roomHeight
+                    }}
                   />
                 </TabsContent>
 
