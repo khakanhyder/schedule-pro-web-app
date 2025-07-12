@@ -83,7 +83,7 @@ export default function Room3DVisualizer({
       0.1,
       1000
     );
-    camera.position.set(15, 12, 15);
+    camera.position.set(18, 15, 18);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -97,8 +97,8 @@ export default function Room3DVisualizer({
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.minDistance = 8;
-    controls.maxDistance = 40;
+    controls.minDistance = 10;
+    controls.maxDistance = 50;
     controlsRef.current = controls;
 
     // Add click event listener for measurements and annotations
@@ -180,7 +180,7 @@ export default function Room3DVisualizer({
     roomGroup.userData.isRoom = true;
 
     // Scale up the room for better visibility
-    const scale = 1.5;
+    const scale = 1.2;
     const scaledLength = length * scale;
     const scaledWidth = width * scale;
     const scaledHeight = height * scale;
