@@ -856,29 +856,40 @@ export class MemStorage implements IStorage {
     return Array.from(this.roomMaterials.values()).filter(m => m.category === category);
   }
 
-  // Initialize room materials with sample data
+  // Initialize room materials with 2024 market trends
   private initializeRoomMaterials(): void {
     const sampleMaterials = [
-      // Flooring
-      { name: "Oak Hardwood", category: "flooring", subcategory: "hardwood", color: "Natural Oak", price: 8.5, unit: "sq_ft", brand: "Armstrong", description: "Classic oak hardwood flooring", imageUrl: "/materials/oak-hardwood.jpg", isActive: true },
-      { name: "Marble Tile", category: "flooring", subcategory: "tile", color: "Carrara White", price: 12.0, unit: "sq_ft", brand: "Daltile", description: "Elegant marble tile flooring", imageUrl: "/materials/marble-tile.jpg", isActive: true },
-      { name: "Luxury Vinyl", category: "flooring", subcategory: "vinyl", color: "Rustic Brown", price: 4.5, unit: "sq_ft", brand: "Shaw", description: "Waterproof luxury vinyl planks", imageUrl: "/materials/luxury-vinyl.jpg", isActive: true },
+      // FLOORING - 2024 Top Trends
+      { name: "White Oak Engineered", category: "flooring", subcategory: "hardwood", color: "Natural White Oak", price: 9.5, unit: "sq_ft", brand: "Shaw", description: "2024's most popular engineered hardwood", imageUrl: "/materials/white-oak.jpg", isActive: true },
+      { name: "Luxury Vinyl Plank", category: "flooring", subcategory: "vinyl", color: "Warm Brown", price: 5.5, unit: "sq_ft", brand: "CoreLuxe", description: "Waterproof LVP - #1 kitchen choice", imageUrl: "/materials/lvp-brown.jpg", isActive: true },
+      { name: "Hickory Hardwood", category: "flooring", subcategory: "hardwood", color: "Natural Hickory", price: 8.0, unit: "sq_ft", brand: "Mohawk", description: "Trending rustic hardwood", imageUrl: "/materials/hickory.jpg", isActive: true },
+      { name: "Walnut Engineered", category: "flooring", subcategory: "hardwood", color: "Rich Walnut", price: 11.0, unit: "sq_ft", brand: "Armstrong", description: "Premium trending wood tone", imageUrl: "/materials/walnut.jpg", isActive: true },
+      { name: "Wood-Look Porcelain", category: "flooring", subcategory: "tile", color: "Warm Gray", price: 6.5, unit: "sq_ft", brand: "Daltile", description: "Waterproof wood-look tile", imageUrl: "/materials/wood-look-tile.jpg", isActive: true },
       
-      // Paint
-      { name: "Premium Interior Paint", category: "paint", subcategory: "interior", color: "Warm White", price: 45.0, unit: "gallon", brand: "Sherwin Williams", description: "High-quality interior paint", imageUrl: "/materials/paint-white.jpg", isActive: true },
-      { name: "Premium Interior Paint", category: "paint", subcategory: "interior", color: "Sage Green", price: 45.0, unit: "gallon", brand: "Sherwin Williams", description: "High-quality interior paint", imageUrl: "/materials/paint-green.jpg", isActive: true },
+      // PAINT - 2024 Top Colors
+      { name: "Sage Green Paint", category: "paint", subcategory: "interior", color: "Sage Green", price: 48.0, unit: "gallon", brand: "Sherwin Williams", description: "2024's #1 trending kitchen color", imageUrl: "/materials/sage-green.jpg", isActive: true },
+      { name: "Navy Blue Paint", category: "paint", subcategory: "interior", color: "Navy Blue", price: 48.0, unit: "gallon", brand: "Benjamin Moore", description: "Deep blue - major 2024 trend", imageUrl: "/materials/navy-blue.jpg", isActive: true },
+      { name: "Warm Cream Paint", category: "paint", subcategory: "interior", color: "Warm Cream", price: 45.0, unit: "gallon", brand: "Clare", description: "Replacing stark whites in 2024", imageUrl: "/materials/warm-cream.jpg", isActive: true },
+      { name: "Olive Green Paint", category: "paint", subcategory: "interior", color: "Olive Green", price: 48.0, unit: "gallon", brand: "Farrow & Ball", description: "Trending earthy green tone", imageUrl: "/materials/olive-green.jpg", isActive: true },
+      { name: "Terracotta Paint", category: "paint", subcategory: "interior", color: "Dusty Terracotta", price: 46.0, unit: "gallon", brand: "Sherwin Williams", description: "Warm earthy 2024 trend", imageUrl: "/materials/terracotta.jpg", isActive: true },
       
-      // Tiles
-      { name: "Subway Tiles", category: "tiles", subcategory: "ceramic", color: "Classic White", price: 3.5, unit: "sq_ft", brand: "American Olean", description: "Timeless subway tiles", imageUrl: "/materials/subway-tiles.jpg", isActive: true },
-      { name: "Mosaic Tiles", category: "tiles", subcategory: "glass", color: "Ocean Blue", price: 15.0, unit: "sq_ft", brand: "Bisazza", description: "Premium glass mosaic tiles", imageUrl: "/materials/mosaic-tiles.jpg", isActive: true },
+      // TILES - 2024 Countertop Trends  
+      { name: "Calacatta Quartz", category: "tiles", subcategory: "quartz", color: "Calacatta White", price: 85.0, unit: "sq_ft", brand: "Caesarstone", description: "2024's most popular quartz", imageUrl: "/materials/calacatta-quartz.jpg", isActive: true },
+      { name: "Carrara Marble", category: "tiles", subcategory: "marble", color: "Carrara White", price: 65.0, unit: "sq_ft", brand: "MSI", description: "Classic luxury marble", imageUrl: "/materials/carrara-marble.jpg", isActive: true },
+      { name: "Warm Gray Quartz", category: "tiles", subcategory: "quartz", color: "Warm Gray", price: 75.0, unit: "sq_ft", brand: "Silestone", description: "Trending warm tone quartz", imageUrl: "/materials/warm-gray-quartz.jpg", isActive: true },
+      { name: "Granite Veined", category: "tiles", subcategory: "granite", color: "Light Veined", price: 55.0, unit: "sq_ft", brand: "Daltile", description: "Modern veined granite", imageUrl: "/materials/veined-granite.jpg", isActive: true },
+      { name: "Marble-Look Porcelain", category: "tiles", subcategory: "porcelain", color: "Marble White", price: 12.0, unit: "sq_ft", brand: "Emser", description: "Low-maintenance marble look", imageUrl: "/materials/marble-porcelain.jpg", isActive: true },
       
-      // Fixtures
-      { name: "Modern Faucet", category: "fixtures", subcategory: "faucets", color: "Brushed Nickel", price: 185.0, unit: "unit", brand: "Moen", description: "Contemporary kitchen faucet", imageUrl: "/materials/modern-faucet.jpg", isActive: true },
-      { name: "LED Light Fixture", category: "fixtures", subcategory: "lighting", color: "Warm White", price: 95.0, unit: "unit", brand: "Philips", description: "Energy-efficient LED ceiling light", imageUrl: "/materials/led-light.jpg", isActive: true },
+      // FIXTURES - 2024 Trends
+      { name: "Matte Black Faucet", category: "fixtures", subcategory: "faucets", color: "Matte Black", price: 225.0, unit: "unit", brand: "Delta", description: "Trending matte black finish", imageUrl: "/materials/black-faucet.jpg", isActive: true },
+      { name: "Brushed Gold Faucet", category: "fixtures", subcategory: "faucets", color: "Brushed Gold", price: 285.0, unit: "unit", brand: "Moen", description: "Popular warm metal finish", imageUrl: "/materials/gold-faucet.jpg", isActive: true },
+      { name: "Stainless Steel Appliances", category: "fixtures", subcategory: "appliances", color: "Stainless Steel", price: 2500.0, unit: "set", brand: "KitchenAid", description: "Classic appliance finish", imageUrl: "/materials/stainless-appliances.jpg", isActive: true },
       
-      // Cabinets
-      { name: "Shaker Cabinets", category: "cabinets", subcategory: "kitchen", color: "Navy Blue", price: 125.0, unit: "linear_ft", brand: "KraftMaid", description: "Classic shaker style kitchen cabinets", imageUrl: "/materials/shaker-cabinets.jpg", isActive: true },
-      { name: "Modern Cabinets", category: "cabinets", subcategory: "bathroom", color: "Espresso", price: 95.0, unit: "linear_ft", brand: "Thomasville", description: "Contemporary bathroom vanity", imageUrl: "/materials/modern-cabinets.jpg", isActive: true }
+      // CABINETS - 2024 Trends
+      { name: "Sage Green Shaker", category: "cabinets", subcategory: "kitchen", color: "Sage Green", price: 145.0, unit: "linear_ft", brand: "KraftMaid", description: "2024's hottest cabinet color", imageUrl: "/materials/sage-cabinets.jpg", isActive: true },
+      { name: "Navy Blue Shaker", category: "cabinets", subcategory: "kitchen", color: "Navy Blue", price: 145.0, unit: "linear_ft", brand: "Diamond", description: "Deep blue trending cabinets", imageUrl: "/materials/navy-cabinets.jpg", isActive: true },
+      { name: "Warm White Shaker", category: "cabinets", subcategory: "kitchen", color: "Warm White", price: 125.0, unit: "linear_ft", brand: "Thomasville", description: "Replacing stark white cabinets", imageUrl: "/materials/warm-white-cabinets.jpg", isActive: true },
+      { name: "Natural Wood Cabinets", category: "cabinets", subcategory: "kitchen", color: "Natural Oak", price: 165.0, unit: "linear_ft", brand: "Wellborn", description: "Wood tone comeback in 2024", imageUrl: "/materials/natural-wood-cabinets.jpg", isActive: true }
     ];
 
     sampleMaterials.forEach(material => {
