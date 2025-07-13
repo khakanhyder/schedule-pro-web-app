@@ -27,6 +27,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import SimpleContractorTools from "./SimpleContractorTools";
 
 export default function IndustrySpecificFeatures() {
   const { selectedIndustry } = useIndustry();
@@ -232,6 +233,9 @@ export default function IndustrySpecificFeatures() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Simple Contractor Tools */}
+      <SimpleContractorTools />
     </div>
   );
 
