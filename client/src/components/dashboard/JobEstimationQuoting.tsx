@@ -406,16 +406,54 @@ export default function JobEstimationQuoting() {
         }
       };
 
-      // Find matching market data
+      // Find matching market data with improved matching logic
       const category = item.category;
       const description = item.description.toLowerCase();
       let recommendation = null;
 
       if (marketData[category]) {
+        // First try exact keyword matching
         for (const [key, value] of Object.entries(marketData[category])) {
           if (description.includes(key)) {
             recommendation = value;
             break;
+          }
+        }
+        
+        // If no exact match, try partial matching for common terms
+        if (!recommendation) {
+          const partialMatches = {
+            'labor': {
+              'demo': 'demolition',
+              'plumb': 'plumbing', 
+              'elect': 'electrical',
+              'dry': 'drywall',
+              'paint': 'painting',
+              'tile': 'tile installation',
+              'floor': 'flooring',
+              'roof': 'roofing',
+              'hvac': 'hvac',
+              'kitchen': 'kitchen installation'
+            },
+            'material': {
+              'tile': 'tile',
+              'floor': 'flooring',
+              'wood': 'lumber',
+              'lumber': 'lumber',
+              'fixture': 'fixtures',
+              'appliance': 'appliances',
+              'roof': 'roofing materials'
+            }
+          };
+          
+          const categoryMatches = partialMatches[category];
+          if (categoryMatches) {
+            for (const [partial, full] of Object.entries(categoryMatches)) {
+              if (description.includes(partial)) {
+                recommendation = marketData[category][full];
+                break;
+              }
+            }
           }
         }
       }
@@ -431,15 +469,24 @@ export default function JobEstimationQuoting() {
         confidence: recommendation?.confidence || 0.75,
         marketPosition: recommendation ? 
           (item.unitCost < recommendation.min ? 'Below Market' :
-           item.unitCost > recommendation.max ? 'Above Market' : 'Market Rate') : 'Unknown',
+           item.unitCost > recommendation.max ? 'Above Market' : 'Market Rate') : 'No Market Data',
         recommendations: [
-          recommendation && item.unitCost < recommendation.avg ? 
-            `Consider increasing price by $${(recommendation.avg - item.unitCost).toFixed(2)} to match market average` :
-            'Current pricing is competitive',
-          `${location} market data shows ${recommendation?.confidence ? (recommendation.confidence * 100).toFixed(0) : '75'}% confidence in this range`,
+          recommendation ? 
+            (item.unitCost < recommendation.avg ? 
+              `Consider increasing price by $${(recommendation.avg - item.unitCost).toFixed(2)} to match market average` :
+              item.unitCost > recommendation.avg ?
+                `Your price is $${(item.unitCost - recommendation.avg).toFixed(2)} above market average` :
+                'Current pricing matches market average'
+            ) : 
+            'No specific market data found for this item - consider researching local competitors',
+          recommendation ? 
+            `Market data shows ${(recommendation.confidence * 100).toFixed(0)}% confidence in $${recommendation.min}-$${recommendation.max} range` :
+            'Recommend getting quotes from suppliers for accurate pricing',
           category === 'labor' ? 'Labor rates vary by experience level and local demand' : 
             'Material costs fluctuate based on supplier and quality',
-          'Consider seasonal pricing adjustments for peak demand periods'
+          recommendation ? 
+            'Consider seasonal pricing adjustments for peak demand periods' :
+            'Build a pricing database from your past projects for better estimates'
         ],
         factors: [
           { factor: 'Market Demand', impact: 'High', description: 'Current demand exceeds supply' },
@@ -454,9 +501,21 @@ export default function JobEstimationQuoting() {
         [item.id]: insights
       }));
 
+      // Debug info for user
+      console.log('AI Price Check Debug:', {
+        description: item.description,
+        category: item.category,
+        currentPrice: item.unitCost,
+        foundRecommendation: !!recommendation,
+        suggestedPrice: insights.suggestedPrice,
+        marketPosition: insights.marketPosition
+      });
+
       toast({
         title: "AI Price Analysis Complete",
-        description: `Market analysis suggests $${insights.suggestedPrice.toFixed(2)} per ${item.unit}`
+        description: recommendation ? 
+          `Market analysis suggests $${insights.suggestedPrice.toFixed(2)} per ${item.unit} (${insights.marketPosition})` :
+          `No market data found for "${item.description}" - showing fallback analysis`
       });
 
     } catch (error) {
