@@ -501,43 +501,11 @@ export default function Professional3DRoomViewer({
 
   return (
     <div className="space-y-4">
-      {/* Professional Controls */}
-      <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-lg">
-        <Button
-          variant={viewMode === 'normal' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('normal')}
-        >
-          <Home className="h-4 w-4 mr-1" />
-          Normal
-        </Button>
-        <Button
-          variant={viewMode === 'overview' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('overview')}
-        >
-          <Maximize2 className="h-4 w-4 mr-1" />
-          Overview
-        </Button>
-        <Button
-          variant={isDay ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setIsDay(!isDay)}
-        >
-          {isDay ? <Sun className="h-4 w-4 mr-1" /> : <Moon className="h-4 w-4 mr-1" />}
-          {isDay ? 'Day' : 'Night'}
-        </Button>
-        <Button
-          variant={showGrid ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setShowGrid(!showGrid)}
-        >
-          <Grid3X3 className="h-4 w-4 mr-1" />
-          Grid
-        </Button>
+      {/* Simple Controls */}
+      <div className="flex gap-2 p-3 bg-gray-50 rounded-lg">
         <Button variant="outline" size="sm" onClick={resetCamera}>
           <RotateCcw className="h-4 w-4 mr-1" />
-          Reset
+          Reset View
         </Button>
         {selectedElement && (
           <Badge variant="secondary" className="ml-2">
@@ -564,21 +532,7 @@ export default function Professional3DRoomViewer({
           </div>
         )}
         
-        {/* Lighting Controls */}
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-md">
-          <div className="flex items-center gap-2">
-            <Lightbulb className="h-4 w-4" />
-            <span className="text-sm font-medium">Light</span>
-            <Slider
-              value={lightIntensity}
-              onValueChange={setLightIntensity}
-              max={1}
-              min={0.1}
-              step={0.1}
-              className="w-20"
-            />
-          </div>
-        </div>
+
         
         {/* Instructions */}
         <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-md">

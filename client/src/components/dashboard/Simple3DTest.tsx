@@ -180,151 +180,72 @@ export default function Simple3DTest() {
         </CardContent>
       </Card>
 
-      {/* New Project Dialog - Compact Professional Version */}
+      {/* New Project Dialog - Simple Version */}
       <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold">New Project</DialogTitle>
+            <DialogTitle>New Project</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="projectName" className="text-sm">Project Name</Label>
+              <Label htmlFor="projectName">Project Name</Label>
               <Input
                 id="projectName"
-                placeholder="Kitchen Remodel - Smith Family"
+                placeholder="Kitchen Remodel"
                 value={newProjectData.projectName}
                 onChange={(e) => setNewProjectData(prev => ({ ...prev, projectName: e.target.value }))}
-                className="mt-1"
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="roomType" className="text-sm">Room</Label>
-                <Select value={newProjectData.roomType} onValueChange={(value) => setNewProjectData(prev => ({ ...prev, roomType: value }))}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kitchen">Kitchen</SelectItem>
-                    <SelectItem value="bathroom">Bathroom</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="clientName" className="text-sm">Client</Label>
-                <Input
-                  id="clientName"
-                  placeholder="John Smith"
-                  value={newProjectData.clientName}
-                  onChange={(e) => setNewProjectData(prev => ({ ...prev, clientName: e.target.value }))}
-                  className="mt-1"
-                />
-              </div>
+            <div>
+              <Label htmlFor="roomType">Room Type</Label>
+              <Select value={newProjectData.roomType} onValueChange={(value) => setNewProjectData(prev => ({ ...prev, roomType: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kitchen">Kitchen</SelectItem>
+                  <SelectItem value="bathroom">Bathroom</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <Label htmlFor="roomLength" className="text-xs">Length (ft)</Label>
-                <Input
-                  id="roomLength"
-                  type="number"
-                  value={newProjectData.roomLength}
-                  onChange={(e) => setNewProjectData(prev => ({ ...prev, roomLength: Number(e.target.value) }))}
-                  min="6"
-                  max="40"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="roomWidth" className="text-xs">Width (ft)</Label>
-                <Input
-                  id="roomWidth"
-                  type="number"
-                  value={newProjectData.roomWidth}
-                  onChange={(e) => setNewProjectData(prev => ({ ...prev, roomWidth: Number(e.target.value) }))}
-                  min="6"
-                  max="40"
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="roomHeight" className="text-xs">Height (ft)</Label>
-                <Input
-                  id="roomHeight"
-                  type="number"
-                  value={newProjectData.roomHeight}
-                  onChange={(e) => setNewProjectData(prev => ({ ...prev, roomHeight: Number(e.target.value) }))}
-                  min="7"
-                  max="12"
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-2 justify-end pt-2">
-              <Button variant="outline" onClick={() => setIsNewProjectOpen(false)} size="sm">
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setIsNewProjectOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={() => {
                 setSelectedDemo(newProjectData.roomType);
                 setIsNewProjectOpen(false);
                 setIsViewerOpen(true);
-              }} size="sm">
-                Create & Open 3D
+              }}>
+                Create 3D View
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* 3D Viewer Dialog - Compact Professional Version */}
+      {/* 3D Viewer Dialog - Simple Version */}
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogContent className="max-w-3xl h-[600px]">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold flex items-center gap-2">
-              <Play className="h-4 w-4" />
-              3D {selectedDemo ? selectedDemo.charAt(0).toUpperCase() + selectedDemo.slice(1) : 'Room'} Viewer
-            </DialogTitle>
+            <DialogTitle>3D Room View</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-3">
-            <div className="h-[400px] border rounded-lg overflow-hidden">
-              <Professional3DRoomViewer
-                roomType={selectedDemo || 'kitchen'}
-                dimensions={{
-                  length: newProjectData.roomLength,
-                  width: newProjectData.roomWidth,
-                  height: newProjectData.roomHeight
-                }}
-                materials={mockMaterials}
-                selectedMaterials={selectedMaterials}
-                onMaterialChange={handleMaterialChange}
-              />
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-600">
-                Click surfaces to change materials • Drag to rotate • Scroll to zoom
-              </div>
-              
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  Save Project
-                </Button>
-                <Button variant="outline" size="sm">
-                  Export Quote
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setIsViewerOpen(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+          <div className="h-[500px] border rounded overflow-hidden">
+            <Professional3DRoomViewer
+              roomType={selectedDemo || 'kitchen'}
+              dimensions={{
+                length: 12,
+                width: 10,
+                height: 9
+              }}
+              materials={mockMaterials}
+              selectedMaterials={selectedMaterials}
+              onMaterialChange={handleMaterialChange}
+            />
           </div>
         </DialogContent>
       </Dialog>
