@@ -475,7 +475,7 @@ export default function Dashboard() {
                 color: 'white'
               } : {}}
             >
-              Tools
+              {selectedIndustry?.id === 'home_services' ? 'Tools' : 'Tools'}
             </TabsTrigger>
 
 
