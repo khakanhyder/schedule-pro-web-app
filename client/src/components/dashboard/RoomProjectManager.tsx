@@ -12,8 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Eye, Edit, Trash2, Home, Calculator, Palette, Square, Wrench, Box } from 'lucide-react';
 import SimpleRoom3D from './SimpleRoom3D';
 import KitchenRoom3D from './KitchenRoom3D';
+import SimpleKitchen3D from './SimpleKitchen3D';
 import ContractorMaterialSelector from './ContractorMaterialSelector';
 import ContractorMaterialCalculator from './ContractorMaterialCalculator';
+import SimpleMaterialSelector from './SimpleMaterialSelector';
 
 import { apiRequest } from '@/lib/queryClient';
 import type { RoomProject, RoomMaterial, InsertRoomProject } from '@shared/schema';
@@ -371,7 +373,7 @@ export default function RoomProjectManager() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">3D Room Preview</h3>
                     {formData.projectType === 'kitchen' ? (
-                      <KitchenRoom3D
+                      <SimpleKitchen3D
                         roomLength={formData.roomLength}
                         roomWidth={formData.roomWidth}
                         roomHeight={formData.roomHeight}
@@ -389,9 +391,9 @@ export default function RoomProjectManager() {
                     )}
                   </div>
 
-                  {/* Material Selection with Calculator */}
+                  {/* Material Selection */}
                   <div className="space-y-4">
-                    <ContractorMaterialCalculator
+                    <SimpleMaterialSelector
                       materials={materials}
                       selectedMaterials={selectedMaterials}
                       onMaterialChange={handleMaterialChange}
@@ -400,7 +402,6 @@ export default function RoomProjectManager() {
                         width: formData.roomWidth,
                         height: formData.roomHeight
                       }}
-                      projectType={formData.projectType}
                     />
                   </div>
                 </TabsContent>
@@ -554,7 +555,7 @@ export default function RoomProjectManager() {
             {/* 3D Viewer */}
             {selectedProject && (
               selectedProject.projectType === 'kitchen' ? (
-                <KitchenRoom3D
+                <SimpleKitchen3D
                   roomLength={selectedProject.roomLength}
                   roomWidth={selectedProject.roomWidth}
                   roomHeight={selectedProject.roomHeight}
@@ -573,7 +574,7 @@ export default function RoomProjectManager() {
             )}
 
             {/* Material Selection */}
-            <ContractorMaterialCalculator
+            <SimpleMaterialSelector
               materials={materials}
               selectedMaterials={selectedMaterials}
               onMaterialChange={handleMaterialChange}
@@ -582,7 +583,6 @@ export default function RoomProjectManager() {
                 width: selectedProject?.roomWidth || 10,
                 height: selectedProject?.roomHeight || 9
               }}
-              projectType={selectedProject?.projectType || 'kitchen'}
             />
           </div>
         </DialogContent>
