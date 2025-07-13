@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -23,7 +24,11 @@ import {
   Phone,
   Star,
   Calculator,
-  RefreshCw
+  RefreshCw,
+  Send,
+  Download,
+  FileText,
+  ShoppingCart
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -219,6 +224,10 @@ export default function MaterialCostTracker() {
     total: number;
   }>>([]);
   const [orderNotes, setOrderNotes] = useState('');
+  const [orderMode, setOrderMode] = useState<'order' | 'quote'>('order');
+  const [userLocation, setUserLocation] = useState('');
+  const [preferredStores, setPreferredStores] = useState<string[]>([]);
+  const [showLocationSettings, setShowLocationSettings] = useState(false);
   const { toast } = useToast();
 
   const categories = ['all', 'Lumber', 'Plumbing', 'Electrical', 'Hardware', 'Drywall', 'Flooring', 'Roofing'];
@@ -321,6 +330,10 @@ export default function MaterialCostTracker() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={() => setShowLocationSettings(true)} variant="outline" size="sm">
+            <MapPin className="h-4 w-4 mr-2" />
+            Location Settings
+          </Button>
           <Button onClick={refreshPrices} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh Prices
@@ -484,23 +497,45 @@ export default function MaterialCostTracker() {
                           View Materials
                         </Button>
                       </div>
-                      <Button 
-                        size="sm"
-                        onClick={() => {
-                          setSelectedSupplierForOrder(supplier.id);
-                          setActiveTab('orders');
-                          setOrderItems([]);
-                          setOrderNotes('');
-                          toast({
-                            title: "Quick Order",
-                            description: `Creating order for ${supplier.name}`,
-                            duration: 3000
-                          });
-                        }}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Order
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedSupplierForOrder(supplier.id);
+                            setOrderMode('order');
+                            setActiveTab('orders');
+                            setOrderItems([]);
+                            setOrderNotes('');
+                            toast({
+                              title: "Quick Order",
+                              description: `Creating order for ${supplier.name}`,
+                              duration: 3000
+                            });
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Order
+                        </Button>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedSupplierForOrder(supplier.id);
+                            setOrderMode('quote');
+                            setActiveTab('orders');
+                            setOrderItems([]);
+                            setOrderNotes('');
+                            toast({
+                              title: "Create Quote",
+                              description: `Creating quote for ${supplier.name}`,
+                              duration: 3000
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          Quote
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -615,17 +650,39 @@ export default function MaterialCostTracker() {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold">Create Order</h3>
+                  <h3 className="text-lg font-semibold">
+                    {orderMode === 'quote' ? 'Create Quote' : 'Create Order'}
+                  </h3>
                   <p className="text-muted-foreground">
-                    Order from {suppliers.find(s => s.id === selectedSupplierForOrder)?.name}
+                    {orderMode === 'quote' ? 'Generate quote from' : 'Order from'} {suppliers.find(s => s.id === selectedSupplierForOrder)?.name}
                   </p>
                 </div>
-                <Button 
-                  variant="outline"
-                  onClick={() => setSelectedSupplierForOrder(null)}
-                >
-                  Cancel Order
-                </Button>
+                <div className="flex gap-2">
+                  <div className="flex bg-muted rounded-lg p-1">
+                    <Button
+                      variant={orderMode === 'quote' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setOrderMode('quote')}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Quote
+                    </Button>
+                    <Button
+                      variant={orderMode === 'order' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setOrderMode('order')}
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Order
+                    </Button>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setSelectedSupplierForOrder(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
 
               {/* Add Materials to Order */}
@@ -749,8 +806,8 @@ export default function MaterialCostTracker() {
                     const orderTotal = orderItems.reduce((sum, item) => sum + item.total, 0) * 1.085;
                     
                     toast({
-                      title: "Order Created",
-                      description: `Order for $${orderTotal.toFixed(2)} sent to ${supplier?.name}`,
+                      title: orderMode === 'quote' ? "Quote Generated" : "Order Created",
+                      description: `${orderMode === 'quote' ? 'Quote' : 'Order'} for $${orderTotal.toFixed(2)} ${orderMode === 'quote' ? 'generated from' : 'sent to'} ${supplier?.name}`,
                       duration: 5000
                     });
                     
@@ -761,8 +818,17 @@ export default function MaterialCostTracker() {
                     setActiveTab('suppliers');
                   }}
                 >
-                  <Send className="h-4 w-4 mr-2" />
-                  Send Order
+                  {orderMode === 'quote' ? (
+                    <>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Generate Quote
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Order
+                    </>
+                  )}
                 </Button>
                 <Button
                   variant="outline"
@@ -770,6 +836,7 @@ export default function MaterialCostTracker() {
                   onClick={() => {
                     const supplier = suppliers.find(s => s.id === selectedSupplierForOrder);
                     const orderData = {
+                      type: orderMode,
                       supplier: supplier?.name,
                       items: orderItems.map(item => {
                         const material = materialPrices.find(m => m.id === item.materialId);
@@ -791,18 +858,18 @@ export default function MaterialCostTracker() {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `order-${supplier?.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+                    a.download = `${orderMode}-${supplier?.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
                     a.click();
                     URL.revokeObjectURL(url);
                     
                     toast({
-                      title: "Order Exported",
-                      description: "Order details downloaded as JSON file"
+                      title: `${orderMode === 'quote' ? 'Quote' : 'Order'} Exported`,
+                      description: `${orderMode === 'quote' ? 'Quote' : 'Order'} details downloaded as JSON file`
                     });
                   }}
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Export Order
+                  Export {orderMode === 'quote' ? 'Quote' : 'Order'}
                 </Button>
               </div>
             </Card>
@@ -879,6 +946,105 @@ export default function MaterialCostTracker() {
           </Card>
         </div>
       )}
+
+      {/* Location Settings Dialog */}
+      <Dialog open={showLocationSettings} onOpenChange={setShowLocationSettings}>
+        <DialogContent className="sm:max-w-[525px]">
+          <DialogHeader>
+            <DialogTitle>Location & Preferred Suppliers</DialogTitle>
+            <DialogDescription>
+              Set your location to find nearby suppliers and manage your preferred stores
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="location">Your Location</Label>
+              <Input
+                id="location"
+                placeholder="Enter city, state or ZIP code"
+                value={userLocation}
+                onChange={(e) => setUserLocation(e.target.value)}
+              />
+              <p className="text-sm text-muted-foreground">
+                Used to find nearby suppliers and calculate delivery costs
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Preferred Suppliers</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {suppliers.map((supplier) => (
+                  <div key={supplier.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={supplier.id}
+                      checked={preferredStores.includes(supplier.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setPreferredStores([...preferredStores, supplier.id]);
+                        } else {
+                          setPreferredStores(preferredStores.filter(id => id !== supplier.id));
+                        }
+                      }}
+                    />
+                    <Label htmlFor={supplier.id} className="text-sm font-normal">
+                      {supplier.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Preferred suppliers will be shown first in search results
+              </p>
+            </div>
+
+            {userLocation && (
+              <div className="space-y-2">
+                <Label>Nearby Suppliers</Label>
+                <div className="border rounded-lg p-3 max-h-32 overflow-y-auto">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Found suppliers near {userLocation}:
+                  </p>
+                  {/* Simulated nearby suppliers */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Home Depot #4521</span>
+                      <span className="text-muted-foreground">2.3 miles</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Lowe's #1847</span>
+                      <span className="text-muted-foreground">3.1 miles</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Menards #3204</span>
+                      <span className="text-muted-foreground">4.7 miles</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>84 Lumber</span>
+                      <span className="text-muted-foreground">5.2 miles</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLocationSettings(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => {
+              setShowLocationSettings(false);
+              toast({
+                title: "Settings Saved",
+                description: `Location set to ${userLocation}. ${preferredStores.length} preferred suppliers selected.`,
+                duration: 3000
+              });
+            }}>
+              Save Settings
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
