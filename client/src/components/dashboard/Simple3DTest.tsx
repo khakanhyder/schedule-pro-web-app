@@ -182,7 +182,7 @@ export default function Simple3DTest() {
 
       {/* New Project Dialog - Professional Size */}
       <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
-        <DialogContent className="w-[400px]">
+        <DialogContent style={{ width: '400px', maxWidth: '400px' }}>
           <DialogHeader>
             <DialogTitle>New Project</DialogTitle>
           </DialogHeader>
@@ -229,7 +229,7 @@ export default function Simple3DTest() {
 
       {/* 3D Viewer Dialog - Professional Size */}
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent className="w-[800px] h-[600px]">
+        <DialogContent style={{ width: '800px', maxWidth: '800px', height: '600px' }}>
           <DialogHeader>
             <DialogTitle>3D Room View</DialogTitle>
           </DialogHeader>
