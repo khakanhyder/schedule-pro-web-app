@@ -57,6 +57,7 @@ import NotificationCenter from "@/components/dashboard/NotificationCenter";
 import QuickStats from "@/components/dashboard/QuickStats";
 import PetCareEnhancements from "@/components/dashboard/PetCareEnhancements";
 import MaterialCostTracker from "@/components/dashboard/MaterialCostTracker";
+import GoogleBusinessSetup from "@/components/dashboard/GoogleBusinessSetup";
 
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 

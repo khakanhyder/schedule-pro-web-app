@@ -216,6 +216,12 @@ export class AISchedulingService {
     const suggestions = {
       beauty: [
         {
+          type: 'google_business',
+          suggestion: 'Create Google Business Profile with professional photos and services',
+          reasoning: 'Google Business listings appear in 92% of local searches and drive 35% more bookings',
+          priority: 5
+        },
+        {
           type: 'rebooking',
           suggestion: 'Schedule follow-up color appointments 6-8 weeks after initial service',
           reasoning: 'Hair color typically needs refreshing every 6-8 weeks to maintain vibrancy',
@@ -235,6 +241,12 @@ export class AISchedulingService {
         }
       ],
       wellness: [
+        {
+          type: 'google_business',
+          suggestion: 'Set up Google Business Profile with wellness services and relaxing ambiance photos',
+          reasoning: 'Wellness businesses with complete Google profiles get 3x more local bookings',
+          priority: 5
+        },
         {
           type: 'rebooking',
           suggestion: 'Schedule massage therapy clients every 2-3 weeks for optimal results',
@@ -256,6 +268,12 @@ export class AISchedulingService {
       ],
       home_services: [
         {
+          type: 'google_business',
+          suggestion: 'Create Google Business Profile with before/after project photos and service areas',
+          reasoning: 'Home service contractors with Google profiles get 50% more local leads',
+          priority: 5
+        },
+        {
           type: 'project_planning',
           suggestion: 'Schedule project consultations 2-3 weeks before planned start dates',
           reasoning: 'Advanced planning reduces cancellations by 45% and improves project success',
@@ -275,6 +293,12 @@ export class AISchedulingService {
         }
       ],
       pet_care: [
+        {
+          type: 'google_business',
+          suggestion: 'Create Google Business Profile with happy pet photos and safety certifications',
+          reasoning: 'Pet care businesses with Google profiles get 60% more trust from local pet owners',
+          priority: 5
+        },
         {
           type: 'rebooking',
           suggestion: 'Schedule dog grooming appointments every 4-6 weeks',
@@ -296,6 +320,12 @@ export class AISchedulingService {
       ],
       creative: [
         {
+          type: 'google_business',
+          suggestion: 'Set up Google Business Profile with portfolio photos and client testimonials',
+          reasoning: 'Creative professionals with Google profiles get 40% more inquiries from local clients',
+          priority: 5
+        },
+        {
           type: 'project_phases',
           suggestion: 'Schedule creative projects in phases with milestone reviews',
           reasoning: 'Phased approach reduces scope creep and improves client satisfaction',
@@ -315,6 +345,12 @@ export class AISchedulingService {
         }
       ],
       custom: [
+        {
+          type: 'google_business',
+          suggestion: 'Create Google Business Profile with accurate business hours and contact information',
+          reasoning: 'Complete Google Business profiles increase local visibility by 70% across all industries',
+          priority: 5
+        },
         {
           type: 'client_retention',
           suggestion: 'Follow up with clients 48 hours after service completion',
