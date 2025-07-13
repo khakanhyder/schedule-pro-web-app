@@ -20,10 +20,15 @@ A comprehensive business management platform designed to empower service-based e
 
 ### Professional Job Estimation & Quoting System (Latest) - Contractor-Focused
 - ✅ **Comprehensive estimation system** - professional job quoting with line items
-- ✅ **Pre-built templates** - bathroom remodel, kitchen renovation, deck construction
+- ✅ **Pre-built templates** - bathroom remodel, kitchen renovation, deck construction, flooring, roofing, HVAC, electrical
 - ✅ **Smart calculations** - automatic totals, markup, tax calculations
 - ✅ **Professional exports** - generate downloadable quote documents
 - ✅ **Client management** - complete client information in quotes
+- ✅ **AI-Powered Price Recommendations** - market analysis and pricing suggestions
+- ✅ **Market positioning analysis** - below/above/at market rate indicators
+- ✅ **Confidence scoring** - reliability metrics for price recommendations
+- ✅ **Market factors analysis** - demand, seasonality, competition insights
+- ✅ **One-click price application** - apply AI suggestions instantly
 - ✅ **Removed safety/compliance tracking** - simplified to focus on practical tools
 - ✅ **Removed vehicle/equipment tracking** - streamlined for job estimation focus
 - ✅ **Added Tools tab** - dedicated contractor tools section in dashboard

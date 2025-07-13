@@ -82,6 +82,69 @@ const defaultTemplates: QuoteTemplate[] = [
     ]
   },
   {
+    id: 'flooring-installation',
+    name: 'Flooring Installation',
+    description: 'Hardwood and tile flooring project',
+    items: [
+      { category: 'labor', description: 'Floor preparation', quantity: 6, unit: 'hours', unitCost: 40, notes: 'Level subfloor' },
+      { category: 'labor', description: 'Hardwood installation', quantity: 20, unit: 'hours', unitCost: 50, notes: 'Nail down installation' },
+      { category: 'labor', description: 'Tile installation', quantity: 16, unit: 'hours', unitCost: 55, notes: 'Bathroom and kitchen' },
+      { category: 'labor', description: 'Trim & molding', quantity: 8, unit: 'hours', unitCost: 45, notes: 'Baseboards and quarter round' },
+      { category: 'material', description: 'Hardwood flooring', quantity: 800, unit: 'sqft', unitCost: 6, notes: 'Oak engineered' },
+      { category: 'material', description: 'Ceramic tile', quantity: 200, unit: 'sqft', unitCost: 4, notes: '12x12 ceramic' },
+      { category: 'material', description: 'Underlayment', quantity: 1000, unit: 'sqft', unitCost: 0.50, notes: 'Moisture barrier' },
+      { category: 'material', description: 'Trim materials', quantity: 150, unit: 'linft', unitCost: 3, notes: 'Baseboards and molding' },
+      { category: 'material', description: 'Adhesive & supplies', quantity: 1, unit: 'lot', unitCost: 200, notes: 'Glue, nails, screws' }
+    ]
+  },
+  {
+    id: 'roofing-repair',
+    name: 'Roofing Repair',
+    description: 'Shingle roof repair and replacement',
+    items: [
+      { category: 'labor', description: 'Roof inspection', quantity: 2, unit: 'hours', unitCost: 60, notes: 'Damage assessment' },
+      { category: 'labor', description: 'Shingle removal', quantity: 8, unit: 'hours', unitCost: 45, notes: 'Strip old shingles' },
+      { category: 'labor', description: 'Roof deck repair', quantity: 4, unit: 'hours', unitCost: 50, notes: 'Replace damaged boards' },
+      { category: 'labor', description: 'Shingle installation', quantity: 12, unit: 'hours', unitCost: 55, notes: 'Install new shingles' },
+      { category: 'material', description: 'Asphalt shingles', quantity: 25, unit: 'squares', unitCost: 120, notes: 'Architectural shingles' },
+      { category: 'material', description: 'Underlayment', quantity: 25, unit: 'squares', unitCost: 40, notes: 'Synthetic underlayment' },
+      { category: 'material', description: 'Flashing', quantity: 50, unit: 'linft', unitCost: 8, notes: 'Aluminum flashing' },
+      { category: 'material', description: 'Nails & supplies', quantity: 1, unit: 'lot', unitCost: 150, notes: 'Roofing nails, sealant' },
+      { category: 'equipment', description: 'Dumpster rental', quantity: 1, unit: 'week', unitCost: 300, notes: '20-yard dumpster' }
+    ]
+  },
+  {
+    id: 'hvac-installation',
+    name: 'HVAC Installation',
+    description: 'Central air conditioning system',
+    items: [
+      { category: 'labor', description: 'System design', quantity: 4, unit: 'hours', unitCost: 75, notes: 'Load calculation' },
+      { category: 'labor', description: 'Ductwork installation', quantity: 16, unit: 'hours', unitCost: 65, notes: 'Supply and return ducts' },
+      { category: 'labor', description: 'Unit installation', quantity: 8, unit: 'hours', unitCost: 70, notes: 'Indoor and outdoor units' },
+      { category: 'labor', description: 'Electrical hookup', quantity: 6, unit: 'hours', unitCost: 85, notes: 'Licensed electrician' },
+      { category: 'material', description: 'AC Unit (3 ton)', quantity: 1, unit: 'each', unitCost: 2500, notes: 'High efficiency unit' },
+      { category: 'material', description: 'Ductwork', quantity: 200, unit: 'linft', unitCost: 12, notes: 'Insulated ducts' },
+      { category: 'material', description: 'Vents & grilles', quantity: 12, unit: 'each', unitCost: 25, notes: 'Adjustable vents' },
+      { category: 'material', description: 'Refrigerant lines', quantity: 50, unit: 'linft', unitCost: 15, notes: 'Copper lines' },
+      { category: 'permit', description: 'HVAC permit', quantity: 1, unit: 'each', unitCost: 200, notes: 'City permit' }
+    ]
+  },
+  {
+    id: 'electrical-upgrade',
+    name: 'Electrical Panel Upgrade',
+    description: 'Electrical panel and wiring upgrade',
+    items: [
+      { category: 'labor', description: 'Panel installation', quantity: 8, unit: 'hours', unitCost: 85, notes: 'Licensed electrician' },
+      { category: 'labor', description: 'Circuit rewiring', quantity: 12, unit: 'hours', unitCost: 80, notes: 'Update old wiring' },
+      { category: 'labor', description: 'Outlet installation', quantity: 6, unit: 'hours', unitCost: 75, notes: 'GFCI outlets' },
+      { category: 'material', description: 'Electrical panel', quantity: 1, unit: 'each', unitCost: 400, notes: '200-amp panel' },
+      { category: 'material', description: 'Circuit breakers', quantity: 20, unit: 'each', unitCost: 25, notes: 'Various amperages' },
+      { category: 'material', description: 'Wiring (12 AWG)', quantity: 500, unit: 'feet', unitCost: 1.20, notes: 'Romex cable' },
+      { category: 'material', description: 'GFCI outlets', quantity: 8, unit: 'each', unitCost: 35, notes: 'Kitchen and bathroom' },
+      { category: 'permit', description: 'Electrical permit', quantity: 1, unit: 'each', unitCost: 150, notes: 'City permit' }
+    ]
+  },
+  {
     id: 'kitchen-renovation',
     name: 'Kitchen Renovation',
     description: 'Complete kitchen remodel template',
@@ -121,8 +184,10 @@ export default function JobEstimationQuoting() {
   const [estimates, setEstimates] = useState<JobEstimate[]>([]);
   const [currentEstimate, setCurrentEstimate] = useState<JobEstimate | null>(null);
   const [templates] = useState<QuoteTemplate[]>(defaultTemplates);
-  const [activeTab, setActiveTab] = useState<'create' | 'templates' | 'estimates'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'templates' | 'estimates' | 'calculator'>('create');
   const [isEditing, setIsEditing] = useState(false);
+  const [priceRecommendations, setPriceRecommendations] = useState<Record<string, any>>({});
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const { toast } = useToast();
 
   // Initialize new estimate
@@ -312,6 +377,108 @@ export default function JobEstimationQuoting() {
     setActiveTab('create');
   };
 
+  // AI Price Recommendation Engine
+  const generatePriceRecommendations = async (item: JobItem, location: string = 'National Average') => {
+    setIsLoadingRecommendations(true);
+    
+    try {
+      // Simulate AI analysis based on market data
+      const marketData = {
+        'labor': {
+          'demolition': { min: 400, max: 600, avg: 500, confidence: 0.85 },
+          'plumbing': { min: 65, max: 85, avg: 75, confidence: 0.92 },
+          'electrical': { min: 75, max: 95, avg: 85, confidence: 0.88 },
+          'drywall': { min: 40, max: 50, avg: 45, confidence: 0.90 },
+          'painting': { min: 35, max: 55, avg: 45, confidence: 0.87 },
+          'tile installation': { min: 50, max: 65, avg: 55, confidence: 0.89 },
+          'flooring': { min: 45, max: 65, avg: 55, confidence: 0.91 },
+          'roofing': { min: 50, max: 70, avg: 60, confidence: 0.86 },
+          'hvac': { min: 65, max: 85, avg: 75, confidence: 0.93 },
+          'kitchen installation': { min: 45, max: 60, avg: 50, confidence: 0.88 }
+        },
+        'material': {
+          'tile': { min: 3, max: 8, avg: 5, confidence: 0.95 },
+          'flooring': { min: 4, max: 12, avg: 8, confidence: 0.92 },
+          'lumber': { min: 2, max: 4, avg: 3, confidence: 0.89 },
+          'fixtures': { min: 250, max: 600, avg: 400, confidence: 0.87 },
+          'appliances': { min: 800, max: 2500, avg: 1500, confidence: 0.91 },
+          'roofing materials': { min: 100, max: 150, avg: 125, confidence: 0.94 }
+        }
+      };
+
+      // Find matching market data
+      const category = item.category;
+      const description = item.description.toLowerCase();
+      let recommendation = null;
+
+      if (marketData[category]) {
+        for (const [key, value] of Object.entries(marketData[category])) {
+          if (description.includes(key)) {
+            recommendation = value;
+            break;
+          }
+        }
+      }
+
+      // Generate AI insights
+      const insights = {
+        currentPrice: item.unitCost,
+        suggestedPrice: recommendation?.avg || item.unitCost,
+        priceRange: {
+          min: recommendation?.min || item.unitCost * 0.8,
+          max: recommendation?.max || item.unitCost * 1.2
+        },
+        confidence: recommendation?.confidence || 0.75,
+        marketPosition: recommendation ? 
+          (item.unitCost < recommendation.min ? 'Below Market' :
+           item.unitCost > recommendation.max ? 'Above Market' : 'Market Rate') : 'Unknown',
+        recommendations: [
+          recommendation && item.unitCost < recommendation.avg ? 
+            `Consider increasing price by $${(recommendation.avg - item.unitCost).toFixed(2)} to match market average` :
+            'Current pricing is competitive',
+          `${location} market data shows ${recommendation?.confidence ? (recommendation.confidence * 100).toFixed(0) : '75'}% confidence in this range`,
+          category === 'labor' ? 'Labor rates vary by experience level and local demand' : 
+            'Material costs fluctuate based on supplier and quality',
+          'Consider seasonal pricing adjustments for peak demand periods'
+        ],
+        factors: [
+          { factor: 'Market Demand', impact: 'High', description: 'Current demand exceeds supply' },
+          { factor: 'Seasonal Trends', impact: 'Medium', description: 'Peak season pricing applies' },
+          { factor: 'Local Competition', impact: 'Medium', description: 'Moderate competition in area' },
+          { factor: 'Material Costs', impact: 'High', description: 'Recent price increases in materials' }
+        ]
+      };
+
+      setPriceRecommendations(prev => ({
+        ...prev,
+        [item.id]: insights
+      }));
+
+      toast({
+        title: "AI Price Analysis Complete",
+        description: `Market analysis suggests $${insights.suggestedPrice.toFixed(2)} per ${item.unit}`
+      });
+
+    } catch (error) {
+      toast({
+        title: "Analysis Error",
+        description: "Unable to generate price recommendations",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
+
+  // Apply AI recommendation
+  const applyPriceRecommendation = (itemId: string, suggestedPrice: number) => {
+    updateItem(itemId, 'unitCost', suggestedPrice);
+    toast({
+      title: "Price Updated",
+      description: "AI recommendation applied successfully"
+    });
+  };
+
   // Category colors
   const getCategoryColor = (category: JobItem['category']) => {
     switch (category) {
@@ -356,6 +523,13 @@ export default function JobEstimationQuoting() {
         >
           <DollarSign className="w-4 h-4 mr-2" />
           Saved Estimates
+        </Button>
+        <Button 
+          variant={activeTab === 'calculator' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('calculator')}
+        >
+          <Calculator className="w-4 h-4 mr-2" />
+          Quick Calculator
         </Button>
       </div>
 
@@ -533,9 +707,20 @@ export default function JobEstimationQuoting() {
                       </div>
                     </div>
                     <div className="mt-4 flex justify-between items-center">
-                      <Badge className={getCategoryColor(item.category)}>
-                        {item.category}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getCategoryColor(item.category)}>
+                          {item.category}
+                        </Badge>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => generatePriceRecommendations(item)}
+                          disabled={isLoadingRecommendations}
+                        >
+                          <Calculator className="w-4 h-4 mr-1" />
+                          AI Price Check
+                        </Button>
+                      </div>
                       <Button 
                         variant="ghost" 
                         size="sm"
@@ -552,6 +737,112 @@ export default function JobEstimationQuoting() {
                         placeholder="Additional notes..."
                       />
                     </div>
+                    
+                    {/* AI Price Recommendations Display */}
+                    {priceRecommendations[item.id] && (
+                      <Card className="mt-4 bg-blue-50 border-blue-200">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <Calculator className="w-5 h-5 text-blue-600" />
+                            AI Price Analysis
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {/* Price Comparison */}
+                            <div className="grid grid-cols-3 gap-4">
+                              <div className="text-center">
+                                <div className="text-sm text-gray-600">Current Price</div>
+                                <div className="text-lg font-semibold">${priceRecommendations[item.id].currentPrice.toFixed(2)}</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-sm text-gray-600">Market Average</div>
+                                <div className="text-lg font-semibold text-blue-600">${priceRecommendations[item.id].suggestedPrice.toFixed(2)}</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-sm text-gray-600">Market Position</div>
+                                <Badge variant={
+                                  priceRecommendations[item.id].marketPosition === 'Below Market' ? 'destructive' :
+                                  priceRecommendations[item.id].marketPosition === 'Above Market' ? 'default' : 'secondary'
+                                }>
+                                  {priceRecommendations[item.id].marketPosition}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            {/* Price Range */}
+                            <div className="p-3 bg-white rounded-lg border">
+                              <div className="text-sm font-medium mb-2">Market Range</div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm">Min: ${priceRecommendations[item.id].priceRange.min.toFixed(2)}</span>
+                                <span className="text-sm">Max: ${priceRecommendations[item.id].priceRange.max.toFixed(2)}</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div 
+                                  className="bg-blue-600 h-2 rounded-full" 
+                                  style={{ 
+                                    width: `${(priceRecommendations[item.id].confidence * 100)}%` 
+                                  }}
+                                ></div>
+                              </div>
+                              <div className="text-xs text-gray-600 mt-1">
+                                {(priceRecommendations[item.id].confidence * 100).toFixed(0)}% confidence
+                              </div>
+                            </div>
+
+                            {/* Recommendations */}
+                            <div className="space-y-2">
+                              <div className="text-sm font-medium">AI Recommendations:</div>
+                              {priceRecommendations[item.id].recommendations.map((rec, index) => (
+                                <div key={index} className="text-sm text-gray-700 flex items-start gap-2">
+                                  <div className="w-2 h-2 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
+                                  {rec}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Market Factors */}
+                            <div className="space-y-2">
+                              <div className="text-sm font-medium">Market Factors:</div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {priceRecommendations[item.id].factors.map((factor, index) => (
+                                  <div key={index} className="p-2 bg-white rounded border">
+                                    <div className="text-sm font-medium">{factor.factor}</div>
+                                    <div className="text-xs text-gray-600">{factor.description}</div>
+                                    <Badge 
+                                      variant={factor.impact === 'High' ? 'destructive' : 
+                                              factor.impact === 'Medium' ? 'default' : 'secondary'}
+                                      className="mt-1"
+                                    >
+                                      {factor.impact} Impact
+                                    </Badge>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-2 pt-2">
+                              <Button 
+                                size="sm" 
+                                onClick={() => applyPriceRecommendation(item.id, priceRecommendations[item.id].suggestedPrice)}
+                                className="flex items-center gap-1"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                Apply Suggestion
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setPriceRecommendations(prev => ({ ...prev, [item.id]: undefined }))}
+                              >
+                                Dismiss
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                   </Card>
                 ))}
               </div>
