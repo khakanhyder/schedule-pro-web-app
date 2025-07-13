@@ -180,28 +180,29 @@ export default function Simple3DTest() {
         </CardContent>
       </Card>
 
-      {/* New Project Dialog - Professional Size */}
+      {/* New Project Dialog - Compact Professional */}
       <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
-        <DialogContent style={{ width: '400px', maxWidth: '400px' }}>
+        <DialogContent style={{ width: '320px', maxWidth: '320px', padding: '16px' }}>
           <DialogHeader>
-            <DialogTitle>New Project</DialogTitle>
+            <DialogTitle className="text-base">New Project</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <Label htmlFor="projectName">Project Name</Label>
+              <Label htmlFor="projectName" className="text-sm">Project Name</Label>
               <Input
                 id="projectName"
                 placeholder="Kitchen Remodel"
                 value={newProjectData.projectName}
                 onChange={(e) => setNewProjectData(prev => ({ ...prev, projectName: e.target.value }))}
+                className="h-8 text-sm"
               />
             </div>
             
             <div>
-              <Label htmlFor="roomType">Room Type</Label>
+              <Label htmlFor="roomType" className="text-sm">Room Type</Label>
               <Select value={newProjectData.roomType} onValueChange={(value) => setNewProjectData(prev => ({ ...prev, roomType: value }))}>
-                <SelectTrigger>
+                <SelectTrigger className="h-8 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -211,30 +212,30 @@ export default function Simple3DTest() {
               </Select>
             </div>
             
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setIsNewProjectOpen(false)}>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="outline" onClick={() => setIsNewProjectOpen(false)} size="sm">
                 Cancel
               </Button>
               <Button onClick={() => {
                 setSelectedDemo(newProjectData.roomType);
                 setIsNewProjectOpen(false);
                 setIsViewerOpen(true);
-              }}>
-                Create 3D View
+              }} size="sm">
+                Create
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* 3D Viewer Dialog - Professional Size */}
+      {/* 3D Viewer Dialog - Compact Professional */}
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent style={{ width: '800px', maxWidth: '800px', height: '600px' }}>
+        <DialogContent style={{ width: '600px', maxWidth: '600px', height: '450px', padding: '12px' }}>
           <DialogHeader>
-            <DialogTitle>3D Room View</DialogTitle>
+            <DialogTitle className="text-base">3D Room View</DialogTitle>
           </DialogHeader>
           
-          <div className="h-[500px] border rounded overflow-hidden">
+          <div className="h-[380px] border rounded overflow-hidden">
             <Professional3DRoomViewer
               roomType={selectedDemo || 'kitchen'}
               dimensions={{
