@@ -211,6 +211,14 @@ export default function MaterialCostTracker() {
     quantity: number;
     result: any;
   }>({ materialId: '', quantity: 0, result: null });
+  const [selectedSupplierForOrder, setSelectedSupplierForOrder] = useState<string | null>(null);
+  const [orderItems, setOrderItems] = useState<Array<{
+    materialId: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }>>([]);
+  const [orderNotes, setOrderNotes] = useState('');
   const { toast } = useToast();
 
   const categories = ['all', 'Lumber', 'Plumbing', 'Electrical', 'Hardware', 'Drywall', 'Flooring', 'Roofing'];
@@ -479,7 +487,10 @@ export default function MaterialCostTracker() {
                       <Button 
                         size="sm"
                         onClick={() => {
+                          setSelectedSupplierForOrder(supplier.id);
                           setActiveTab('orders');
+                          setOrderItems([]);
+                          setOrderNotes('');
                           toast({
                             title: "Quick Order",
                             description: `Creating order for ${supplier.name}`,
@@ -600,19 +611,216 @@ export default function MaterialCostTracker() {
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-4">
-          <Card className="p-6">
-            <div className="text-center py-8">
-              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Order Management</h3>
-              <p className="text-muted-foreground mb-4">
-                Track material orders and delivery schedules
-              </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Order
-              </Button>
-            </div>
-          </Card>
+          {selectedSupplierForOrder ? (
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-semibold">Create Order</h3>
+                  <p className="text-muted-foreground">
+                    Order from {suppliers.find(s => s.id === selectedSupplierForOrder)?.name}
+                  </p>
+                </div>
+                <Button 
+                  variant="outline"
+                  onClick={() => setSelectedSupplierForOrder(null)}
+                >
+                  Cancel Order
+                </Button>
+              </div>
+
+              {/* Add Materials to Order */}
+              <div className="space-y-4 mb-6">
+                <h4 className="font-medium">Add Materials</h4>
+                <div className="grid gap-4">
+                  {materialPrices
+                    .filter(material => material.supplierId === selectedSupplierForOrder)
+                    .map((material) => (
+                      <div key={material.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="font-medium">{material.materialName}</div>
+                          <div className="text-sm text-muted-foreground">
+                            ${material.currentPrice.toFixed(2)} per {material.unit}
+                            {material.inStock ? (
+                              <Badge variant="default" className="ml-2">In Stock</Badge>
+                            ) : (
+                              <Badge variant="destructive" className="ml-2">Out of Stock</Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            placeholder="Qty"
+                            className="w-20"
+                            onChange={(e) => {
+                              const quantity = parseInt(e.target.value) || 0;
+                              if (quantity > 0) {
+                                const existingItemIndex = orderItems.findIndex(item => item.materialId === material.id);
+                                const unitPrice = material.currentPrice;
+                                const total = quantity * unitPrice;
+                                
+                                if (existingItemIndex >= 0) {
+                                  const newItems = [...orderItems];
+                                  newItems[existingItemIndex] = {
+                                    materialId: material.id,
+                                    quantity,
+                                    unitPrice,
+                                    total
+                                  };
+                                  setOrderItems(newItems);
+                                } else {
+                                  setOrderItems([...orderItems, {
+                                    materialId: material.id,
+                                    quantity,
+                                    unitPrice,
+                                    total
+                                  }]);
+                                }
+                              } else {
+                                setOrderItems(orderItems.filter(item => item.materialId !== material.id));
+                              }
+                            }}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setBulkCalculator({ materialId: material.id, quantity: 100, result: null });
+                              setActiveTab('bulk');
+                            }}
+                          >
+                            <Calculator className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Order Summary */}
+              {orderItems.length > 0 && (
+                <div className="border rounded-lg p-4 mb-6">
+                  <h4 className="font-medium mb-3">Order Summary</h4>
+                  <div className="space-y-2">
+                    {orderItems.map((item) => {
+                      const material = materialPrices.find(m => m.id === item.materialId);
+                      return (
+                        <div key={item.materialId} className="flex justify-between text-sm">
+                          <span>{material?.materialName} × {item.quantity}</span>
+                          <span>${item.total.toFixed(2)}</span>
+                        </div>
+                      );
+                    })}
+                    <Separator />
+                    <div className="flex justify-between font-medium">
+                      <span>Subtotal</span>
+                      <span>${orderItems.reduce((sum, item) => sum + item.total, 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Tax (8.5%)</span>
+                      <span>${(orderItems.reduce((sum, item) => sum + item.total, 0) * 0.085).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total</span>
+                      <span>${(orderItems.reduce((sum, item) => sum + item.total, 0) * 1.085).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Order Notes */}
+              <div className="space-y-2 mb-6">
+                <Label htmlFor="order-notes">Order Notes</Label>
+                <Textarea
+                  id="order-notes"
+                  placeholder="Special instructions, delivery preferences, etc."
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              {/* Order Actions */}
+              <div className="flex gap-2">
+                <Button
+                  disabled={orderItems.length === 0}
+                  onClick={() => {
+                    const supplier = suppliers.find(s => s.id === selectedSupplierForOrder);
+                    const orderTotal = orderItems.reduce((sum, item) => sum + item.total, 0) * 1.085;
+                    
+                    toast({
+                      title: "Order Created",
+                      description: `Order for $${orderTotal.toFixed(2)} sent to ${supplier?.name}`,
+                      duration: 5000
+                    });
+                    
+                    // Reset form
+                    setOrderItems([]);
+                    setOrderNotes('');
+                    setSelectedSupplierForOrder(null);
+                    setActiveTab('suppliers');
+                  }}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Order
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={orderItems.length === 0}
+                  onClick={() => {
+                    const supplier = suppliers.find(s => s.id === selectedSupplierForOrder);
+                    const orderData = {
+                      supplier: supplier?.name,
+                      items: orderItems.map(item => {
+                        const material = materialPrices.find(m => m.id === item.materialId);
+                        return {
+                          name: material?.materialName,
+                          quantity: item.quantity,
+                          unitPrice: item.unitPrice,
+                          total: item.total
+                        };
+                      }),
+                      subtotal: orderItems.reduce((sum, item) => sum + item.total, 0),
+                      tax: orderItems.reduce((sum, item) => sum + item.total, 0) * 0.085,
+                      total: orderItems.reduce((sum, item) => sum + item.total, 0) * 1.085,
+                      notes: orderNotes,
+                      date: new Date().toISOString()
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(orderData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `order-${supplier?.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    toast({
+                      title: "Order Exported",
+                      description: "Order details downloaded as JSON file"
+                    });
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Order
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            <Card className="p-6">
+              <div className="text-center py-8">
+                <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Order Management</h3>
+                <p className="text-muted-foreground mb-4">
+                  Create orders by clicking "Create Order" on any supplier card
+                </p>
+                <Button onClick={() => setActiveTab('suppliers')}>
+                  <Truck className="h-4 w-4 mr-2" />
+                  View Suppliers
+                </Button>
+              </div>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 
