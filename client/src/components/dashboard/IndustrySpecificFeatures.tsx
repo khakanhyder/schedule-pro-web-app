@@ -572,11 +572,11 @@ export default function IndustrySpecificFeatures() {
     switch (selectedIndustry.id) {
       case 'beauty':
         return renderBeautyFeatures();
-      case 'trades':
+      case 'home_services':
         return renderTradesFeatures();
       case 'wellness':
         return renderWellnessFeatures();
-      case 'pet-care':
+      case 'pet_care':
         return renderPetCareFeatures();
       case 'creative':
         return renderCreativeFeatures();

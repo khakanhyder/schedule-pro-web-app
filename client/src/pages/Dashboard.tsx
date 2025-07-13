@@ -396,7 +396,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-8'}`}>
+          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-10' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9'}`}>
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -467,6 +467,16 @@ export default function Dashboard() {
             >
               Messages
             </TabsTrigger>
+            <TabsTrigger 
+              value="industry-tools" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'industry-tools' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Tools
+            </TabsTrigger>
 
 
 
@@ -531,6 +541,11 @@ export default function Dashboard() {
           {/* Communication Hub Tab */}
           <TabsContent value="messages">
             <CommunicationHub />
+          </TabsContent>
+
+          {/* Industry-Specific Tools Tab */}
+          <TabsContent value="industry-tools">
+            <IndustrySpecificFeatures />
           </TabsContent>
 
 
