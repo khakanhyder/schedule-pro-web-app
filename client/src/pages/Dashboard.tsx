@@ -86,6 +86,14 @@ export default function Dashboard() {
     }
   }, [setLocation]);
 
+  // Force refresh of services when industry changes
+  useEffect(() => {
+    if (selectedIndustry) {
+      queryClient.invalidateQueries({ queryKey: ['/api/services'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stylists'] });
+    }
+  }, [selectedIndustry]);
+
   // Get terminology for current industry - fallback to default
   const defaultTerms = {
     professional: 'professional',
@@ -104,12 +112,16 @@ export default function Dashboard() {
 
   // Fetch services
   const { data: services = [] } = useQuery<Service[]>({
-    queryKey: ['/api/services']
+    queryKey: ['/api/services'],
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true // Refetch when component mounts
   });
 
   // Fetch staff/professionals  
   const { data: staff = [] } = useQuery<Stylist[]>({
-    queryKey: ['/api/stylists']
+    queryKey: ['/api/stylists'],
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true // Refetch when component mounts
   });
 
   // Get today's appointments
