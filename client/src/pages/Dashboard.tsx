@@ -56,7 +56,7 @@ import DepositManager from "@/components/dashboard/DepositManager";
 import NotificationCenter from "@/components/dashboard/NotificationCenter";
 import QuickStats from "@/components/dashboard/QuickStats";
 import PetCareEnhancements from "@/components/dashboard/PetCareEnhancements";
-import RoomMeasurementCalculator from "@/components/dashboard/RoomMeasurementCalculator";
+
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
 export default function Dashboard() {
@@ -101,9 +101,6 @@ export default function Dashboard() {
   
   // Check if current industry should have pet care enhancements (pet care only)
   const isPetCareIndustry = selectedIndustry && selectedIndustry.id === 'pet_care';
-  
-  // Check if current industry should have room measurement tools (home services only)
-  const isHomeServicesIndustry = selectedIndustry && selectedIndustry.id === 'home_services';
 
   // Fetch services
   const { data: services = [] } = useQuery<Service[]>({
@@ -399,7 +396,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry || isHomeServicesIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-8'}`}>
+          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-8'}`}>
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -471,18 +468,7 @@ export default function Dashboard() {
               Messages
             </TabsTrigger>
 
-            {isHomeServicesIndustry && (
-              <TabsTrigger 
-                value="measurement-calculator" 
-                className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
-                style={selectedTab === 'measurement-calculator' ? {
-                  backgroundColor: currentTemplate.primaryColor,
-                  color: 'white'
-                } : {}}
-              >
-                Material Calculator
-              </TabsTrigger>
-            )}
+
 
             {isPetCareIndustry && (
               <TabsTrigger 
@@ -547,13 +533,7 @@ export default function Dashboard() {
             <CommunicationHub />
           </TabsContent>
 
-          {/* 3D Room Projects Tab - Skilled Trades Only */}
-          {/* Material Calculator Tab */}
-          {isHomeServicesIndustry && (
-            <TabsContent value="measurement-calculator">
-              <RoomMeasurementCalculator />
-            </TabsContent>
-          )}
+
 
           {/* Pet Care Enhancements Tab - Pet Care Only */}
           {isPetCareIndustry && (
