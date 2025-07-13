@@ -180,9 +180,9 @@ export default function Simple3DTest() {
         </CardContent>
       </Card>
 
-      {/* New Project Dialog - Simple Version */}
+      {/* New Project Dialog - Professional Size */}
       <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="w-[400px]">
           <DialogHeader>
             <DialogTitle>New Project</DialogTitle>
           </DialogHeader>
@@ -227,9 +227,9 @@ export default function Simple3DTest() {
         </DialogContent>
       </Dialog>
 
-      {/* 3D Viewer Dialog - Simple Version */}
+      {/* 3D Viewer Dialog - Professional Size */}
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent className="max-w-3xl h-[600px]">
+        <DialogContent className="w-[800px] h-[600px]">
           <DialogHeader>
             <DialogTitle>3D Room View</DialogTitle>
           </DialogHeader>
