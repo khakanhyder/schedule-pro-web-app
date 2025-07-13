@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Slider } from '@/components/ui/slider';
 import { 
   Plus, 
   Eye, 
@@ -22,283 +20,21 @@ import {
   Square, 
   Wrench, 
   Box,
-  Sun,
-  Moon,
-  Grid3X3,
-  RotateCcw,
-  Lightbulb,
-  Maximize2,
   AlertCircle,
-  Play
+  Play,
+  Zap
 } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import Professional3DRoomViewer from './Professional3DRoomViewer';
 
-// Lightweight 3D Canvas Component
-function Professional3DViewer({ 
-  roomType, 
-  roomLength, 
-  roomWidth, 
-  roomHeight, 
-  selectedMaterials, 
-  materials,
-  onMaterialChange 
-}: {
-  roomType: string;
-  roomLength: number;
-  roomWidth: number;
-  roomHeight: number;
-  selectedMaterials: Record<string, number>;
-  materials: any[];
-  onMaterialChange?: (category: string, materialId: number) => void;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDay, setIsDay] = useState(true);
-  const [lightIntensity, setLightIntensity] = useState([0.8]);
-  const [showGrid, setShowGrid] = useState(true);
-  const [viewMode, setViewMode] = useState('normal');
-
-  // Simple 2D representation with professional styling
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Set background
-    ctx.fillStyle = isDay ? '#f8f9fa' : '#2d3748';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw room outline
-    const scale = Math.min(canvas.width / (roomLength + 4), canvas.height / (roomWidth + 4));
-    const roomPixelWidth = roomLength * scale;
-    const roomPixelHeight = roomWidth * scale;
-    const offsetX = (canvas.width - roomPixelWidth) / 2;
-    const offsetY = (canvas.height - roomPixelHeight) / 2;
-
-    // Draw grid if enabled
-    if (showGrid) {
-      ctx.strokeStyle = isDay ? '#e2e8f0' : '#4a5568';
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= roomLength; i++) {
-        const x = offsetX + (i * scale);
-        ctx.beginPath();
-        ctx.moveTo(x, offsetY);
-        ctx.lineTo(x, offsetY + roomPixelHeight);
-        ctx.stroke();
-      }
-      for (let i = 0; i <= roomWidth; i++) {
-        const y = offsetY + (i * scale);
-        ctx.beginPath();
-        ctx.moveTo(offsetX, y);
-        ctx.lineTo(offsetX + roomPixelWidth, y);
-        ctx.stroke();
-      }
-    }
-
-    // Draw room walls
-    ctx.strokeStyle = '#4a5568';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(offsetX, offsetY, roomPixelWidth, roomPixelHeight);
-
-    // Draw room-specific features
-    if (roomType === 'kitchen') {
-      // Kitchen island
-      const islandWidth = roomPixelWidth * 0.3;
-      const islandHeight = roomPixelHeight * 0.15;
-      const islandX = offsetX + (roomPixelWidth - islandWidth) / 2;
-      const islandY = offsetY + roomPixelHeight * 0.4;
-      
-      ctx.fillStyle = '#8b5a2b';
-      ctx.fillRect(islandX, islandY, islandWidth, islandHeight);
-      
-      // L-shaped cabinets
-      ctx.fillStyle = '#6b4423';
-      ctx.fillRect(offsetX + 10, offsetY + 10, roomPixelWidth * 0.4, 20);
-      ctx.fillRect(offsetX + 10, offsetY + 10, 20, roomPixelHeight * 0.5);
-      
-      // Appliances
-      ctx.fillStyle = '#2d3748';
-      ctx.fillRect(offsetX + roomPixelWidth * 0.7, offsetY + 10, 30, 25);
-      
-    } else if (roomType === 'bathroom') {
-      // Vanity
-      ctx.fillStyle = '#4a5568';
-      ctx.fillRect(offsetX + 10, offsetY + 10, roomPixelWidth * 0.4, 25);
-      
-      // Shower
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillRect(offsetX + roomPixelWidth * 0.6, offsetY + 10, roomPixelWidth * 0.3, roomPixelHeight * 0.4);
-      
-      // Tub
-      ctx.fillStyle = '#f7fafc';
-      ctx.fillRect(offsetX + 10, offsetY + roomPixelHeight * 0.6, roomPixelWidth * 0.5, roomPixelHeight * 0.3);
-    }
-
-    // Add lighting effect
-    const lightAlpha = lightIntensity[0] * (isDay ? 0.1 : 0.3);
-    ctx.fillStyle = `rgba(255, 255, 255, ${lightAlpha})`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Add room dimensions
-    ctx.fillStyle = isDay ? '#4a5568' : '#e2e8f0';
-    ctx.font = '14px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${roomLength}' × ${roomWidth}' × ${roomHeight}'`, canvas.width / 2, canvas.height - 20);
-
-  }, [roomType, roomLength, roomWidth, roomHeight, isDay, lightIntensity, showGrid]);
-
-  // Get material categories based on room type
-  const getMaterialCategories = () => {
-    if (roomType === 'kitchen') {
-      return ['flooring', 'paint', 'cabinets', 'countertops', 'backsplash'];
-    } else if (roomType === 'bathroom') {
-      return ['flooring', 'paint', 'tiles', 'fixtures', 'countertops'];
-    }
-    return ['flooring', 'paint', 'tiles'];
-  };
-
-  return (
-    <div className="space-y-4">
-      {/* Professional Controls */}
-      <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-lg">
-        <Button
-          variant={viewMode === 'normal' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('normal')}
-        >
-          <Home className="h-4 w-4 mr-1" />
-          Normal
-        </Button>
-        <Button
-          variant={viewMode === 'overview' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setViewMode('overview')}
-        >
-          <Maximize2 className="h-4 w-4 mr-1" />
-          Overview
-        </Button>
-        <Button
-          variant={isDay ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setIsDay(!isDay)}
-        >
-          {isDay ? <Sun className="h-4 w-4 mr-1" /> : <Moon className="h-4 w-4 mr-1" />}
-          {isDay ? 'Day' : 'Night'}
-        </Button>
-        <Button
-          variant={showGrid ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setShowGrid(!showGrid)}
-        >
-          <Grid3X3 className="h-4 w-4 mr-1" />
-          Grid
-        </Button>
-        <Button variant="outline" size="sm">
-          <RotateCcw className="h-4 w-4 mr-1" />
-          Reset
-        </Button>
-      </div>
-
-      {/* 3D Canvas */}
-      <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
-        <canvas
-          ref={canvasRef}
-          width={600}
-          height={400}
-          className="w-full h-80 cursor-move"
-          style={{ maxWidth: '100%', height: 'auto' }}
-        />
-        
-        {/* Lighting Controls */}
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-md">
-          <div className="flex items-center gap-2">
-            <Lightbulb className="h-4 w-4" />
-            <span className="text-sm font-medium">Light</span>
-            <Slider
-              value={lightIntensity}
-              onValueChange={setLightIntensity}
-              max={1}
-              min={0.1}
-              step={0.1}
-              className="w-20"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Material Selection */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Material Selection</h3>
-        <div className="grid gap-3 md:grid-cols-2">
-          {getMaterialCategories().map((category) => (
-            <Card key={category} className="cursor-pointer hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm capitalize">{category}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {materials
-                    .filter(m => m.category === category)
-                    .slice(0, 3)
-                    .map((material) => (
-                      <div
-                        key={material.id}
-                        className={`p-2 rounded border cursor-pointer transition-all ${
-                          selectedMaterials[category] === material.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => onMaterialChange?.(category, material.id)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium">{material.name}</span>
-                          <span className="text-xs text-gray-500">${material.pricePerSqFt}/sq ft</span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div
-                            className="w-4 h-4 rounded border"
-                            style={{ backgroundColor: material.color }}
-                          />
-                          <span className="text-xs text-gray-600">{material.description}</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Cost Summary */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
-        <CardHeader>
-          <CardTitle className="text-lg">Cost Estimate</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>Room Size:</span>
-              <span>{roomLength}' × {roomWidth}' × {roomHeight}'</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Floor Area:</span>
-              <span>{roomLength * roomWidth} sq ft</span>
-            </div>
-            <div className="flex justify-between font-semibold">
-              <span>Estimated Total:</span>
-              <span>$12,500</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+// Material and project interfaces
+interface Material {
+  id: number;
+  name: string;
+  category: string;
+  pricePerSqFt: number;
+  color: string;
+  description: string;
 }
 
 export default function Enhanced3DProjectManager() {
@@ -551,13 +287,15 @@ export default function Enhanced3DProjectManager() {
                       </div>
                     </div>
 
-                    <Professional3DViewer
+                    <Professional3DRoomViewer
                       roomType={formData.projectType}
-                      roomLength={formData.roomLength}
-                      roomWidth={formData.roomWidth}
-                      roomHeight={formData.roomHeight}
-                      selectedMaterials={selectedMaterials}
+                      dimensions={{
+                        length: formData.roomLength,
+                        width: formData.roomWidth,
+                        height: formData.roomHeight
+                      }}
                       materials={materials}
+                      selectedMaterials={selectedMaterials}
                       onMaterialChange={handleMaterialChange}
                     />
                   </TabsContent>
@@ -658,13 +396,15 @@ export default function Enhanced3DProjectManager() {
           </DialogHeader>
           
           {selectedProject && (
-            <Professional3DViewer
+            <Professional3DRoomViewer
               roomType={selectedProject.projectType}
-              roomLength={selectedProject.roomLength}
-              roomWidth={selectedProject.roomWidth}
-              roomHeight={selectedProject.roomHeight}
-              selectedMaterials={selectedMaterials}
+              dimensions={{
+                length: selectedProject.roomLength,
+                width: selectedProject.roomWidth,
+                height: selectedProject.roomHeight
+              }}
               materials={materials}
+              selectedMaterials={selectedMaterials}
               onMaterialChange={handleMaterialChange}
             />
           )}
