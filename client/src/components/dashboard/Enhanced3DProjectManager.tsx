@@ -25,6 +25,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import Professional3DRoomViewer from './Professional3DRoomViewer';
 
 // Material and project interfaces
