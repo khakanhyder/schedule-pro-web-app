@@ -444,9 +444,52 @@ export default function MaterialCostTracker() {
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
                       <span className="font-semibold">{supplier.rating}</span>
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground mb-3">
                       <p>Min Order: ${supplier.minimumOrder}</p>
                       <p>Terms: {supplier.paymentTerms}</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            window.open(`tel:${supplier.phone}`, '_self');
+                          }}
+                        >
+                          <Phone className="h-4 w-4 mr-2" />
+                          Call
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setActiveTab('prices');
+                            setSearchTerm(supplier.name);
+                            toast({
+                              title: "Supplier Materials",
+                              description: `Showing all materials from ${supplier.name}`
+                            });
+                          }}
+                        >
+                          <Package className="h-4 w-4 mr-2" />
+                          View Materials
+                        </Button>
+                      </div>
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          setActiveTab('orders');
+                          toast({
+                            title: "Quick Order",
+                            description: `Creating order for ${supplier.name}`,
+                            duration: 3000
+                          });
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Order
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -456,11 +499,31 @@ export default function MaterialCostTracker() {
                     <p className="text-sm font-medium mb-2">Specialties:</p>
                     <div className="flex flex-wrap gap-2">
                       {supplier.specialties.map((specialty) => (
-                        <Badge key={specialty} variant="secondary" className="text-xs">
+                        <Badge 
+                          key={specialty} 
+                          variant="secondary" 
+                          className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                          onClick={() => {
+                            setActiveTab('prices');
+                            setSelectedCategory(specialty);
+                            setSearchTerm('');
+                            toast({
+                              title: "Filter Applied",
+                              description: `Showing ${specialty} materials from ${supplier.name}`
+                            });
+                          }}
+                        >
                           {specialty}
                         </Badge>
                       ))}
                     </div>
+                  </div>
+                )}
+                
+                {supplier.notes && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-sm font-medium mb-2">Notes:</p>
+                    <p className="text-sm text-muted-foreground">{supplier.notes}</p>
                   </div>
                 )}
               </Card>
@@ -479,11 +542,19 @@ export default function MaterialCostTracker() {
                     <SelectValue placeholder="Choose material..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {materialPrices.map((material) => (
-                      <SelectItem key={material.id} value={material.id}>
-                        {material.materialName} (${material.currentPrice.toFixed(2)})
-                      </SelectItem>
-                    ))}
+                    {materialPrices
+                      .filter(material => 
+                        material.materialName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        material.category.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
+                      .map((material) => {
+                        const supplier = suppliers.find(s => s.id === material.supplierId);
+                        return (
+                          <SelectItem key={material.id} value={material.id}>
+                            {material.materialName} - ${material.currentPrice.toFixed(2)} ({supplier?.name})
+                          </SelectItem>
+                        );
+                      })}
                   </SelectContent>
                 </Select>
               </div>
