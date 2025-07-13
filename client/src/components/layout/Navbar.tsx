@@ -40,9 +40,9 @@ export default function Navbar() {
                       `${selectedIndustry.name} Services`;
   
   const links = [
-    { name: serviceLabel, href: "/", scroll: "services" },
+    { name: serviceLabel, href: "/home", scroll: "services" },
     { name: "Book", href: "/booking" },
-    { name: "Reviews", href: "/", scroll: "reviews" },
+    { name: "Reviews", href: "/home", scroll: "reviews" },
     { name: portalName, href: "/dashboard" }
   ];
 
@@ -54,7 +54,7 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
-          <Link href="/">
+          <Link href="/home">
             <div className="flex items-center cursor-pointer text-xl font-bold text-primary">
               {businessLogo ? (
                 <img src={businessLogo} alt={businessName} className="h-8 w-8 mr-3 rounded object-cover" />
@@ -77,7 +77,7 @@ export default function Navbar() {
                   location === link.href ? "text-primary font-medium" : ""
                 }`}
                 onClick={(e) => {
-                  if (link.scroll && location === "/") {
+                  if (link.scroll && location === "/home") {
                     e.preventDefault();
                     const element = document.getElementById(link.scroll);
                     if (element) {
@@ -118,7 +118,7 @@ export default function Navbar() {
                   location === link.href ? "text-primary font-medium" : ""
                 }`}
                 onClick={(e) => {
-                  if (link.scroll && location === "/") {
+                  if (link.scroll && location === "/home") {
                     e.preventDefault();
                     const element = document.getElementById(link.scroll);
                     if (element) {

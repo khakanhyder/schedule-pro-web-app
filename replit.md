@@ -18,7 +18,14 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 13, 2025)
 
-### Professional Material Cost Tracker & Supplier Database (Latest)
+### Industry Selection as Default Landing Page (Latest)
+- ✅ **Updated default route** - Root path "/" now shows industry selection page instead of home
+- ✅ **Moved home page** - Original home page moved to "/home" route
+- ✅ **Updated navigation** - All navbar links now point to "/home" for homepage sections
+- ✅ **Seamless onboarding** - Users immediately see industry templates when visiting the app
+- ✅ **Improved user flow** - No confusion about which industry to select, starts with choice
+
+### Professional Material Cost Tracker & Supplier Database (Previous)
 - ✅ **Real-time price tracking** - Live material pricing with trend indicators (up/down arrows)
 - ✅ **Supplier database** - Complete supplier management with contact info, ratings, delivery terms
 - ✅ **Bulk pricing calculator** - Automatic discount calculation based on quantity tiers
