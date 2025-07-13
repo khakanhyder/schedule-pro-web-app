@@ -242,6 +242,7 @@ export default function Professional3DRoomViewer({
     roomMeshes['leftWall'] = leftWall;
     
     // Right wall
+    const rightWallGeometry = new THREE.PlaneGeometry(dimensions.width, dimensions.height);
     const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial.clone());
     rightWall.position.set(dimensions.length / 2, dimensions.height / 2, 0);
     rightWall.rotation.y = -Math.PI / 2;
