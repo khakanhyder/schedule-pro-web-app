@@ -430,9 +430,78 @@ export const insertRoomMaterialSchema = createInsertSchema(roomMaterials).pick({
   isActive: true,
 });
 
+// Project Timeline and Milestone Tracking
+export const projectTimelines = pgTable("project_timelines", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => roomProjects.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  actualStartDate: timestamp("actual_start_date"),
+  actualEndDate: timestamp("actual_end_date"),
+  status: text("status").notNull().default('planned'), // 'planned', 'in_progress', 'completed', 'delayed'
+  priority: text("priority").notNull().default('medium'), // 'low', 'medium', 'high', 'urgent'
+  assignedTo: text("assigned_to"), // Team member or contractor
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const projectMilestones = pgTable("project_milestones", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => roomProjects.id).notNull(),
+  timelineId: integer("timeline_id").references(() => projectTimelines.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  targetDate: timestamp("target_date").notNull(),
+  completedDate: timestamp("completed_date"),
+  status: text("status").notNull().default('pending'), // 'pending', 'in_progress', 'completed', 'overdue'
+  category: text("category").notNull(), // 'planning', 'permits', 'materials', 'construction', 'inspection', 'completion'
+  progress: integer("progress").default(0), // 0-100 percentage
+  cost: real("cost"), // Associated cost for this milestone
+  photos: text("photos").array(), // Progress photos
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertProjectTimelineSchema = createInsertSchema(projectTimelines).pick({
+  projectId: true,
+  title: true,
+  description: true,
+  startDate: true,
+  endDate: true,
+  actualStartDate: true,
+  actualEndDate: true,
+  status: true,
+  priority: true,
+  assignedTo: true,
+  notes: true,
+});
+
+export const insertProjectMilestoneSchema = createInsertSchema(projectMilestones).pick({
+  projectId: true,
+  timelineId: true,
+  title: true,
+  description: true,
+  targetDate: true,
+  completedDate: true,
+  status: true,
+  category: true,
+  progress: true,
+  cost: true,
+  photos: true,
+  notes: true,
+});
+
 export type RoomProject = typeof roomProjects.$inferSelect;
 export type InsertRoomProject = z.infer<typeof insertRoomProjectSchema>;
 export type RoomMaterial = typeof roomMaterials.$inferSelect;
 export type InsertRoomMaterial = z.infer<typeof insertRoomMaterialSchema>;
+export type ProjectTimeline = typeof projectTimelines.$inferSelect;
+export type InsertProjectTimeline = z.infer<typeof insertProjectTimelineSchema>;
+export type ProjectMilestone = typeof projectMilestones.$inferSelect;
+export type InsertProjectMilestone = z.infer<typeof insertProjectMilestoneSchema>;
 
 
