@@ -13,9 +13,12 @@ import { Plus, Eye, Edit, Trash2, Home, Calculator, Palette, Square, Wrench, Box
 import SimpleRoom3D from './SimpleRoom3D';
 import KitchenRoom3D from './KitchenRoom3D';
 import SimpleKitchen3D from './SimpleKitchen3D';
+import ProfessionalKitchen3D from './ProfessionalKitchen3D';
+import ProfessionalBathroom3D from './ProfessionalBathroom3D';
 import ContractorMaterialSelector from './ContractorMaterialSelector';
 import ContractorMaterialCalculator from './ContractorMaterialCalculator';
 import SimpleMaterialSelector from './SimpleMaterialSelector';
+import QuickMaterialSelector from './QuickMaterialSelector';
 
 import { apiRequest } from '@/lib/queryClient';
 import type { RoomProject, RoomMaterial, InsertRoomProject } from '@shared/schema';
@@ -191,6 +194,63 @@ export default function RoomProjectManager() {
     }));
   };
 
+  // Quick demo handler for different room types
+  const handleQuickDemo = (roomType: string) => {
+    const demoProjects = {
+      kitchen: {
+        projectName: "Modern Kitchen Showcase",
+        projectType: "kitchen",
+        clientName: "Demo Client",
+        clientEmail: "demo@example.com",
+        roomLength: 14,
+        roomWidth: 12,
+        roomHeight: 9,
+        notes: "Interactive kitchen design with premium materials and professional lighting.",
+        materials: {
+          flooring: 2,
+          cabinets: 4,
+          tiles: 6,
+          backsplash: 8,
+          paint: 1
+        }
+      },
+      bathroom: {
+        projectName: "Luxury Bathroom Experience",
+        projectType: "bathroom",
+        clientName: "Demo Client",
+        clientEmail: "demo@example.com",
+        roomLength: 10,
+        roomWidth: 8,
+        roomHeight: 9,
+        notes: "Spa-like bathroom with walk-in shower, double vanity, and premium finishes.",
+        materials: {
+          flooring: 3,
+          tiles: 5,
+          fixtures: 7,
+          paint: 1,
+          countertops: 9
+        }
+      }
+    };
+
+    const demo = demoProjects[roomType as keyof typeof demoProjects];
+    
+    setFormData({
+      projectName: demo.projectName,
+      projectType: demo.projectType,
+      clientName: demo.clientName,
+      clientEmail: demo.clientEmail,
+      roomLength: demo.roomLength,
+      roomWidth: demo.roomWidth,
+      roomHeight: demo.roomHeight,
+      notes: demo.notes
+    });
+    
+    setSelectedMaterials(demo.materials);
+    setCurrentTab("design");
+    setIsCreateDialogOpen(true);
+  };
+
   const calculateProjectCost = () => {
     let totalCost = 0;
     const roomArea = formData.roomLength * formData.roomWidth;
@@ -238,7 +298,36 @@ export default function RoomProjectManager() {
 
   return (
     <div className="space-y-6">
-      {/* Demo mode removed for cleaner interface */}
+      {/* Quick Demo Section */}
+      {projects.length === 0 && (
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardContent className="p-6">
+            <div className="text-center space-y-4">
+              <h3 className="text-lg font-semibold text-blue-900">
+                Experience Professional 3D Design
+              </h3>
+              <p className="text-blue-700">
+                Try our advanced 3D room visualization with realistic materials and lighting
+              </p>
+              <div className="flex justify-center gap-4">
+                <Button 
+                  onClick={() => handleQuickDemo('kitchen')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Kitchen Demo
+                </Button>
+                <Button 
+                  onClick={() => handleQuickDemo('bathroom')}
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  Bathroom Demo
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Header */}
       <div className="flex justify-between items-center">
@@ -261,10 +350,10 @@ export default function RoomProjectManager() {
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-6">
-              <Tabs defaultValue="details" className="w-full">
+              <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="details">Project Details</TabsTrigger>
-                  <TabsTrigger value="room">Room & Materials</TabsTrigger>
+                  <TabsTrigger value="design">3D Design</TabsTrigger>
                   <TabsTrigger value="cost">Cost Estimate</TabsTrigger>
                 </TabsList>
 
@@ -373,12 +462,22 @@ export default function RoomProjectManager() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">3D Room Preview</h3>
                     {formData.projectType === 'kitchen' ? (
-                      <SimpleKitchen3D
+                      <ProfessionalKitchen3D
                         roomLength={formData.roomLength}
                         roomWidth={formData.roomWidth}
                         roomHeight={formData.roomHeight}
                         selectedMaterials={selectedMaterials}
                         materials={materials}
+                        onMaterialChange={handleMaterialChange}
+                      />
+                    ) : formData.projectType === 'bathroom' ? (
+                      <ProfessionalBathroom3D
+                        roomLength={formData.roomLength}
+                        roomWidth={formData.roomWidth}
+                        roomHeight={formData.roomHeight}
+                        selectedMaterials={selectedMaterials}
+                        materials={materials}
+                        onMaterialChange={handleMaterialChange}
                       />
                     ) : (
                       <SimpleRoom3D
@@ -391,19 +490,21 @@ export default function RoomProjectManager() {
                     )}
                   </div>
 
-                  {/* Material Selection */}
-                  <div className="space-y-4">
-                    <SimpleMaterialSelector
-                      materials={materials}
-                      selectedMaterials={selectedMaterials}
-                      onMaterialChange={handleMaterialChange}
-                      roomDimensions={{
-                        length: formData.roomLength,
-                        width: formData.roomWidth,
-                        height: formData.roomHeight
-                      }}
-                    />
-                  </div>
+                  {/* Material Selection - Skip for kitchen/bathroom as it's integrated */}
+                  {!['kitchen', 'bathroom'].includes(formData.projectType) && (
+                    <div className="space-y-4">
+                      <QuickMaterialSelector
+                        materials={materials}
+                        selectedMaterials={selectedMaterials}
+                        onMaterialChange={handleMaterialChange}
+                        roomDimensions={{
+                          length: formData.roomLength,
+                          width: formData.roomWidth,
+                          height: formData.roomHeight
+                        }}
+                      />
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="cost" className="space-y-4">
@@ -555,12 +656,22 @@ export default function RoomProjectManager() {
             {/* 3D Viewer */}
             {selectedProject && (
               selectedProject.projectType === 'kitchen' ? (
-                <SimpleKitchen3D
+                <ProfessionalKitchen3D
                   roomLength={selectedProject.roomLength}
                   roomWidth={selectedProject.roomWidth}
                   roomHeight={selectedProject.roomHeight}
                   selectedMaterials={selectedMaterials}
                   materials={materials}
+                  onMaterialChange={handleMaterialChange}
+                />
+              ) : selectedProject.projectType === 'bathroom' ? (
+                <ProfessionalBathroom3D
+                  roomLength={selectedProject.roomLength}
+                  roomWidth={selectedProject.roomWidth}
+                  roomHeight={selectedProject.roomHeight}
+                  selectedMaterials={selectedMaterials}
+                  materials={materials}
+                  onMaterialChange={handleMaterialChange}
                 />
               ) : (
                 <SimpleRoom3D
@@ -573,17 +684,19 @@ export default function RoomProjectManager() {
               )
             )}
 
-            {/* Material Selection */}
-            <SimpleMaterialSelector
-              materials={materials}
-              selectedMaterials={selectedMaterials}
-              onMaterialChange={handleMaterialChange}
-              roomDimensions={{
-                length: selectedProject?.roomLength || 12,
-                width: selectedProject?.roomWidth || 10,
-                height: selectedProject?.roomHeight || 9
-              }}
-            />
+            {/* Material Selection - Skip for kitchen/bathroom as it's integrated */}
+            {selectedProject && !['kitchen', 'bathroom'].includes(selectedProject.projectType) && (
+              <QuickMaterialSelector
+                materials={materials}
+                selectedMaterials={selectedMaterials}
+                onMaterialChange={handleMaterialChange}
+                roomDimensions={{
+                  length: selectedProject?.roomLength || 12,
+                  width: selectedProject?.roomWidth || 10,
+                  height: selectedProject?.roomHeight || 9
+                }}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
