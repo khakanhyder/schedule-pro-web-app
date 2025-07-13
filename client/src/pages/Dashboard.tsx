@@ -48,7 +48,7 @@ import AdvancedFeatures from "@/components/dashboard/AdvancedFeatures";
 import IndustrySpecificFeatures from "@/components/dashboard/IndustrySpecificFeatures";
 import PredictiveInsights from "@/components/dashboard/PredictiveInsights";
 import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
-import Simple3DTest from "@/components/dashboard/Simple3DTest";
+
 import SettingsManagement from "@/components/dashboard/SettingsManagement";
 import BusinessGrowthHub from "@/components/dashboard/BusinessGrowthHub";
 import CommunicationHub from "@/components/dashboard/CommunicationHub";
@@ -56,6 +56,7 @@ import DepositManager from "@/components/dashboard/DepositManager";
 import NotificationCenter from "@/components/dashboard/NotificationCenter";
 import QuickStats from "@/components/dashboard/QuickStats";
 import PetCareEnhancements from "@/components/dashboard/PetCareEnhancements";
+import RoomMeasurementCalculator from "@/components/dashboard/RoomMeasurementCalculator";
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
 export default function Dashboard() {
@@ -96,11 +97,13 @@ export default function Dashboard() {
   
   const terms = selectedIndustry ? getTerminology(selectedIndustry) : defaultTerms;
   
-  // Check if current industry should have 3D room projects (skilled trades only)
-  const isSkillledTradesIndustry = selectedIndustry && selectedIndustry.id === 'home_services';
+
   
   // Check if current industry should have pet care enhancements (pet care only)
   const isPetCareIndustry = selectedIndustry && selectedIndustry.id === 'pet_care';
+  
+  // Check if current industry should have room measurement tools (home services only)
+  const isHomeServicesIndustry = selectedIndustry && selectedIndustry.id === 'home_services';
 
   // Fetch services
   const { data: services = [] } = useQuery<Service[]>({
@@ -396,7 +399,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isSkillledTradesIndustry || isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-8'}`}>
+          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry || isHomeServicesIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-8'}`}>
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -467,18 +470,20 @@ export default function Dashboard() {
             >
               Messages
             </TabsTrigger>
-            {isSkillledTradesIndustry && (
+
+            {isHomeServicesIndustry && (
               <TabsTrigger 
-                value="room-projects" 
+                value="measurement-calculator" 
                 className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
-                style={selectedTab === 'room-projects' ? {
+                style={selectedTab === 'measurement-calculator' ? {
                   backgroundColor: currentTemplate.primaryColor,
                   color: 'white'
                 } : {}}
               >
-                3D Projects
+                Material Calculator
               </TabsTrigger>
             )}
+
             {isPetCareIndustry && (
               <TabsTrigger 
                 value="pet-care" 
@@ -543,9 +548,10 @@ export default function Dashboard() {
           </TabsContent>
 
           {/* 3D Room Projects Tab - Skilled Trades Only */}
-          {isSkillledTradesIndustry && (
-            <TabsContent value="room-projects">
-              <Simple3DTest />
+          {/* Material Calculator Tab */}
+          {isHomeServicesIndustry && (
+            <TabsContent value="measurement-calculator">
+              <RoomMeasurementCalculator />
             </TabsContent>
           )}
 

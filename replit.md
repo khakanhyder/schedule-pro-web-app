@@ -18,7 +18,19 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 13, 2025)
 
-### Professional 3D Visualization System (Latest) - Industry-Leading Redesign
+### Practical Room Measurement Calculator (Latest) - Real Contractor Tool
+- ✅ **Replaced non-functional 3D system** with practical material calculator for contractors
+- ✅ **Room Dimension Input**: Length, width, height with door/window measurements
+- ✅ **Material Calculations**: Baseboards, crown molding, flooring, paint, drywall
+- ✅ **Automatic Calculations**: Perimeter for trim, area for flooring, paint coverage
+- ✅ **Cost Estimation**: Real-time pricing with material costs per unit
+- ✅ **Professional Interface**: Clean, focused design contractors can actually use
+- ✅ **Smart Calculations**: Accounts for doors/windows in baseboard and paint calculations
+- ✅ **Export Ready**: Save quotes and generate PDFs for client presentations
+- ✅ **Industry-Specific**: Only appears for Home Services industry template
+- ✅ **Practical Value**: Solves real business problems instead of flashy but useless features
+
+### Professional 3D Visualization System (Removed) - Was Not Contractor-Functional
 - ✅ **Professional Kitchen 3D**: Matterport/SketchUp-inspired interface with realistic materials, lighting, and navigation
 - ✅ **Professional Bathroom 3D**: Complete bathroom visualization with vanity, shower, tub, and premium fixtures
 - ✅ **Advanced Lighting System**: Day/night toggle, adjustable intensity, realistic shadows and reflections
