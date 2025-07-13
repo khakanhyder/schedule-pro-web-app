@@ -48,7 +48,7 @@ import AdvancedFeatures from "@/components/dashboard/AdvancedFeatures";
 import IndustrySpecificFeatures from "@/components/dashboard/IndustrySpecificFeatures";
 import PredictiveInsights from "@/components/dashboard/PredictiveInsights";
 import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
-import Simple3DProjectManager from "@/components/dashboard/Simple3DProjectManager";
+import Enhanced3DProjectManager from "@/components/dashboard/Enhanced3DProjectManager";
 import SettingsManagement from "@/components/dashboard/SettingsManagement";
 import BusinessGrowthHub from "@/components/dashboard/BusinessGrowthHub";
 import CommunicationHub from "@/components/dashboard/CommunicationHub";
@@ -545,7 +545,7 @@ export default function Dashboard() {
           {/* 3D Room Projects Tab - Skilled Trades Only */}
           {isSkillledTradesIndustry && (
             <TabsContent value="room-projects">
-              <Simple3DProjectManager />
+              <Enhanced3DProjectManager />
             </TabsContent>
           )}
 
