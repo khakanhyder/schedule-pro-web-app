@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Home, Play, Zap, X, Plus, Save } from 'lucide-react';
 import Professional3DRoomViewer from './Professional3DRoomViewer';
+import Simple2DRoomPlanner from './Simple2DRoomPlanner';
 
 // Mock materials data for demos
 const mockMaterials = [
@@ -156,7 +157,10 @@ export default function Simple3DTest() {
           <h3 className="text-lg font-semibold mb-2">Create New Project</h3>
           <p className="text-gray-600 mb-4">Start a new 3D room design project</p>
           <Button 
-            onClick={() => setIsNewProjectOpen(true)}
+            onClick={() => {
+              setSelectedDemo('kitchen');
+              setIsViewerOpen(true);
+            }}
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
@@ -180,76 +184,37 @@ export default function Simple3DTest() {
         </CardContent>
       </Card>
 
-      {/* New Project Dialog - Compact Professional */}
-      <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
-        <DialogContent style={{ width: '320px', maxWidth: '320px', padding: '16px' }}>
-          <DialogHeader>
-            <DialogTitle className="text-base">New Project</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="projectName" className="text-sm">Project Name</Label>
-              <Input
-                id="projectName"
-                placeholder="Kitchen Remodel"
-                value={newProjectData.projectName}
-                onChange={(e) => setNewProjectData(prev => ({ ...prev, projectName: e.target.value }))}
-                className="h-8 text-sm"
+      {/* Simple 3D Viewer */}
+      {isViewerOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-[600px] h-[500px] p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Room Planner</h2>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setIsViewerOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="h-[420px] overflow-hidden">
+              <Simple2DRoomPlanner
+                roomType={selectedDemo || 'kitchen'}
+                dimensions={{
+                  length: 12,
+                  width: 10,
+                  height: 9
+                }}
+                materials={mockMaterials}
+                selectedMaterials={selectedMaterials}
+                onMaterialChange={handleMaterialChange}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="roomType" className="text-sm">Room Type</Label>
-              <Select value={newProjectData.roomType} onValueChange={(value) => setNewProjectData(prev => ({ ...prev, roomType: value }))}>
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="kitchen">Kitchen</SelectItem>
-                  <SelectItem value="bathroom">Bathroom</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex gap-2 justify-end pt-2">
-              <Button variant="outline" onClick={() => setIsNewProjectOpen(false)} size="sm">
-                Cancel
-              </Button>
-              <Button onClick={() => {
-                setSelectedDemo(newProjectData.roomType);
-                setIsNewProjectOpen(false);
-                setIsViewerOpen(true);
-              }} size="sm">
-                Create
-              </Button>
-            </div>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* 3D Viewer Dialog - Compact Professional */}
-      <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
-        <DialogContent style={{ width: '600px', maxWidth: '600px', height: '450px', padding: '12px' }}>
-          <DialogHeader>
-            <DialogTitle className="text-base">3D Room View</DialogTitle>
-          </DialogHeader>
-          
-          <div className="h-[380px] border rounded overflow-hidden">
-            <Professional3DRoomViewer
-              roomType={selectedDemo || 'kitchen'}
-              dimensions={{
-                length: 12,
-                width: 10,
-                height: 9
-              }}
-              materials={mockMaterials}
-              selectedMaterials={selectedMaterials}
-              onMaterialChange={handleMaterialChange}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
