@@ -3,7 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Home, Play, Zap, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Home, Play, Zap, X, Plus, Save } from 'lucide-react';
 import Professional3DRoomViewer from './Professional3DRoomViewer';
 
 // Mock materials data for demos
@@ -41,6 +46,7 @@ const mockMaterials = [
 export default function Simple3DTest() {
   const [selectedDemo, setSelectedDemo] = useState<string | null>(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [isNewProjectOpen, setIsNewProjectOpen] = useState(false);
   const [selectedMaterials, setSelectedMaterials] = useState<Record<string, number>>({
     flooring: 1,
     paint: 4,
@@ -49,6 +55,16 @@ export default function Simple3DTest() {
     backsplash: 13,
     tiles: 16,
     fixtures: 17
+  });
+  const [newProjectData, setNewProjectData] = useState({
+    projectName: '',
+    clientName: '',
+    clientEmail: '',
+    roomType: 'kitchen',
+    roomLength: 12,
+    roomWidth: 10,
+    roomHeight: 9,
+    notes: ''
   });
 
   const handleDemoClick = (demoType: string) => {
@@ -140,10 +156,10 @@ export default function Simple3DTest() {
           <h3 className="text-lg font-semibold mb-2">Create New Project</h3>
           <p className="text-gray-600 mb-4">Start a new 3D room design project</p>
           <Button 
-            onClick={() => alert('New project dialog would open here')}
+            onClick={() => setIsNewProjectOpen(true)}
             className="flex items-center gap-2"
           >
-            <Zap className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
             New Project
           </Button>
         </CardContent>
@@ -163,6 +179,150 @@ export default function Simple3DTest() {
           </p>
         </CardContent>
       </Card>
+
+      {/* New Project Dialog */}
+      <Dialog open={isNewProjectOpen} onOpenChange={setIsNewProjectOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Create New 3D Project</DialogTitle>
+          </DialogHeader>
+          
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Project Details</TabsTrigger>
+              <TabsTrigger value="design">3D Design</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="details" className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label htmlFor="projectName">Project Name</Label>
+                  <Input
+                    id="projectName"
+                    placeholder="e.g., Kitchen Remodel - Smith Family"
+                    value={newProjectData.projectName}
+                    onChange={(e) => setNewProjectData(prev => ({ ...prev, projectName: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="roomType">Room Type</Label>
+                  <Select value={newProjectData.roomType} onValueChange={(value) => setNewProjectData(prev => ({ ...prev, roomType: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kitchen">Kitchen</SelectItem>
+                      <SelectItem value="bathroom">Bathroom</SelectItem>
+                      <SelectItem value="living">Living Room</SelectItem>
+                      <SelectItem value="bedroom">Bedroom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="clientName">Client Name</Label>
+                  <Input
+                    id="clientName"
+                    placeholder="Client full name"
+                    value={newProjectData.clientName}
+                    onChange={(e) => setNewProjectData(prev => ({ ...prev, clientName: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="clientEmail">Client Email</Label>
+                  <Input
+                    id="clientEmail"
+                    type="email"
+                    placeholder="client@email.com"
+                    value={newProjectData.clientEmail}
+                    onChange={(e) => setNewProjectData(prev => ({ ...prev, clientEmail: e.target.value }))}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <Label htmlFor="roomLength">Length (ft)</Label>
+                  <Input
+                    id="roomLength"
+                    type="number"
+                    value={newProjectData.roomLength}
+                    onChange={(e) => setNewProjectData(prev => ({ ...prev, roomLength: Number(e.target.value) }))}
+                    min="6"
+                    max="40"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="roomWidth">Width (ft)</Label>
+                  <Input
+                    id="roomWidth"
+                    type="number"
+                    value={newProjectData.roomWidth}
+                    onChange={(e) => setNewProjectData(prev => ({ ...prev, roomWidth: Number(e.target.value) }))}
+                    min="6"
+                    max="40"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="roomHeight">Height (ft)</Label>
+                  <Input
+                    id="roomHeight"
+                    type="number"
+                    value={newProjectData.roomHeight}
+                    onChange={(e) => setNewProjectData(prev => ({ ...prev, roomHeight: Number(e.target.value) }))}
+                    min="7"
+                    max="12"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="notes">Project Notes</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Additional project requirements, preferences, or notes..."
+                  value={newProjectData.notes}
+                  onChange={(e) => setNewProjectData(prev => ({ ...prev, notes: e.target.value }))}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setIsNewProjectOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  setSelectedDemo(newProjectData.roomType);
+                  setIsNewProjectOpen(false);
+                  setIsViewerOpen(true);
+                }}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Create & Open 3D
+                </Button>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="design" className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  Live preview of your {newProjectData.roomType} design with current dimensions: {newProjectData.roomLength}' × {newProjectData.roomWidth}' × {newProjectData.roomHeight}'
+                </p>
+              </div>
+              
+              <Professional3DRoomViewer
+                roomType={newProjectData.roomType}
+                dimensions={{
+                  length: newProjectData.roomLength,
+                  width: newProjectData.roomWidth,
+                  height: newProjectData.roomHeight
+                }}
+                materials={mockMaterials}
+                selectedMaterials={selectedMaterials}
+                onMaterialChange={handleMaterialChange}
+              />
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
 
       {/* 3D Viewer Dialog */}
       <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
