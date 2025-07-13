@@ -434,8 +434,122 @@ export default function MaterialCostTracker() {
         </TabsContent>
 
         <TabsContent value="suppliers" className="space-y-4">
+          {/* Supplier Search */}
+          <div className="space-y-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search suppliers or materials..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full lg:w-[200px]">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category === 'all' ? 'All Categories' : category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Quick Material Search Results */}
+            {searchTerm && (
+              <Card className="p-4">
+                <h4 className="font-medium mb-3">Material Search Results</h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {materialPrices
+                    .filter(material => 
+                      material.materialName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      material.category.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .slice(0, 10)
+                    .map((material) => {
+                      const supplier = suppliers.find(s => s.id === material.supplierId);
+                      return (
+                        <div key={material.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
+                          <div className="flex-1">
+                            <div className="font-medium">{material.materialName}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {supplier?.name} • {material.category}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold">${material.currentPrice.toFixed(2)}</div>
+                            <div className="text-sm text-muted-foreground">per {material.unit}</div>
+                          </div>
+                          <div className="ml-4 flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setBulkCalculator({ materialId: material.id, quantity: 100, result: null });
+                                setActiveTab('bulk');
+                              }}
+                            >
+                              <Calculator className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedSupplierForOrder(material.supplierId);
+                                setOrderMode('quote');
+                                setActiveTab('orders');
+                                setOrderItems([]);
+                                setOrderNotes('');
+                              }}
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {materialPrices.filter(material => 
+                    material.materialName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    material.category.toLowerCase().includes(searchTerm.toLowerCase())
+                  ).length === 0 && (
+                    <p className="text-muted-foreground text-center py-4">
+                      No materials found matching "{searchTerm}"
+                    </p>
+                  )}
+                </div>
+              </Card>
+            )}
+          </div>
+
           <div className="grid gap-4">
-            {suppliers.map((supplier) => (
+            {suppliers
+              .filter(supplier => {
+                const matchesSearch = !searchTerm || 
+                  supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  supplier.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  supplier.specialties.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
+                const matchesCategory = selectedCategory === 'all' || 
+                  supplier.category === selectedCategory ||
+                  supplier.specialties.includes(selectedCategory);
+                return matchesSearch && matchesCategory;
+              })
+              .sort((a, b) => {
+                // Preferred suppliers first
+                const aPreferred = preferredStores.includes(a.id);
+                const bPreferred = preferredStores.includes(b.id);
+                if (aPreferred && !bPreferred) return -1;
+                if (!aPreferred && bPreferred) return 1;
+                // Then by rating
+                return b.rating - a.rating;
+              })
+              .map((supplier) => (
               <Card key={supplier.id} className="p-4">
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   <div className="flex-1">
@@ -443,6 +557,12 @@ export default function MaterialCostTracker() {
                       <Truck className="h-4 w-4 text-muted-foreground" />
                       <h3 className="font-semibold">{supplier.name}</h3>
                       <Badge variant="outline">{supplier.category}</Badge>
+                      {preferredStores.includes(supplier.id) && (
+                        <Badge variant="default" className="bg-green-500">
+                          <Star className="h-3 w-3 mr-1" />
+                          Preferred
+                        </Badge>
+                      )}
                     </div>
                     <div className="text-sm text-muted-foreground space-y-1">
                       <div className="flex items-center gap-1">
@@ -487,6 +607,7 @@ export default function MaterialCostTracker() {
                           onClick={() => {
                             setActiveTab('prices');
                             setSearchTerm(supplier.name);
+                            setSelectedCategory('all');
                             toast({
                               title: "Supplier Materials",
                               description: `Showing all materials from ${supplier.name}`
@@ -494,7 +615,7 @@ export default function MaterialCostTracker() {
                           }}
                         >
                           <Package className="h-4 w-4 mr-2" />
-                          View Materials
+                          Show Materials ({materialPrices.filter(m => m.supplierId === supplier.id).length})
                         </Button>
                       </div>
                       <div className="flex gap-1">
