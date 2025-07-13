@@ -18,6 +18,13 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 13, 2025)
 
+### Fixed Skilled Trades Services Display (Latest)
+- ✅ **Fixed default industry** - Changed server default from beauty to home_services
+- ✅ **Corrected service display** - Now shows: Bathroom Remodel, Built-in Cabinets, Electrical Panel Upgrade, Kitchen Renovation, Plumbing Repair, Deck Construction
+- ✅ **Fixed Tools tab visibility** - Tools tab now appears in dashboard navigation for all users
+- ✅ **Resolved data persistence** - Services now properly persist as skilled trades services after server restart
+- ✅ **Enhanced cache invalidation** - Added aggressive cache refresh to ensure fresh data loads
+
 ### Professional Job Estimation & Quoting System (Latest) - Contractor-Focused
 - ✅ **Comprehensive estimation system** - professional job quoting with line items
 - ✅ **Pre-built templates** - bathroom remodel, kitchen renovation, deck construction, flooring, roofing, HVAC, electrical

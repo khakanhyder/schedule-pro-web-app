@@ -157,7 +157,7 @@ export class MemStorage implements IStorage {
   private roomMaterialCurrentId = 1;
   
   // Track the current industry
-  private currentIndustryId = "beauty";
+  private currentIndustryId = "home_services";
 
   constructor() {
     // Initialize with some sample data
