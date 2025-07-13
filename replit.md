@@ -18,7 +18,18 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 13, 2025)
 
-### Fixed Skilled Trades Services Display (Latest)
+### Professional Material Cost Tracker & Supplier Database (Latest)
+- ✅ **Real-time price tracking** - Live material pricing with trend indicators (up/down arrows)
+- ✅ **Supplier database** - Complete supplier management with contact info, ratings, delivery terms
+- ✅ **Bulk pricing calculator** - Automatic discount calculation based on quantity tiers
+- ✅ **Stock status monitoring** - In-stock/out-of-stock indicators with lead times
+- ✅ **Category filtering** - Search by lumber, plumbing, electrical, hardware, etc.
+- ✅ **Market intelligence** - Price change tracking with previous vs current pricing
+- ✅ **Professional supplier profiles** - Rating system, payment terms, minimum orders
+- ✅ **Materials tab** - Dedicated navigation tab in dashboard for contractor users
+- ✅ **Order tracking framework** - Foundation for future order management features
+
+### Fixed Skilled Trades Services Display (Previous)
 - ✅ **Fixed default industry** - Changed server default from beauty to home_services
 - ✅ **Corrected service display** - Now shows: Bathroom Remodel, Built-in Cabinets, Electrical Panel Upgrade, Kitchen Renovation, Plumbing Repair, Deck Construction
 - ✅ **Fixed Tools tab visibility** - Tools tab now appears in dashboard navigation for all users

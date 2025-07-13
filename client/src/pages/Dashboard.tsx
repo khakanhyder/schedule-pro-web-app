@@ -56,6 +56,7 @@ import DepositManager from "@/components/dashboard/DepositManager";
 import NotificationCenter from "@/components/dashboard/NotificationCenter";
 import QuickStats from "@/components/dashboard/QuickStats";
 import PetCareEnhancements from "@/components/dashboard/PetCareEnhancements";
+import MaterialCostTracker from "@/components/dashboard/MaterialCostTracker";
 
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
@@ -489,6 +490,16 @@ export default function Dashboard() {
             >
               Tools
             </TabsTrigger>
+            <TabsTrigger 
+              value="materials" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'materials' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Materials
+            </TabsTrigger>
 
 
 
@@ -561,6 +572,11 @@ export default function Dashboard() {
           </TabsContent>
 
 
+
+          {/* Materials Tab */}
+          <TabsContent value="materials">
+            <MaterialCostTracker />
+          </TabsContent>
 
           {/* Pet Care Enhancements Tab - Pet Care Only */}
           {isPetCareIndustry && (
