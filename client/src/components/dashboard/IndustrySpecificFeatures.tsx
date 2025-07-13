@@ -27,7 +27,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import SimpleContractorTools from "./SimpleContractorTools";
+import JobEstimationQuoting from "./JobEstimationQuoting";
 
 export default function IndustrySpecificFeatures() {
   const { selectedIndustry } = useIndustry();
@@ -173,69 +173,10 @@ export default function IndustrySpecificFeatures() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Truck className="h-5 w-5" />
-              Vehicle & Equipment Tracking
-            </CardTitle>
-            <CardDescription>
-              Track tools, materials, and service vehicles
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="p-3 border rounded-lg">
-                <h4 className="font-medium">Service Van #1</h4>
-                <p className="text-sm text-muted-foreground">Next maintenance: 2,500 miles</p>
-                <Badge variant="outline" className="text-green-600 mt-1">Active</Badge>
-              </div>
-              <div className="p-3 border rounded-lg">
-                <h4 className="font-medium">Tool Inventory</h4>
-                <p className="text-sm text-muted-foreground">42 tools tracked, 3 need calibration</p>
-                <Badge variant="outline" className="text-orange-600 mt-1">Action Needed</Badge>
-              </div>
-            </div>
-            <Button className="w-full" onClick={() => handleSetup("Equipment Tracking")}>
-              Manage Equipment
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Safety & Compliance Tracking
-          </CardTitle>
-          <CardDescription>
-            Monitor safety protocols and licensing requirements
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-3 border rounded-lg">
-              <h4 className="font-medium">License Renewals</h4>
-              <p className="text-sm text-muted-foreground">Electrical license expires in 45 days</p>
-              <Badge variant="outline" className="text-orange-600 mt-1">Renewal Due</Badge>
-            </div>
-            <div className="p-3 border rounded-lg">
-              <h4 className="font-medium">Safety Certifications</h4>
-              <p className="text-sm text-muted-foreground">OSHA 30-hour cert up to date</p>
-              <Badge variant="outline" className="text-green-600 mt-1">Current</Badge>
-            </div>
-            <div className="p-3 border rounded-lg">
-              <h4 className="font-medium">Insurance Coverage</h4>
-              <p className="text-sm text-muted-foreground">Liability coverage valid</p>
-              <Badge variant="outline" className="text-green-600 mt-1">Active</Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Simple Contractor Tools */}
-      <SimpleContractorTools />
+      {/* Professional Job Estimation & Quoting */}
+      <JobEstimationQuoting />
     </div>
   );
 

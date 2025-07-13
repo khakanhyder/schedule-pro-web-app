@@ -18,7 +18,17 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 13, 2025)
 
-### Removed Non-Functional Features (Latest) - Focus on Core Business Management
+### Professional Job Estimation & Quoting System (Latest) - Contractor-Focused
+- ✅ **Comprehensive estimation system** - professional job quoting with line items
+- ✅ **Pre-built templates** - bathroom remodel, kitchen renovation, deck construction
+- ✅ **Smart calculations** - automatic totals, markup, tax calculations
+- ✅ **Professional exports** - generate downloadable quote documents
+- ✅ **Client management** - complete client information in quotes
+- ✅ **Removed safety/compliance tracking** - simplified to focus on practical tools
+- ✅ **Removed vehicle/equipment tracking** - streamlined for job estimation focus
+- ✅ **Added Tools tab** - dedicated contractor tools section in dashboard
+
+### Removed Non-Functional Features - Focus on Core Business Management
 - ✅ **Removed 3D/2D room visualization** - not practical for actual contractor use
 - ✅ **Removed material calculator** - didn't meet user expectations for functionality
 - ✅ **Streamlined dashboard** - focus on core appointment and client management
