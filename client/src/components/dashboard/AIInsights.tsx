@@ -105,7 +105,7 @@ export default function AIInsights() {
   return (
     <div className="space-y-8">
       {/* Hero Header with Industry Theming */}
-      <Card className="relative overflow-hidden border-2 shadow-xl bg-white hover:shadow-2xl transition-all duration-300">
+      <Card className="relative overflow-hidden border-2 shadow-xl bg-white hover:shadow-2xl transition-shadow duration-300">
         {/* Top accent line matching industry color */}
         <div 
           className="h-1.5 w-full"
@@ -115,7 +115,7 @@ export default function AIInsights() {
         <CardHeader className="px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
             <div 
-              className="p-3 rounded-xl shadow-md hover:-translate-y-0.5 transition-transform duration-200"
+              className="p-3 rounded-xl shadow-md"
               style={{ 
                 backgroundColor: `${currentTemplate.primaryColor}15`,
                 border: `1px solid ${currentTemplate.primaryColor}30`
@@ -155,7 +155,7 @@ export default function AIInsights() {
         <TabsList className="grid w-full grid-cols-6 h-auto p-1 bg-slate-100 rounded-lg">
           <TabsTrigger 
             value="scheduling" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-colors duration-200 rounded-md data-[state=active]:text-white"
             style={selectedTab === 'scheduling' ? {
               backgroundColor: currentTemplate.primaryColor,
               color: 'white'
@@ -169,7 +169,7 @@ export default function AIInsights() {
           </TabsTrigger>
           <TabsTrigger 
             value="marketing" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-colors duration-200 rounded-md data-[state=active]:text-white"
             style={selectedTab === 'marketing' ? {
               backgroundColor: currentTemplate.primaryColor,
               color: 'white'
@@ -183,7 +183,7 @@ export default function AIInsights() {
           </TabsTrigger>
           <TabsTrigger 
             value="insights" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-colors duration-200 rounded-md data-[state=active]:text-white"
             style={selectedTab === 'insights' ? {
               backgroundColor: currentTemplate.primaryColor,
               color: 'white'
@@ -197,7 +197,7 @@ export default function AIInsights() {
           </TabsTrigger>
           <TabsTrigger 
             value="discovery" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-colors duration-200 rounded-md data-[state=active]:text-white"
             style={selectedTab === 'discovery' ? {
               backgroundColor: currentTemplate.primaryColor,
               color: 'white'
@@ -211,7 +211,7 @@ export default function AIInsights() {
           </TabsTrigger>
           <TabsTrigger 
             value="industry" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-colors duration-200 rounded-md data-[state=active]:text-white"
             style={selectedTab === 'industry' ? {
               backgroundColor: currentTemplate.primaryColor,
               color: 'white'
@@ -225,7 +225,7 @@ export default function AIInsights() {
           </TabsTrigger>
           <TabsTrigger 
             value="google-setup" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-all duration-200 rounded-md data-[state=active]:text-white"
+            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-colors duration-200 rounded-md data-[state=active]:text-white"
             style={selectedTab === 'google-setup' ? {
               backgroundColor: currentTemplate.primaryColor,
               color: 'white'
@@ -240,7 +240,7 @@ export default function AIInsights() {
         </TabsList>
 
         <TabsContent value="scheduling" className="space-y-6">
-          <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl transition-all duration-300">
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
             {/* Accent line */}
             <div 
               className="h-1 w-full"
@@ -344,7 +344,7 @@ export default function AIInsights() {
                 <Button 
                   onClick={() => handleCreateCampaign('review_request')}
                   disabled={createCampaignMutation.isPending}
-                  className="w-full text-sm shadow-md hover:shadow-lg transition-all duration-200"
+                  className="w-full text-sm shadow-md hover:shadow-lg transition-shadow duration-200"
                   style={{ 
                     backgroundColor: currentTemplate.primaryColor,
                     border: 'none'
@@ -356,7 +356,7 @@ export default function AIInsights() {
               </CardContent>
             </Card>
 
-            <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
               <div 
                 className="h-1 w-full"
                 style={{ backgroundColor: currentTemplate.primaryColor }}
@@ -382,7 +382,7 @@ export default function AIInsights() {
                 <Button 
                   onClick={() => handleCreateCampaign('rebook_reminder')}
                   disabled={createCampaignMutation.isPending}
-                  className="w-full shadow-md hover:shadow-lg transition-all duration-200"
+                  className="w-full shadow-md hover:shadow-lg transition-shadow duration-200"
                   style={{ 
                     backgroundColor: currentTemplate.primaryColor,
                     border: 'none'
@@ -559,7 +559,7 @@ export default function AIInsights() {
         </TabsContent>
 
         <TabsContent value="discovery" className="space-y-6">
-          <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl transition-all duration-300">
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
             {/* Accent line */}
             <div 
               className="h-1 w-full"
