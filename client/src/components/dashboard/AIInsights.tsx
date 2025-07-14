@@ -8,7 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Brain, TrendingUp, Users, Calendar, CheckCircle, Clock, Target, Sparkles, Zap, BarChart3 } from "lucide-react";
 import { useIndustry, industryTemplates } from "@/lib/industryContext";
 import IndustrySpecificInsights from "./IndustrySpecificInsights";
-import GoogleBusinessSetup from "./GoogleBusinessSetup";
+import SimpleBusinessSetup from "./SimpleBusinessSetup";
 
 interface SchedulingSuggestion {
   id: number;
@@ -105,7 +105,7 @@ export default function AIInsights() {
   return (
     <div className="space-y-8">
       {/* Hero Header with Industry Theming */}
-      <Card className="relative overflow-hidden border-2 shadow-xl bg-gradient-to-br from-white to-slate-50/30 hover:shadow-2xl transition-all duration-300">
+      <Card className="relative overflow-hidden border-2 shadow-xl bg-white hover:shadow-2xl transition-all duration-300">
         {/* Top accent line matching industry color */}
         <div 
           className="h-1.5 w-full"
@@ -240,7 +240,7 @@ export default function AIInsights() {
         </TabsList>
 
         <TabsContent value="scheduling" className="space-y-6">
-          <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl transition-all duration-300">
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl transition-all duration-300">
             {/* Accent line */}
             <div 
               className="h-1 w-full"
@@ -318,7 +318,7 @@ export default function AIInsights() {
 
         <TabsContent value="marketing" className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
               <div 
                 className="h-1 w-full"
                 style={{ backgroundColor: currentTemplate.primaryColor }}
@@ -356,7 +356,7 @@ export default function AIInsights() {
               </CardContent>
             </Card>
 
-            <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
               <div 
                 className="h-1 w-full"
                 style={{ backgroundColor: currentTemplate.primaryColor }}
@@ -559,7 +559,7 @@ export default function AIInsights() {
         </TabsContent>
 
         <TabsContent value="discovery" className="space-y-6">
-          <Card className="relative overflow-hidden border-2 shadow-lg bg-gradient-to-br from-white to-slate-50/30 hover:shadow-xl transition-all duration-300">
+          <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl transition-all duration-300">
             {/* Accent line */}
             <div 
               className="h-1 w-full"
@@ -787,7 +787,7 @@ export default function AIInsights() {
         </TabsContent>
 
         <TabsContent value="google-setup" className="space-y-6">
-          <GoogleBusinessSetup 
+          <SimpleBusinessSetup 
             industryId={currentTemplate.id} 
             businessName={currentTemplate.name} 
           />
