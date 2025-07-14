@@ -48,7 +48,7 @@ export default function Navbar() {
 
   return (
     <header 
-      className={`bg-white/95 backdrop-blur-sm sticky top-0 z-50 safe-top transition-all ${
+      className={`bg-white sticky top-0 z-50 safe-top transition-all ${
         isScrolled ? "shadow-md" : ""
       }`}
     >
@@ -107,7 +107,7 @@ export default function Navbar() {
           mobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <nav className="bg-white/95 backdrop-blur-sm px-4 py-2 flex flex-col space-y-4 pb-4 shadow-md">
+        <nav className="bg-white px-4 py-2 flex flex-col space-y-4 pb-4 shadow-md">
           {links.map((link) => (
             <Link 
               key={link.name} 
