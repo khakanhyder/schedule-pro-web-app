@@ -103,7 +103,7 @@ export default function AIInsights() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 ai-insights-text text-fix">
       {/* Hero Header with Industry Theming */}
       <Card className="relative overflow-hidden border-2 shadow-xl bg-white hover:shadow-2xl transition-shadow duration-300">
         {/* Top accent line matching industry color */}

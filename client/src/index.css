@@ -74,6 +74,9 @@
 body {
   background-color: var(--color-background);
   color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Remove button overrides - let components handle their own styling */
@@ -115,6 +118,38 @@ body {
 
 .hero-bg, .accent-bg {
   background-color: var(--color-primary) !important;
+}
+
+/* Fix text rendering issues */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure proper text spacing */
+.text-spacing-fix {
+  line-height: 1.5;
+  letter-spacing: normal;
+}
+
+/* AI Insights specific fixes */
+.ai-insights-text {
+  line-height: 1.6 !important;
+  letter-spacing: 0.01em !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+.ai-insights-text * {
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
+  text-rendering: inherit !important;
+}
+
+/* Emergency fix for overlapping text */
+.text-fix {
+  transform: none !important;
+  will-change: auto !important;
+  backface-visibility: visible !important;
 }
 
 :root {
