@@ -16,9 +16,16 @@ A comprehensive business management platform designed to empower service-based e
 - iOS App Store deployment targeting premium pricing ($299-499/month)
 - Focus on seamless data migration to remove adoption barriers
 
-## Recent Changes (July 13, 2025)
+## Recent Changes (July 14, 2025)
 
-### Google Business Page Setup Assistant (Latest)
+### Streamlined AI Insights Interface (Latest)
+- ✅ **Removed redundant Smart Scheduling tab** - Eliminated duplicate functionality that exists in calendar section
+- ✅ **Fixed text rendering issues** - Resolved blur and overlapping text problems in AI insights
+- ✅ **Simplified navigation** - Reduced AI insights from 6 tabs to 5 for better focus
+- ✅ **Improved readability** - Added CSS fixes for font smoothing and text clarity
+- ✅ **Enhanced user experience** - Cleaner interface with less redundancy
+
+### Google Business Page Setup Assistant (Previous)
 - ✅ **Comprehensive setup guide** - Step-by-step Google Business Profile creation across all industries
 - ✅ **Industry-specific optimization** - Customized photos, services, and keywords for each business type
 - ✅ **Multi-platform review support** - Links to Google, Yelp, Facebook, and Trustpilot setup

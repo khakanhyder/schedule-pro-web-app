@@ -41,7 +41,7 @@ interface MarketingCampaign {
 }
 
 export default function AIInsights() {
-  const [selectedTab, setSelectedTab] = useState("scheduling");
+  const [selectedTab, setSelectedTab] = useState("marketing");
   const queryClient = useQueryClient();
   const { selectedIndustry } = useIndustry();
   
@@ -152,21 +152,7 @@ export default function AIInsights() {
 
       {/* Tabs with Industry Theming */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-6 h-auto p-1 bg-slate-100 rounded-lg">
-          <TabsTrigger 
-            value="scheduling" 
-            className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-colors duration-200 rounded-md data-[state=active]:text-white"
-            style={selectedTab === 'scheduling' ? {
-              backgroundColor: currentTemplate.primaryColor,
-              color: 'white'
-            } : {}}
-          >
-            <div className="flex flex-col items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Smart Scheduling</span>
-              <span className="sm:hidden">Schedule</span>
-            </div>
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-slate-100 rounded-lg">
           <TabsTrigger 
             value="marketing" 
             className="text-xs sm:text-sm px-2 py-3 data-[state=active]:shadow-md transition-colors duration-200 rounded-md data-[state=active]:text-white"
@@ -238,83 +224,6 @@ export default function AIInsights() {
             </div>
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="scheduling" className="space-y-6">
-          <Card className="relative overflow-hidden border-2 shadow-lg bg-white hover:shadow-xl transition-shadow duration-300">
-            {/* Accent line */}
-            <div 
-              className="h-1 w-full"
-              style={{ backgroundColor: currentTemplate.primaryColor }}
-            />
-            <CardHeader className="pb-4">
-              <CardTitle 
-                className="flex items-center gap-2 text-xl"
-                style={{ color: currentTemplate.primaryColor }}
-              >
-                <div 
-                  className="p-2 rounded-lg"
-                  style={{ backgroundColor: `${currentTemplate.primaryColor}15` }}
-                >
-                  <Calendar className="h-5 w-5" />
-                </div>
-                Scheduling Optimization
-              </CardTitle>
-              <CardDescription className="text-slate-600 font-medium">
-                AI-powered suggestions to optimize your booking schedule and increase revenue
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loadingRebooking ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {rebookingSuggestions?.suggestions?.length > 0 ? (
-                    rebookingSuggestions.suggestions.map((suggestion: SchedulingSuggestion) => (
-                      <div key={suggestion.id} className="border rounded-lg p-4 space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant={getPriorityColor(suggestion.priority)}>
-                                {getPriorityLabel(suggestion.priority)} Priority
-                              </Badge>
-                              <Badge variant="outline">{suggestion.suggestionType.replace('_', ' ')}</Badge>
-                            </div>
-                            <p className="font-medium mb-1">{suggestion.suggestion}</p>
-                            <p className="text-sm text-muted-foreground">{suggestion.reasoning}</p>
-                          </div>
-                          {suggestion.isAccepted === null && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleAcceptSuggestion(suggestion.id)}
-                              disabled={acceptSuggestionMutation.isPending}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Accept
-                            </Button>
-                          )}
-                          {suggestion.isAccepted === true && (
-                            <Badge variant="outline" className="text-green-600">
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Accepted
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>AI is analyzing your booking patterns...</p>
-                      <p className="text-sm">More suggestions will appear as you get more bookings</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="marketing" className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
