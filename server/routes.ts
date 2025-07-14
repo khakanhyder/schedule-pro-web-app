@@ -292,21 +292,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API endpoint to get appointments by date
+  // API endpoint to get appointments by date (optional date parameter)
   app.get("/api/appointments", async (req, res) => {
     try {
       const dateParam = req.query.date as string;
-      if (!dateParam) {
-        return res.status(400).json({ message: "Date parameter is required" });
-      }
       
-      const date = new Date(dateParam);
-      if (isNaN(date.getTime())) {
-        return res.status(400).json({ message: "Invalid date format" });
+      if (dateParam) {
+        // If date is provided, get appointments for that specific date
+        const date = new Date(dateParam);
+        if (isNaN(date.getTime())) {
+          return res.status(400).json({ message: "Invalid date format" });
+        }
+        const appointments = await storage.getAppointmentsByDate(date);
+        res.json(appointments);
+      } else {
+        // If no date provided, get all appointments
+        const appointments = await storage.getAppointments();
+        res.json(appointments);
       }
-      
-      const appointments = await storage.getAppointmentsByDate(date);
-      res.json(appointments);
     } catch (error) {
       res.status(500).json({ message: "Error fetching appointments" });
     }

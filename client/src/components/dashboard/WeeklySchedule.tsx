@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -142,8 +142,8 @@ export default function WeeklySchedule() {
               
               {/* Time slots */}
               {timeSlots.map((timeSlot, timeIndex) => (
-                <>
-                  <div key={`time-${timeIndex}`} className="border-b p-2 flex items-center text-sm">
+                <React.Fragment key={`timeslot-${timeIndex}`}>
+                  <div className="border-b p-2 flex items-center text-sm">
                     {timeSlot}
                   </div>
                   
@@ -173,7 +173,7 @@ export default function WeeklySchedule() {
                       </div>
                     );
                   })}
-                </>
+                </React.Fragment>
               ))}
             </div>
           </div>
