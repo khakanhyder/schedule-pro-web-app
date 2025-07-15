@@ -16,9 +16,15 @@ A comprehensive business management platform designed to empower service-based e
 - iOS App Store deployment targeting premium pricing ($299-499/month)
 - Focus on seamless data migration to remove adoption barriers
 
-## Recent Changes (July 14, 2025)
+## Recent Changes (July 15, 2025)
 
-### Streamlined AI Insights Interface (Latest)
+### Improved Industry Selection Landing Page (Latest)
+- ✅ **Enhanced landing page messaging** - Updated title from "Set Up Your Scheduled Dashboard" to "Welcome to Scheduled"
+- ✅ **Clearer industry selection flow** - Improved description to emphasize pre-configured templates
+- ✅ **Better call-to-action** - Changed "Back to Home" to "Learn More" for better user guidance
+- ✅ **Focused operator onboarding** - Landing page now clearly positions as industry template selection
+
+### Streamlined AI Insights Interface (Previous)
 - ✅ **Removed redundant Smart Scheduling tab** - Eliminated duplicate functionality that exists in calendar section
 - ✅ **Fixed text rendering issues** - Resolved blur and overlapping text problems in AI insights
 - ✅ **Simplified navigation** - Reduced AI insights from 6 tabs to 5 for better focus

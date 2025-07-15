@@ -83,9 +83,9 @@ export default function Setup() {
       <div className="container mx-auto px-4">
         <Card className="max-w-5xl mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold">Set Up Your Scheduled Dashboard</CardTitle>
+            <CardTitle className="text-3xl font-bold">Welcome to Scheduled</CardTitle>
             <CardDescription>
-              Let's personalize your scheduling experience for your business
+              Choose your industry to get started with a personalized business management platform
             </CardDescription>
             
             <div className="flex justify-center items-center mt-6 space-x-4">
@@ -116,7 +116,7 @@ export default function Setup() {
                 <div className="text-center mb-8">
                   <h2 className="text-2xl font-bold tracking-tight mb-2">Choose Your Industry</h2>
                   <p className="text-muted-foreground text-sm">
-                    Select a template to personalize your business dashboard
+                    Select the industry that best matches your business to get started with pre-configured templates
                   </p>
                 </div>
                 
@@ -241,8 +241,8 @@ export default function Setup() {
           <CardFooter className="flex justify-between">
             {step === 1 && (
               <>
-                <Button variant="outline" onClick={() => setLocation("/")}>
-                  Back to Home
+                <Button variant="outline" onClick={() => setLocation("/home")}>
+                  Learn More
                 </Button>
                 <div className="text-sm text-muted-foreground">
                   Select an industry template to continue
