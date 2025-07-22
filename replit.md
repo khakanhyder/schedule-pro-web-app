@@ -16,9 +16,17 @@ A comprehensive business management platform designed to empower service-based e
 - iOS App Store deployment targeting premium pricing ($299-499/month)
 - Focus on seamless data migration to remove adoption barriers
 
-## Recent Changes (July 21, 2025)
+## Recent Changes (July 22, 2025)
 
-### Apple App Store Submission Preparation (Latest)
+### Marketing Website Creation Challenges (Latest)
+- ⚠️ **User frustration with separate project creation** - Multiple attempts to create standalone marketing site for scheduledpros.com domain
+- ✅ **Marketing website files created** - Complete HTML files with Scheduled app styling (server/public/marketing.html, scheduledpros-marketing.html)
+- ⚠️ **Replit project workflow complexity** - User experienced significant difficulty with project separation and URL navigation
+- 📝 **User feedback: Process too technical** - Needs simpler approach for non-technical users to create separate marketing projects
+- ✅ **Styling consistency maintained** - Marketing site matches main Scheduled app blue gradients and professional design
+- 🎯 **Next priority: Simplify marketing site deployment** - Focus on straightforward hosting solution for scheduledpros.com
+
+### Apple App Store Submission Preparation (Previous)
 - ✅ **Created comprehensive app descriptions** - Short-term and long-term descriptions for Apple submission
 - ✅ **User acquisition optimized content** - Pain-focused marketing copy emphasizing revenue benefits  
 - ✅ **Complete Apple submission package** - Keywords, privacy requirements, pricing structure, review guidelines
