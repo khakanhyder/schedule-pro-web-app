@@ -1,0 +1,18 @@
+Your marketing website for scheduledpros.com is complete and ready.
+
+FILE LOCATION: server/public/marketing.html
+
+TO USE THIS WEBSITE:
+1. Download the file "server/public/marketing.html" from your Replit project
+2. Upload it to any web hosting service 
+3. Connect your scheduledpros.com domain to that hosting
+
+THE WEBSITE INCLUDES:
+- "Scheduled Pros" branding matching your app
+- Professional blue styling like your current app
+- Industry sections: Beauty, Contractors, Wellness
+- Pricing: $299, $399, $499 per month
+- Download buttons and contact forms
+
+This is a complete standalone website ready for your domain.
+No coding knowledge needed - just download and upload to hosting.
