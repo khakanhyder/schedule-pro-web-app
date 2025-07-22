@@ -37,6 +37,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Serve marketing site directly
+  app.get('/marketing', (req, res) => {
+    res.sendFile('marketing-site.html', { root: '.' });
+  });
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
