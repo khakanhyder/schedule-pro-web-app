@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Scissors, HardHat, Spa, Paw, Palette, Settings, Brain, TrendingUp, Sync, Check, Apple, Mail } from 'lucide-react';
+import { Scissors, HardHat, Heart, PawPrint, Palette, Settings, Brain, TrendingUp, RotateCw, Check, Apple, Mail } from 'lucide-react';
 import { useState } from 'react';
 
 export default function MarketingSite() {
@@ -32,7 +32,7 @@ export default function MarketingSite() {
       iconBg: "bg-orange-500"
     },
     {
-      icon: Spa,
+      icon: Heart,
       title: "Wellness Professionals",
       description: "Health tracking, treatment plans, appointment optimization, and wellness program management.",
       color: "from-green-50 to-emerald-50",
@@ -40,7 +40,7 @@ export default function MarketingSite() {
       iconBg: "bg-green-500"
     },
     {
-      icon: Paw,
+      icon: PawPrint,
       title: "Pet Care Professionals",
       description: "Pet profiles, health records, grooming schedules, and specialized care management.",
       color: "from-purple-50 to-violet-50",
@@ -79,7 +79,7 @@ export default function MarketingSite() {
       iconBg: "bg-green-500"
     },
     {
-      icon: Sync,
+      icon: RotateCw,
       title: "Seamless Migration",
       description: "Import from 12+ platforms including Vagaro, Booksy, Square, and GlossGenius.",
       iconBg: "bg-purple-500"
