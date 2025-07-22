@@ -24,7 +24,7 @@ function App() {
     <ThemeProvider>
       <IndustryProvider>
         <div className="flex flex-col min-h-screen theme-bg">
-          {!isSetupPage && !isAdminPage && !isMarketingPage && <Navbar />}
+          {!isSetupPage && !isAdminPage && <Navbar />}
           <main className="flex-grow">
           <Switch>
             <Route path="/" component={Setup} />
