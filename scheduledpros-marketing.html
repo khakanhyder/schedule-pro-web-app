@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduled Pros - Professional Business Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles matching your Scheduled app */
+        .theme-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: transform 0.2s ease-in-out; }
+        .card-hover:hover { transform: translateY(-4px); }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold text-blue-600">Scheduled Pros</h1>
+                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                        <a href="#features" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">Features</a>
+                        <a href="#industries" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">Industries</a>
+                        <a href="#pricing" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">Pricing</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="#demo" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">Request Demo</a>
+                    <a href="#download" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Download App</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="theme-bg py-20 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold mb-6">
+                    Built for <span class="text-yellow-300">Professionals</span><br>
+                    Who Demand More
+                </h1>
+                <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                    The only business management platform that combines AI-powered scheduling, 
+                    comprehensive client management, and predictive business insights.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#download" class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-all card-hover">
+                        <i class="fas fa-mobile-alt mr-2"></i>
+                        Download Scheduled App
+                    </a>
+                    <a href="#demo" class="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg transition-all">
+                        Request Live Demo
+                    </a>
+                </div>
+                <p class="text-sm text-blue-200 mt-4">
+                    Join 1000+ professionals who've transformed their business operations
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Industry Focus -->
+    <section id="industries" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Designed for Your Industry</h2>
+                <p class="text-xl text-gray-600">Pre-configured templates and workflows for professional service providers</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Beauty Professionals -->
+                <div class="bg-gradient-to-br from-pink-50 to-rose-50 p-8 rounded-xl border border-pink-100 card-hover">
+                    <div class="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-cut text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Beauty Professionals</h3>
+                    <p class="text-gray-600 mb-4">Salon management, client history, service tracking, and automated marketing for beauty experts.</p>
+                    <div class="text-sm text-gray-500">
+                        <div>• Advanced booking system</div>
+                        <div>• Client preference tracking</div>
+                        <div>• Inventory management</div>
+                        <div>• Revenue optimization</div>
+                    </div>
+                </div>
+
+                <!-- Contractors -->
+                <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-8 rounded-xl border border-orange-100 card-hover">
+                    <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-hard-hat text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Contractors</h3>
+                    <p class="text-gray-600 mb-4">Project management, job estimation, material tracking, and client communication for home service pros.</p>
+                    <div class="text-sm text-gray-500">
+                        <div>• Professional job quoting</div>
+                        <div>• Material cost tracking</div>
+                        <div>• Project timeline management</div>
+                        <div>• Client progress updates</div>
+                    </div>
+                </div>
+
+                <!-- Wellness Professionals -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-xl border border-green-100 card-hover">
+                    <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-spa text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Wellness Professionals</h3>
+                    <p class="text-gray-600 mb-4">Health tracking, treatment plans, appointment optimization, and wellness program management.</p>
+                    <div class="text-sm text-gray-500">
+                        <div>• Treatment history tracking</div>
+                        <div>• Wellness program management</div>
+                        <div>• Automated follow-ups</div>
+                        <div>• Health compliance tools</div>
+                    </div>
+                </div>
+
+                <!-- Pet Care Professionals -->
+                <div class="bg-gradient-to-br from-purple-50 to-violet-50 p-8 rounded-xl border border-purple-100 card-hover">
+                    <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-paw text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Pet Care Professionals</h3>
+                    <p class="text-gray-600 mb-4">Pet profiles, health records, grooming schedules, and specialized care management.</p>
+                    <div class="text-sm text-gray-500">
+                        <div>• Pet health tracking</div>
+                        <div>• Vaccination reminders</div>
+                        <div>• Specialized services</div>
+                        <div>• Owner communication</div>
+                    </div>
+                </div>
+
+                <!-- Creative Services -->
+                <div class="bg-gradient-to-br from-indigo-50 to-blue-50 p-8 rounded-xl border border-indigo-100 card-hover">
+                    <div class="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-palette text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Creative Professionals</h3>
+                    <p class="text-gray-600 mb-4">Project phases, portfolio management, client collaboration, and creative workflow optimization.</p>
+                    <div class="text-sm text-gray-500">
+                        <div>• Project phase tracking</div>
+                        <div>• Portfolio integration</div>
+                        <div>• Creative brief management</div>
+                        <div>• Revision tracking</div>
+                    </div>
+                </div>
+
+                <!-- Custom Business -->
+                <div class="bg-gradient-to-br from-gray-50 to-slate-50 p-8 rounded-xl border border-gray-100 card-hover">
+                    <div class="w-12 h-12 bg-gray-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-cogs text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Custom Business</h3>
+                    <p class="text-gray-600 mb-4">Fully customizable platform for unique business models with flexible workflows and automation.</p>
+                    <div class="text-sm text-gray-500">
+                        <div>• Custom workflow design</div>
+                        <div>• Flexible service structure</div>
+                        <div>• Tailored automation</div>
+                        <div>• Industry adaptation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Enterprise-Grade Features</h2>
+                <p class="text-xl text-gray-600">Built for professionals who demand excellence</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-lg border card-hover">
+                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-brain text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">AI-Powered Insights</h3>
+                    <p class="text-gray-600">Predictive scheduling and business intelligence that adapts to your workflow and maximizes revenue.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg border card-hover">
+                    <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-line text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Growth Analytics</h3>
+                    <p class="text-gray-600">Track revenue, optimize pricing, and identify growth opportunities with precision data analysis.</p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg border card-hover">
+                    <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-sync text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Seamless Migration</h3>
+                    <p class="text-gray-600">Import from 12+ platforms including Vagaro, Booksy, Square, and GlossGenius with zero data loss.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Professional Pricing</h2>
+                <p class="text-xl text-gray-600">Investment-grade platform with enterprise-level ROI</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Professional -->
+                <div class="bg-white border-2 border-gray-200 rounded-xl p-8 card-hover">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Professional</h3>
+                    <div class="text-4xl font-bold text-gray-900 mb-6">$299<span class="text-lg text-gray-500">/month</span></div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Advanced scheduling system</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Comprehensive client management</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Basic AI insights & automation</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Complete data migration support</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Email & SMS notifications</li>
+                    </ul>
+                    <a href="#contact" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-semibold text-center block transition-colors">
+                        Start Professional Plan
+                    </a>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="bg-blue-600 text-white rounded-xl p-8 relative transform scale-105 card-hover">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-semibold">Most Popular</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+                    <div class="text-4xl font-bold mb-6">$399<span class="text-lg text-blue-200">/month</span></div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center"><i class="fas fa-check text-blue-200 mr-3"></i>Everything in Professional</li>
+                        <li class="flex items-center"><i class="fas fa-check text-blue-200 mr-3"></i>Advanced AI automation & insights</li>
+                        <li class="flex items-center"><i class="fas fa-check text-blue-200 mr-3"></i>Custom integrations & workflows</li>
+                        <li class="flex items-center"><i class="fas fa-check text-blue-200 mr-3"></i>Priority customer support</li>
+                        <li class="flex items-center"><i class="fas fa-check text-blue-200 mr-3"></i>Advanced analytics dashboard</li>
+                    </ul>
+                    <a href="#contact" class="w-full bg-white text-blue-600 hover:bg-gray-100 py-3 px-6 rounded-lg font-semibold text-center block transition-colors">
+                        Start Enterprise Plan
+                    </a>
+                </div>
+
+                <!-- Premium -->
+                <div class="bg-white border-2 border-gray-200 rounded-xl p-8 card-hover">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Premium</h3>
+                    <div class="text-4xl font-bold text-gray-900 mb-6">$499<span class="text-lg text-gray-500">/month</span></div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Everything in Enterprise</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>White-label customization</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Dedicated account manager</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Custom feature development</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-3"></i>Enterprise-level SLA</li>
+                    </ul>
+                    <a href="#contact" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 px-6 rounded-lg font-semibold text-center block transition-colors">
+                        Contact Sales Team
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="download" class="py-16 bg-blue-600 text-white">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold mb-6">Ready to Transform Your Business?</h2>
+            <p class="text-xl text-blue-100 mb-8">
+                Join the professionals who've made the switch to intelligent business management
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                <a href="#" class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition-all card-hover">
+                    <i class="fab fa-apple mr-2"></i>
+                    Download for iOS
+                </a>
+                <a href="#demo" class="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg transition-all">
+                    Request Demo
+                </a>
+            </div>
+            
+            <!-- Demo Form -->
+            <div id="demo" class="bg-blue-700 p-8 rounded-xl border border-blue-500">
+                <h3 class="text-2xl font-bold mb-4">Request a Demo</h3>
+                <p class="text-blue-100 mb-6">See how Scheduled Pros can transform your business operations</p>
+                <form class="max-w-md mx-auto space-y-4">
+                    <input type="text" placeholder="Your Name" class="w-full px-4 py-3 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-300">
+                    <input type="email" placeholder="Business Email" class="w-full px-4 py-3 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-300">
+                    <input type="text" placeholder="Business Type" class="w-full px-4 py-3 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-300">
+                    <textarea placeholder="Tell us about your needs (optional)" class="w-full px-4 py-3 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-300" rows="3"></textarea>
+                    <button type="submit" class="w-full bg-white text-blue-600 hover:bg-gray-100 py-3 px-6 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Request Demo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <h3 class="text-2xl font-bold mb-4">Scheduled Pros</h3>
+                    <p class="text-gray-400 mb-4">Built for professionals who demand more from their business management platform.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-3">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Updates</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Roadmap</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-3">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+                <p>&copy; 2025 Scheduled Pros. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
