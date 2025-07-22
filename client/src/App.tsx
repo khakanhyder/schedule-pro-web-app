@@ -6,7 +6,6 @@ import Setup from "@/pages/Setup";
 import Pricing from "@/pages/Pricing";
 import AdminDashboard from "@/pages/AdminDashboard";
 import IOSTest from "@/pages/IOSTest";
-import Marketing from "@/pages/Marketing";
 import NotFound from "@/pages/not-found";
 import Checkout from "@/pages/checkout";
 import Navbar from "@/components/layout/Navbar";
@@ -35,7 +34,6 @@ function App() {
             <Route path="/admin" component={AdminDashboard} />
             <Route path="/checkout" component={Checkout} />
             <Route path="/ios-test" component={IOSTest} />
-            <Route path="/marketing" component={Marketing} />
             <Route component={NotFound} />
           </Switch>
           </main>
