@@ -566,7 +566,7 @@ export default function JobEstimationQuoting() {
     });
   };
 
-  // Generate payment link using our existing Stripe integration
+  // Generate multi-payment link using our enhanced payment system
   const generatePaymentLink = (estimate: JobEstimate) => {
     if (!estimate.id || estimate.id <= 0) {
       toast({
@@ -577,14 +577,14 @@ export default function JobEstimationQuoting() {
       return;
     }
 
-    // This would integrate with our existing Stripe system
-    const paymentUrl = `/pay-invoice?amount=${estimate.total}&description=${encodeURIComponent(estimate.jobTitle)}&client=${encodeURIComponent(estimate.clientName)}`;
+    // Enhanced payment URL with multi-payment options
+    const paymentUrl = `/pay-invoice?amount=${estimate.total}&description=${encodeURIComponent(estimate.jobTitle)}&client=${encodeURIComponent(estimate.clientName)}&estimateId=${estimate.id}`;
     
     navigator.clipboard.writeText(`${window.location.origin}${paymentUrl}`);
     
     toast({
-      title: "Payment Link Generated",
-      description: "Payment link copied to clipboard - send to client for instant payment"
+      title: "Multi-Payment Link Generated",
+      description: "Link copied! Clients can pay with Stripe, PayPal, Zelle, or Venmo"
     });
   };
 

@@ -9,6 +9,7 @@ import IOSTest from "@/pages/IOSTest";
 
 import NotFound from "@/pages/not-found";
 import Checkout from "@/pages/checkout";
+import PayInvoice from "@/pages/PayInvoice";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { IndustryProvider } from "@/lib/industryContext";
@@ -35,6 +36,7 @@ function App() {
             <Route path="/pricing" component={Pricing} />
             <Route path="/admin" component={AdminDashboard} />
             <Route path="/checkout" component={Checkout} />
+            <Route path="/pay-invoice" component={PayInvoice} />
             <Route path="/ios-test" component={IOSTest} />
 
             <Route component={NotFound} />
