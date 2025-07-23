@@ -60,6 +60,7 @@ import MaterialCostTracker from "@/components/dashboard/MaterialCostTracker";
 import GoogleBusinessSetup from "@/components/dashboard/GoogleBusinessSetup";
 import JobEstimationQuoting from '@/components/dashboard/JobEstimationQuoting';
 import PaymentManagement from '@/components/dashboard/PaymentManagement';
+import PaymentSettingsConfig from '@/components/dashboard/PaymentSettingsConfig';
 
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
@@ -548,16 +549,20 @@ export default function Dashboard() {
           {/* Payments Tab */}
           <TabsContent value="payments">
             <Tabs defaultValue="payment-management" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="payment-management">Payment Management</TabsTrigger>
-                <TabsTrigger value="job-estimates">Job Estimates & Quotes</TabsTrigger>
-                <TabsTrigger value="payment-options">Payment Options</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="payment-management">Send Payment Requests</TabsTrigger>
+                <TabsTrigger value="job-estimates">Create Estimates</TabsTrigger>
+                <TabsTrigger value="payment-settings">Payment Setup</TabsTrigger>
+                <TabsTrigger value="payment-options">Payment History</TabsTrigger>
               </TabsList>
               <TabsContent value="payment-management">
                 <PaymentManagement />
               </TabsContent>
               <TabsContent value="job-estimates">
                 <JobEstimationQuoting />
+              </TabsContent>
+              <TabsContent value="payment-settings">
+                <PaymentSettingsConfig />
               </TabsContent>
               <TabsContent value="payment-options">
                 <PaymentOptions 
