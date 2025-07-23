@@ -16,7 +16,15 @@ A comprehensive business management platform designed to empower service-based e
 - iOS App Store deployment targeting premium pricing ($299-499/month)
 - Focus on seamless data migration to remove adoption barriers
 
-## Recent Changes (July 22, 2025)
+## Recent Changes (July 23, 2025)
+
+### Pricing Update (Latest)
+- ✅ **Updated pricing tiers** - Reduced Basic from $29 to $25/month, Professional from $79 to $75/month
+- ✅ **Enterprise unchanged** - Maintained $199/month for enterprise tier
+- ✅ **Improved accessibility** - Lower entry price point to attract more individual service providers
+- ✅ **Competitive positioning** - $75 Professional tier positioned as sweet spot for growing businesses
+
+## Previous Changes (July 22, 2025)
 
 ### Marketing Website Creation Challenges (Latest)
 - ⚠️ **User frustration with separate project creation** - Multiple attempts to create standalone marketing site for scheduledpros.com domain
