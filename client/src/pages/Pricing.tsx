@@ -18,7 +18,7 @@ import { useLocation } from "wouter";
 const pricingPlans = [
   {
     name: "Basic",
-    price: 25,
+    price: 29,
     billingPeriod: "month",
     description: "Perfect for individual service providers getting started",
     features: [
@@ -38,7 +38,7 @@ const pricingPlans = [
   },
   {
     name: "Professional",
-    price: 75,
+    price: 79,
     billingPeriod: "month",
     description: "For growing businesses with multiple service providers",
     features: [
