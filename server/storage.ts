@@ -9,6 +9,7 @@ import {
   marketingCampaigns, type MarketingCampaign, type InsertMarketingCampaign,
   clientInsights, type ClientInsight, type InsertClientInsight,
   schedulingSuggestions, type SchedulingSuggestion, type InsertSchedulingSuggestion,
+  jobEstimates, type JobEstimate, type InsertJobEstimate,
   invoices, type Invoice, type InsertInvoice,
   invoiceViews, type InvoiceView, type InsertInvoiceView,
   invoiceNotifications, type InvoiceNotification, type InsertInvoiceNotification,
@@ -117,6 +118,14 @@ export interface IStorage {
   updateRoomMaterial(id: number, updates: Partial<InsertRoomMaterial>): Promise<RoomMaterial>;
   deleteRoomMaterial(id: number): Promise<void>;
   getRoomMaterialsByCategory(category: string): Promise<RoomMaterial[]>;
+  
+  // Job Estimates
+  getJobEstimates(): Promise<JobEstimate[]>;
+  getJobEstimate(id: number): Promise<JobEstimate | undefined>;
+  createJobEstimate(estimate: InsertJobEstimate): Promise<JobEstimate>;
+  updateJobEstimate(id: number, updates: Partial<InsertJobEstimate>): Promise<JobEstimate>;
+  deleteJobEstimate(id: number): Promise<void>;
+  convertEstimateToInvoice(estimateId: number): Promise<Invoice>;
 }
 
 export class MemStorage implements IStorage {
@@ -137,6 +146,7 @@ export class MemStorage implements IStorage {
   private reviewSubmissions = new Map<number, ReviewSubmission>();
   private roomProjects = new Map<number, RoomProject>();
   private roomMaterials = new Map<number, RoomMaterial>();
+  private jobEstimates = new Map<number, JobEstimate>();
   
   private userCurrentId = 1;
   private serviceCurrentId = 1;
@@ -155,6 +165,7 @@ export class MemStorage implements IStorage {
   private reviewSubmissionCurrentId = 1;
   private roomProjectCurrentId = 1;
   private roomMaterialCurrentId = 1;
+  private jobEstimateCurrentId = 1;
   
   // Track the current industry
   private currentIndustryId = "home_services";
@@ -906,6 +917,70 @@ export class MemStorage implements IStorage {
         isActive: material.isActive !== undefined ? material.isActive : true
       });
     });
+  }
+
+  // Job Estimates Implementation
+  async getJobEstimates(): Promise<JobEstimate[]> {
+    return Array.from(this.jobEstimates.values());
+  }
+
+  async getJobEstimate(id: number): Promise<JobEstimate | undefined> {
+    return this.jobEstimates.get(id);
+  }
+
+  async createJobEstimate(estimate: InsertJobEstimate): Promise<JobEstimate> {
+    const id = this.jobEstimateCurrentId++;
+    const newEstimate: JobEstimate = {
+      ...estimate,
+      id,
+      createdAt: new Date()
+    };
+    this.jobEstimates.set(id, newEstimate);
+    return newEstimate;
+  }
+
+  async updateJobEstimate(id: number, updates: Partial<InsertJobEstimate>): Promise<JobEstimate> {
+    const estimate = this.jobEstimates.get(id);
+    if (!estimate) {
+      throw new Error(`Job estimate ${id} not found`);
+    }
+    const updatedEstimate = { ...estimate, ...updates };
+    this.jobEstimates.set(id, updatedEstimate);
+    return updatedEstimate;
+  }
+
+  async deleteJobEstimate(id: number): Promise<void> {
+    this.jobEstimates.delete(id);
+  }
+
+  async convertEstimateToInvoice(estimateId: number): Promise<Invoice> {
+    const estimate = this.jobEstimates.get(estimateId);
+    if (!estimate) {
+      throw new Error(`Job estimate ${estimateId} not found`);
+    }
+
+    // Generate unique invoice number
+    const invoiceNumber = `INV-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    
+    // Convert estimate to invoice format (using existing invoice schema)
+    const invoiceData: InsertInvoice = {
+      clientEmail: estimate.clientEmail,
+      clientName: estimate.clientName,
+      invoiceNumber,
+      title: estimate.jobTitle,
+      description: `Invoice converted from estimate: ${estimate.jobTitle}`,
+      amount: estimate.total,
+      status: 'sent',
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      publicUrl: `invoice-${Date.now()}-${Math.random().toString(36).substr(2, 8)}`
+    };
+
+    const invoice = await this.createInvoice(invoiceData);
+    
+    // Update estimate status to converted
+    await this.updateJobEstimate(estimateId, { status: 'accepted' });
+    
+    return invoice;
   }
 }
 

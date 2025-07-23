@@ -140,6 +140,48 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type Review = typeof reviews.$inferSelect;
 
+// Job Estimates
+export const jobEstimates = pgTable("job_estimates", {
+  id: serial("id").primaryKey(),
+  jobTitle: text("job_title").notNull(),
+  clientName: text("client_name").notNull(),
+  clientEmail: text("client_email").notNull(),
+  clientPhone: text("client_phone").notNull(),
+  jobAddress: text("job_address").notNull(),
+  items: text("items").notNull(), // JSON string of JobItem[]
+  subtotal: doublePrecision("subtotal").notNull(),
+  taxRate: doublePrecision("tax_rate").notNull(),
+  taxAmount: doublePrecision("tax_amount").notNull(),
+  markupRate: doublePrecision("markup_rate").notNull(),
+  markupAmount: doublePrecision("markup_amount").notNull(),
+  total: doublePrecision("total").notNull(),
+  validUntil: text("valid_until").notNull(),
+  status: text("status").notNull(), // 'draft' | 'sent' | 'accepted' | 'declined' | 'expired'
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertJobEstimateSchema = createInsertSchema(jobEstimates).pick({
+  jobTitle: true,
+  clientName: true,
+  clientEmail: true,
+  clientPhone: true,
+  jobAddress: true,
+  items: true,
+  subtotal: true,
+  taxRate: true,
+  taxAmount: true,
+  markupRate: true,
+  markupAmount: true,
+  total: true,
+  validUntil: true,
+  status: true,
+  notes: true,
+});
+
+export type InsertJobEstimate = z.infer<typeof insertJobEstimateSchema>;
+export type JobEstimate = typeof jobEstimates.$inferSelect;
+
 // Contact Messages
 export const contactMessages = pgTable("contact_messages", {
   id: serial("id").primaryKey(),

@@ -15,7 +15,8 @@ import {
   insertContactMessageSchema,
   insertInvoiceSchema,
   insertRoomProjectSchema,
-  insertRoomMaterialSchema
+  insertRoomMaterialSchema,
+  insertJobEstimateSchema
 } from "@shared/schema";
 
 // Initialize Stripe with the secret key
@@ -1202,6 +1203,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(material);
     } catch (error: any) {
       res.status(400).json({ message: "Error creating room material: " + error.message });
+    }
+  });
+
+  // Job Estimates API
+  app.get("/api/job-estimates", async (req, res) => {
+    try {
+      const estimates = await storage.getJobEstimates();
+      res.json(estimates);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching job estimates: " + error.message });
+    }
+  });
+
+  app.get("/api/job-estimates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const estimate = await storage.getJobEstimate(id);
+      if (!estimate) {
+        res.status(404).json({ message: "Job estimate not found" });
+        return;
+      }
+      res.json(estimate);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching job estimate: " + error.message });
+    }
+  });
+
+  app.post("/api/job-estimates", async (req, res) => {
+    try {
+      const validatedData = insertJobEstimateSchema.parse(req.body);
+      const estimate = await storage.createJobEstimate(validatedData);
+      res.status(201).json(estimate);
+    } catch (error: any) {
+      res.status(400).json({ message: "Error creating job estimate: " + error.message });
+    }
+  });
+
+  app.patch("/api/job-estimates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const estimate = await storage.updateJobEstimate(id, updates);
+      res.json(estimate);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error updating job estimate: " + error.message });
+    }
+  });
+
+  app.delete("/api/job-estimates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteJobEstimate(id);
+      res.json({ message: "Job estimate deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error deleting job estimate: " + error.message });
+    }
+  });
+
+  // Convert estimate to invoice (Joist-inspired feature)
+  app.post("/api/job-estimates/:id/convert-to-invoice", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const invoice = await storage.convertEstimateToInvoice(id);
+      res.json({ 
+        message: "Estimate converted to invoice successfully",
+        invoice 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error converting estimate to invoice: " + error.message });
     }
   });
 

@@ -20,9 +20,14 @@ import {
   Trash2,
   AlertCircle,
   CheckCircle,
-  Save
+  Save,
+  Receipt,
+  CreditCard,
+  Eye
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface JobItem {
   id: string;
@@ -36,13 +41,14 @@ interface JobItem {
 }
 
 interface JobEstimate {
-  id: string;
+  id: number;
   jobTitle: string;
   clientName: string;
   clientEmail: string;
   clientPhone: string;
   jobAddress: string;
-  items: JobItem[];
+  items: string; // JSON string from API
+  parsedItems?: JobItem[]; // Local parsed items
   subtotal: number;
   taxRate: number;
   taxAmount: number;
@@ -181,7 +187,6 @@ const defaultTemplates: QuoteTemplate[] = [
 ];
 
 export default function JobEstimationQuoting() {
-  const [estimates, setEstimates] = useState<JobEstimate[]>([]);
   const [currentEstimate, setCurrentEstimate] = useState<JobEstimate | null>(null);
   const [templates] = useState<QuoteTemplate[]>(defaultTemplates);
   const [activeTab, setActiveTab] = useState<'create' | 'templates' | 'estimates' | 'calculator'>('create');
@@ -189,16 +194,86 @@ export default function JobEstimationQuoting() {
   const [priceRecommendations, setPriceRecommendations] = useState<Record<string, any>>({});
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch estimates from API
+  const { data: estimates = [], isLoading: estimatesLoading } = useQuery({
+    queryKey: ['/api/job-estimates'],
+    select: (data: JobEstimate[]) => data.map(estimate => ({
+      ...estimate,
+      parsedItems: JSON.parse(estimate.items) as JobItem[]
+    }))
+  });
+
+  // Create estimate mutation
+  const createEstimateMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/job-estimates', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/job-estimates'] });
+      toast({ title: "Success", description: "Estimate created successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create estimate", variant: "destructive" });
+    }
+  });
+
+  // Update estimate mutation
+  const updateEstimateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number, data: any }) => apiRequest(`/api/job-estimates/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/job-estimates'] });
+      toast({ title: "Success", description: "Estimate updated successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update estimate", variant: "destructive" });
+    }
+  });
+
+  // Delete estimate mutation
+  const deleteEstimateMutation = useMutation({
+    mutationFn: (id: number) => apiRequest(`/api/job-estimates/${id}`, {
+      method: 'DELETE'
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/job-estimates'] });
+      toast({ title: "Success", description: "Estimate deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete estimate", variant: "destructive" });
+    }
+  });
+
+  // Convert to invoice mutation (Joist-inspired)
+  const convertToInvoiceMutation = useMutation({
+    mutationFn: (id: number) => apiRequest(`/api/job-estimates/${id}/convert-to-invoice`, {
+      method: 'POST'
+    }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/job-estimates'] });
+      toast({ 
+        title: "Success", 
+        description: `Estimate converted to invoice #${data.invoice.invoiceNumber}` 
+      });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to convert to invoice", variant: "destructive" });
+    }
+  });
 
   // Initialize new estimate
-  const initializeEstimate = (): JobEstimate => ({
-    id: Date.now().toString(),
+  const initializeEstimate = () => ({
     jobTitle: '',
     clientName: '',
     clientEmail: '',
     clientPhone: '',
     jobAddress: '',
-    items: [],
+    parsedItems: [] as JobItem[],
     subtotal: 0,
     taxRate: 8.25,
     taxAmount: 0,
@@ -206,8 +281,7 @@ export default function JobEstimationQuoting() {
     markupAmount: 0,
     total: 0,
     validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    status: 'draft',
-    createdAt: new Date(),
+    status: 'draft' as const,
     notes: ''
   });
 
