@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -80,10 +81,36 @@ export default function StripeSetupGuide() {
     }
   ]);
 
+  const trackStripeReferral = async (action: string, url?: string) => {
+    try {
+      // Track referral in analytics
+      const referralData = {
+        businessName: 'Current User Business', // Will be dynamic when user auth is implemented
+        email: 'user@example.com', // Will be dynamic when user auth is implemented
+        action,
+        timestamp: new Date().toISOString(),
+        sourceUrl: url
+      };
+      
+      // Store locally for now (will integrate with backend when users are active)
+      const existingReferrals = JSON.parse(localStorage.getItem('stripe_referrals') || '[]');
+      existingReferrals.push(referralData);
+      localStorage.setItem('stripe_referrals', JSON.stringify(existingReferrals));
+      
+      console.log('Stripe referral tracked:', action);
+    } catch (error) {
+      console.log('Referral tracking error (non-critical):', error);
+    }
+  };
+
   const markStepComplete = (stepIndex: number) => {
     const newSteps = [...steps];
     newSteps[stepIndex].completed = true;
     setSteps(newSteps);
+    
+    // Track completion in analytics
+    const step = steps[stepIndex];
+    trackStripeReferral(`completed_${step.id}`);
     
     if (stepIndex < steps.length - 1) {
       setCurrentStep(stepIndex + 1);
@@ -109,7 +136,10 @@ export default function StripeSetupGuide() {
         <CardContent>
           <div className="text-center">
             <Button
-              onClick={() => window.open('https://dashboard.stripe.com/register', '_blank')}
+              onClick={() => {
+                trackStripeReferral('clicked_main_setup', 'https://dashboard.stripe.com/register');
+                window.open('https://dashboard.stripe.com/register', '_blank');
+              }}
               className="mr-3"
             >
               Start Stripe Setup
@@ -238,7 +268,10 @@ export default function StripeSetupGuide() {
                   <div className="flex gap-3">
                     {step.url && (
                       <Button
-                        onClick={() => window.open(step.url, '_blank')}
+                        onClick={() => {
+                          trackStripeReferral(`clicked_${step.id}`, step.url);
+                          window.open(step.url, '_blank');
+                        }}
                         className="flex items-center gap-2"
                       >
                         <ExternalLink className="w-4 h-4" />

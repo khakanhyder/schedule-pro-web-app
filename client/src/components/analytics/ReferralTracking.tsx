@@ -8,8 +8,10 @@ import {
   Users, 
   DollarSign,
   Calendar,
-  Target
+  Target,
+  Settings
 } from 'lucide-react';
+import PartnershipReminder from './PartnershipReminder';
 
 interface ReferralData {
   id: string;
@@ -24,6 +26,7 @@ interface ReferralData {
 
 export default function ReferralTracking() {
   const [referrals, setReferrals] = useState<ReferralData[]>([]);
+  const [showReminders, setShowReminders] = useState(false);
   const [stats, setStats] = useState({
     totalReferrals: 0,
     conversionRate: 0,
@@ -101,10 +104,27 @@ export default function ReferralTracking() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Stripe Partnership Tracking</h2>
-        <Button onClick={exportReferralData} variant="outline">
-          Export Data
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowReminders(!showReminders)} 
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Settings className="w-4 h-4" />
+            {showReminders ? 'Hide' : 'Show'} Reminders
+          </Button>
+          <Button onClick={exportReferralData} variant="outline">
+            Export Data
+          </Button>
+        </div>
       </div>
+
+      {/* Partnership Reminders */}
+      {showReminders && (
+        <div className="space-y-4">
+          <PartnershipReminder />
+        </div>
+      )}
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
