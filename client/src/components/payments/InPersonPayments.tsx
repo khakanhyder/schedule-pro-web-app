@@ -14,7 +14,8 @@ import {
   Receipt,
   CheckCircle,
   Clock,
-  DollarSign
+  DollarSign,
+  AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -59,7 +60,13 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
     setPaymentMethod(method);
 
     try {
-      // Simulate payment processing
+      // NOTE: This is a demonstration interface
+      // In production, this would integrate with:
+      // - Stripe Terminal SDK for card payments
+      // - Your POS system for cash tracking
+      // - Real payment processing APIs
+      
+      // Simulate payment processing for demo
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       const baseAmount = parseFloat(paymentAmount);
@@ -362,22 +369,54 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
         </CardContent>
       </Card>
 
+      {/* Demo Notice */}
+      <Card className="bg-amber-50 border-amber-200">
+        <CardHeader>
+          <CardTitle className="text-amber-800 text-sm flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" />
+            Demo Interface - Integration Required
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-amber-700">
+          <p className="mb-3">
+            This is a demonstration of the payment interface. For live processing, you'll need:
+          </p>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="font-medium">1. Stripe Terminal SDK:</span>
+              <span>Connect physical card readers for real transactions</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="font-medium">2. Payment Processing:</span>
+              <span>Integrate with Stripe's payment intent APIs</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="font-medium">3. POS Integration:</span>
+              <span>Connect to your point-of-sale system for cash tracking</span>
+            </div>
+          </div>
+          <p className="mt-3 text-xs">
+            The interface design and tipping logic are production-ready. Only the payment processing backend needs implementation.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Stripe Terminal Info */}
       <Card className="bg-blue-50 border-blue-200">
         <CardHeader>
-          <CardTitle className="text-blue-800 text-sm">Stripe Terminal Integration</CardTitle>
+          <CardTitle className="text-blue-800 text-sm">Next Steps: Stripe Terminal Setup</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-blue-700">
           <p className="mb-2">
-            For full in-person payment processing, connect a Stripe Terminal reader:
+            To make this fully functional, order a Stripe Terminal reader:
           </p>
           <ul className="list-disc list-inside space-y-1 text-xs">
-            <li><strong>BBPOS WisePad 3:</strong> $59 - Chip, contactless, and mobile wallets</li>
-            <li><strong>Stripe Reader M2:</strong> $249 - All-in-one with receipt printer</li>
-            <li><strong>Verifone P400:</strong> $149 - Countertop terminal with screen</li>
+            <li><strong>BBPOS WisePad 3:</strong> $59 - Portable, perfect for salons</li>
+            <li><strong>Stripe Reader M2:</strong> $249 - Countertop with receipt printer</li>
+            <li><strong>Verifone P400:</strong> $149 - Customer-facing screen</li>
           </ul>
           <p className="mt-2 text-xs">
-            All readers integrate directly with your Stripe account for seamless payment processing.
+            Once connected, the same interface will process real payments with live tip calculations.
           </p>
         </CardContent>
       </Card>
