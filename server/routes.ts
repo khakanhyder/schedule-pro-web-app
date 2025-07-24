@@ -12,6 +12,7 @@ import { sendCoderInvitation } from "./coder-invitation";
 import { performHealthCheck, getSystemInfo } from "./health-check";
 import { createRateLimitMiddleware, paymentLimiter, emailLimiter } from "./rate-limiter";
 import { addSecurityHeaders, addCorsHeaders } from "./security-headers";
+import { PromoCodeService } from "./promo-codes";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
@@ -1229,6 +1230,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ message: "Error marking notification as read: " + error.message });
+    }
+  });
+
+  // Beta promo code validation endpoint
+  app.post("/api/validate-promo", async (req, res) => {
+    try {
+      const { code, userEmail, userName } = req.body;
+      
+      if (!code || !userEmail || !userName) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Code, email, and name are required' 
+        });
+      }
+      
+      const validation = PromoCodeService.validatePromoCode(code);
+      
+      if (!validation.valid) {
+        return res.status(400).json(validation);
+      }
+      
+      // Attempt to use the code
+      const used = PromoCodeService.usePromoCode(code, userEmail, userName);
+      
+      if (!used) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'You have already used this promo code' 
+        });
+      }
+      
+      res.json({
+        valid: true,
+        freeMonths: validation.promoCode?.freeMonths,
+        description: validation.promoCode?.description,
+        message: `Congratulations! You get ${validation.promoCode?.freeMonths} months free access to Scheduled.`
+      });
+      
+    } catch (error: any) {
+      res.status(500).json({ 
+        valid: false, 
+        error: 'Error validating promo code' 
+      });
+    }
+  });
+
+  // Get promo code usage stats (admin only)
+  app.get("/api/promo-stats", async (req, res) => {
+    try {
+      const codes = PromoCodeService.getAllPromoCodes();
+      const stats = codes.map(code => ({
+        code: code.code,
+        description: code.description,
+        maxUses: code.maxUses,
+        currentUses: code.currentUses,
+        remaining: code.maxUses - code.currentUses,
+        validUntil: code.validUntil
+      }));
+      
+      res.json({ promoCodes: stats });
+    } catch (error: any) {
+      res.status(500).json({ error: 'Error fetching promo stats' });
     }
   });
 

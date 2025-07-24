@@ -19,22 +19,13 @@ export interface PromoCodeUsage {
 // In-memory storage for promo codes
 let promoCodes: PromoCode[] = [
   {
-    code: 'BETA3MONTHS',
-    description: 'Beta Tester - 3 Months Free Access',
+    code: 'TESTFREE',
+    description: 'Beta Testing - 3 Months Free',
     freeMonths: 3,
-    maxUses: 100,
+    maxUses: 200,
     currentUses: 0,
     active: true,
     validUntil: new Date('2025-12-31')
-  },
-  {
-    code: 'EARLYACCESS',
-    description: 'Early Access Program - 3 Months Free',
-    freeMonths: 3,
-    maxUses: 50,
-    currentUses: 0,
-    active: true,
-    validUntil: new Date('2025-10-31')
   }
 ];
 
