@@ -281,7 +281,7 @@ export default function BulkInvoicingAutomation() {
                   <SelectItem value="download">Download PDFs</SelectItem>
                   <SelectItem value="mark-paid">Mark as Paid</SelectItem>
                   <SelectItem value="send-reminder">Send Reminders</SelectItem>
-                  <SelectItem value="export">Export to QuickBooks</SelectItem>
+
                 </SelectContent>
               </Select>
               <Button 
@@ -392,7 +392,7 @@ export default function BulkInvoicingAutomation() {
                 <li>• Generate weeks of invoices in 5 minutes</li>
                 <li>• Bulk send to multiple clients instantly</li>
                 <li>• Automatic service tracking and compilation</li>
-                <li>• One-click QuickBooks export</li>
+                <li>• Streamlined PDF generation and delivery</li>
               </ul>
             </div>
             <div className="space-y-2">
@@ -401,7 +401,7 @@ export default function BulkInvoicingAutomation() {
                 <li>• Eliminate manual calculation errors</li>
                 <li>• Standardized professional formatting</li>
                 <li>• Automatic tax and fee calculations</li>
-                <li>• GPS-verified service duration tracking</li>
+                <li>• Service duration tracking and verification</li>
               </ul>
             </div>
             <div className="space-y-2">
