@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import MobileGroomingPlanner from './MobileGroomingPlanner';
+import BoardingDaycareManager from './BoardingDaycareManager';
 import BreedSpecificServices from './BreedSpecificServices';
 import PhotoProgressSharing from './PhotoProgressSharing';
 import { 
@@ -107,7 +107,7 @@ type PetCareSpecialization = 'groomer' | 'sitter' | 'both';
 
 const PetCareEnhancements: React.FC = () => {
   const [selectedPet, setSelectedPet] = useState<PetProfile | null>(null);
-  const [activeTab, setActiveTab] = useState('mobile-routing');
+  const [activeTab, setActiveTab] = useState('boarding-daycare');
   const [specialization, setSpecialization] = useState<PetCareSpecialization>('both');
 
   const getVaccinationBadge = (status: string) => {
@@ -421,7 +421,7 @@ const PetCareEnhancements: React.FC = () => {
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="mobile-routing">Mobile Routes</TabsTrigger>
+          <TabsTrigger value="boarding-daycare">Boarding & Daycare</TabsTrigger>
           <TabsTrigger value="breed-guide">Breed Guide</TabsTrigger>
           <TabsTrigger value="photo-sharing">Photo Sharing</TabsTrigger>
           <TabsTrigger value="profiles">Pet Profiles</TabsTrigger>
@@ -429,8 +429,8 @@ const PetCareEnhancements: React.FC = () => {
           <TabsTrigger value="seasonal">Seasonal Services</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="mobile-routing" className="space-y-4">
-          <MobileGroomingPlanner />
+        <TabsContent value="boarding-daycare" className="space-y-4">
+          <BoardingDaycareManager />
         </TabsContent>
         
         <TabsContent value="breed-guide" className="space-y-4">

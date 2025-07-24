@@ -113,18 +113,18 @@ export const industryTemplates: Industry[] = [
     id: "pet_care",
     name: "Pet Care Professional",
     description: "All-in-one platform for mobile groomers, pet trainers, sitters and specialized pet services",
-    services: ["Full Service Grooming", "Mobile Grooming", "Breed-Specific Cuts", "De-shedding Treatment", "Nail & Paw Care", "Dog Training Sessions", "Pet Sitting (In-Home)", "Dog Walking Service", "Pet Photography", "Holiday Pet Care", "Puppy Socialization"],
+    services: ["Full Service Grooming", "Breed-Specific Cuts", "De-shedding Treatment", "Nail & Paw Care", "Pet Boarding", "In-Home Pet Sitting", "Dog Walking Service", "Pet Daycare", "Holiday Pet Care", "Puppy Training", "Pet Photography"],
     icon: "🐾",
     primaryColor: "#4daa57",
     accentColor: "#2a9d8f",
     benefits: [
-      "Optimize mobile grooming routes with GPS tracking",
-      "Access comprehensive breed database with service recommendations", 
+      "Manage pet boarding schedules and daycare capacity", 
+      "Access comprehensive breed database with service recommendations",
       "Share before/after photos instantly with pet parents",
       "Track vaccination schedules and health alerts automatically",
-      "Manage seasonal service packages and premium holiday rates"
+      "Coordinate in-home pet sitting and walking services"
     ],
-    features: ["Breed-specific services", "Mobile route planning", "Photo progress sharing", "Health tracking", "Seasonal packages"],
+    features: ["Boarding management", "Breed-specific services", "Photo progress sharing", "Health tracking", "In-home care coordination"],
     professionalName: "pet professional",
     professionalPlural: "pet professionals",
     clientName: "pet parent",

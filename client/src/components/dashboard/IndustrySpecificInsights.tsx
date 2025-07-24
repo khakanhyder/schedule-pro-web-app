@@ -87,15 +87,15 @@ const industrySpecificInsights = {
       },
       {
         category: "Operations Efficiency", 
-        title: "Mobile Route Optimization",
-        description: "Smart route planning saves mobile groomers 45 minutes daily and reduces fuel costs by 25%. Group appointments by geographic area.",
+        title: "Boarding & Daycare Capacity Management",
+        description: "Optimizing boarding schedules and daycare capacity can increase revenue by 35% while maintaining quality care standards.",
         priority: "high" as const,
         actionable: true,
         recommendations: [
-          "Use GPS-based route optimization for daily schedules",
-          "Group appointments by zip code and proximity", 
-          "Factor in travel time when setting appointment slots",
-          "Track fuel savings and time efficiency metrics"
+          "Track daily boarding capacity and utilization rates",
+          "Group daycare pets by size and energy level", 
+          "Schedule staff based on expected daily boarding count",
+          "Offer premium rates for holiday and peak season boarding"
         ]
       },
       {
