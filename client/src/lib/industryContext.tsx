@@ -125,10 +125,10 @@ export const industryTemplates: Industry[] = [
       "Manage seasonal service packages and premium holiday rates"
     ],
     features: ["Breed-specific services", "Mobile route planning", "Photo progress sharing", "Health tracking", "Seasonal packages"],
-    professionalName: "caretaker",
-    professionalPlural: "caretakers",
-    clientName: "pet owner",
-    appointmentTerm: "visit",
+    professionalName: "pet professional",
+    professionalPlural: "pet professionals",
+    clientName: "pet parent",
+    appointmentTerm: "appointment",
     serviceTerm: "service",
     heroImage: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=800",
     galleryImages: [

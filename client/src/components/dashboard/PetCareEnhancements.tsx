@@ -58,8 +58,8 @@ const samplePets: PetProfile[] = [
     breed: 'Golden Retriever',
     age: '3 years',
     weight: '68 lbs',
-    temperament: 'Friendly, energetic',
-    specialNeeds: 'Mild anxiety during nail trims',
+    temperament: 'Friendly, energetic, excellent with children',
+    specialNeeds: 'Mild anxiety during nail trims, prefers calm environment',
     lastVisit: '2025-06-15',
     nextDue: '2025-08-15',
     vaccinationStatus: 'current',
@@ -67,7 +67,7 @@ const samplePets: PetProfile[] = [
     emergencyContact: {
       name: 'Sarah Johnson',
       phone: '(555) 123-4567',
-      relationship: 'Owner'
+      relationship: 'Pet Parent'
     },
     veterinarian: {
       name: 'Westside Animal Hospital',
