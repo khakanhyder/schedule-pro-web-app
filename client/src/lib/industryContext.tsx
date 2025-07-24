@@ -112,18 +112,19 @@ export const industryTemplates: Industry[] = [
   {
     id: "pet_care",
     name: "Pet Care Professional",
-    description: "Premium booking system for dog groomers, trainers, sitters and veterinary services",
-    services: ["Pet Grooming", "Dog Training", "Pet Sitting", "Dog Walking", "Basic Veterinary Care", "Pet Photography"],
+    description: "All-in-one platform for mobile groomers, pet trainers, sitters and specialized pet services",
+    services: ["Full Service Grooming", "Mobile Grooming", "Breed-Specific Cuts", "De-shedding Treatment", "Nail & Paw Care", "Dog Training Sessions", "Pet Sitting (In-Home)", "Dog Walking Service", "Pet Photography", "Holiday Pet Care", "Puppy Socialization"],
     icon: "🐾",
     primaryColor: "#4daa57",
     accentColor: "#2a9d8f",
     benefits: [
-      "Track pet details and breed-specific needs",
-      "Maintain health and behavior records",
-      "Send appointment reminders to pet owners",
-      "Share photos of pets during and after services"
+      "Optimize mobile grooming routes with GPS tracking",
+      "Access comprehensive breed database with service recommendations", 
+      "Share before/after photos instantly with pet parents",
+      "Track vaccination schedules and health alerts automatically",
+      "Manage seasonal service packages and premium holiday rates"
     ],
-    features: ["Pet profiles", "Breed database", "Service history", "Photo sharing"],
+    features: ["Breed-specific services", "Mobile route planning", "Photo progress sharing", "Health tracking", "Seasonal packages"],
     professionalName: "caretaker",
     professionalPlural: "caretakers",
     clientName: "pet owner",

@@ -553,14 +553,13 @@ export default function Dashboard() {
           {/* Payments Tab */}
           <TabsContent value="payments">
             <Tabs defaultValue="payment-management" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-7">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="payment-management">Send Payment Requests</TabsTrigger>
                 <TabsTrigger value="stripe-setup">Stripe Setup Guide</TabsTrigger>
                 <TabsTrigger value="in-person">In-Person Payments</TabsTrigger>
                 <TabsTrigger value="job-estimates">Create Estimates</TabsTrigger>
                 <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
                 <TabsTrigger value="payment-options">Payment History</TabsTrigger>
-                <TabsTrigger value="analytics">Partnership Analytics</TabsTrigger>
               </TabsList>
               <TabsContent value="payment-management">
                 <PaymentManagement />
@@ -591,9 +590,6 @@ export default function Dashboard() {
                   clientName="Select appointment"
                   amount={0}
                 />
-              </TabsContent>
-              <TabsContent value="analytics">
-                <ReferralTracking />
               </TabsContent>
             </Tabs>
           </TabsContent>
