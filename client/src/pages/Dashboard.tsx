@@ -648,19 +648,17 @@ export default function Dashboard() {
             <DialogDescription>
               Schedule a new {terms.appointment} for your {terms.client}
             </DialogDescription>
-            <div className="p-4">
-              <p className="text-sm text-muted-foreground mb-4">
-                Appointment creation form will be displayed here
-              </p>
-              <div className="flex gap-2">
-                <Button onClick={() => setIsAddAppointmentOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={() => setIsAddAppointmentOpen(false)}>
-                  Create {terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)}
-                </Button>
-              </div>
-            </div>
+            <AppointmentForm 
+              onSuccess={() => {
+                setIsAddAppointmentOpen(false);
+                queryClient.invalidateQueries({ queryKey: ['/api/appointments'] });
+                toast({
+                  title: `${terms.appointment.charAt(0).toUpperCase() + terms.appointment.slice(1)} Created`,
+                  description: `New ${terms.appointment} has been scheduled successfully`
+                });
+              }}
+              onCancel={() => setIsAddAppointmentOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       </div>

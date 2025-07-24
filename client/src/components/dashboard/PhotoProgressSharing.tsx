@@ -91,8 +91,56 @@ export default function PhotoProgressSharing() {
     );
     setSessions(updatedSessions);
     
-    // Simulate SMS/email notification
-    console.log(`Photos shared with pet parent for session ${sessionId}`);
+    // Show success message
+    toast({
+      title: "Photos Shared Successfully!",
+      description: `Progress photos sent to ${sessions.find(s => s.id === sessionId)?.petParent}`
+    });
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>, sessionId: string, type: 'before' | 'after') => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please select an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Create a URL for preview (in real app, you'd upload to server)
+    const imageUrl = URL.createObjectURL(file);
+    
+    setSessions(prev => prev.map(session => 
+      session.id === sessionId 
+        ? { 
+            ...session, 
+            [type === 'before' ? 'beforePhotos' : 'afterPhotos']: [
+              ...session[type === 'before' ? 'beforePhotos' : 'afterPhotos'],
+              imageUrl
+            ]
+          }
+        : session
+    ));
+
+    toast({
+      title: "Photo Uploaded",
+      description: `${type === 'before' ? 'Before' : 'After'} photo added successfully`
+    });
   };
 
   const formatTime = (timestamp: string) => {
@@ -203,9 +251,15 @@ export default function PhotoProgressSharing() {
                           <Image className="w-8 h-8 text-gray-400" />
                         </div>
                       ))}
-                      <div className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
+                      <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          onChange={(e) => handlePhotoUpload(e, selectedSession.id, 'before')}
+                        />
                         <Upload className="w-6 h-6 text-gray-400" />
-                      </div>
+                      </label>
                     </div>
                   </div>
                   <div>
@@ -216,9 +270,15 @@ export default function PhotoProgressSharing() {
                           <Image className="w-8 h-8 text-gray-400" />
                         </div>
                       ))}
-                      <div className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
+                      <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          onChange={(e) => handlePhotoUpload(e, selectedSession.id, 'after')}
+                        />
                         <Upload className="w-6 h-6 text-gray-400" />
-                      </div>
+                      </label>
                     </div>
                   </div>
                 </div>
