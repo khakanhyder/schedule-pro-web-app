@@ -11,15 +11,15 @@ import {
 } from "lucide-react";
 
 export default function QuickStats() {
-  const { data: appointments = [] } = useQuery({
+  const { data: appointments = [] } = useQuery<any[]>({
     queryKey: ['/api/appointments'],
   });
 
-  const { data: clients = [] } = useQuery({
+  const { data: clients = [] } = useQuery<any[]>({
     queryKey: ['/api/clients'],
   });
 
-  const { data: reviews = [] } = useQuery({
+  const { data: reviews = [] } = useQuery<any[]>({
     queryKey: ['/api/reviews'],
   });
 
@@ -100,8 +100,6 @@ export default function QuickStats() {
                 <p className={`text-xs mt-1 ${
                   stat.changeType === 'positive' 
                     ? 'text-green-600' 
-                    : stat.changeType === 'negative'
-                    ? 'text-red-600'
                     : 'text-muted-foreground'
                 }`}>
                   {stat.change}
