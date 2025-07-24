@@ -51,12 +51,8 @@ import ExecutiveDashboard from "@/components/dashboard/ExecutiveDashboard";
 
 import SettingsManagement from "@/components/dashboard/SettingsManagement";
 import BusinessGrowthHub from "@/components/dashboard/BusinessGrowthHub";
-import CommunicationHub from "@/components/dashboard/CommunicationHub";
-import DepositManager from "@/components/dashboard/DepositManager";
-import NotificationCenter from "@/components/dashboard/NotificationCenter";
 import QuickStats from "@/components/dashboard/QuickStats";
 import PetCareEnhancements from "@/components/dashboard/PetCareEnhancements";
-import MaterialCostTracker from "@/components/dashboard/MaterialCostTracker";
 import GoogleBusinessSetup from "@/components/dashboard/GoogleBusinessSetup";
 import JobEstimationQuoting from '@/components/dashboard/JobEstimationQuoting';
 import PaymentManagement from '@/components/dashboard/PaymentManagement';
@@ -65,9 +61,7 @@ import InPersonPayments from '@/components/payments/InPersonPayments';
 import StripeTerminalInfo from '@/components/payments/StripeTerminalInfo';
 import StripeSetupGuide from '@/components/payments/StripeSetupGuide';
 import ReferralTracking from '@/components/analytics/ReferralTracking';
-import LeadGenerationHub from '@/components/dashboard/LeadGenerationHub';
-import LocalBusinessDirectory from '@/components/dashboard/LocalBusinessDirectory';
-import HotLeadsTracker from '@/components/dashboard/HotLeadsTracker';
+
 
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
@@ -212,7 +206,6 @@ export default function Dashboard() {
           </div>
           
           <div className="flex gap-2">
-            <NotificationCenter />
             <Button 
               variant="outline"
               onClick={() => {
@@ -420,7 +413,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-10' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-9'}`}>
+          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7'}`}>
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -482,16 +475,6 @@ export default function Dashboard() {
               Growth
             </TabsTrigger>
             <TabsTrigger 
-              value="messages" 
-              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
-              style={selectedTab === 'messages' ? {
-                backgroundColor: currentTemplate.primaryColor,
-                color: 'white'
-              } : {}}
-            >
-              Messages
-            </TabsTrigger>
-            <TabsTrigger 
               value="industry-tools" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
               style={selectedTab === 'industry-tools' ? {
@@ -500,16 +483,6 @@ export default function Dashboard() {
               } : {}}
             >
               Tools
-            </TabsTrigger>
-            <TabsTrigger 
-              value="materials" 
-              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
-              style={selectedTab === 'materials' ? {
-                backgroundColor: currentTemplate.primaryColor,
-                color: 'white'
-              } : {}}
-            >
-              Materials
             </TabsTrigger>
 
 
@@ -602,45 +575,28 @@ export default function Dashboard() {
             <AIInsights />
           </TabsContent>
 
-          {/* Lead Generation Hub Tab */}
+          {/* Business Growth Tab */}
           <TabsContent value="growth">
-            <Tabs defaultValue="hot-leads" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="hot-leads">Hot Leads</TabsTrigger>
-                <TabsTrigger value="lead-sources">Lead Sources</TabsTrigger>
-                <TabsTrigger value="partnerships">Local Partners</TabsTrigger>
-                <TabsTrigger value="analytics">Growth Analytics</TabsTrigger>
+            <Tabs defaultValue="google-setup" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="google-setup">Google Business Setup</TabsTrigger>
+                <TabsTrigger value="growth-tools">Growth Tools</TabsTrigger>
               </TabsList>
-              <TabsContent value="hot-leads">
-                <HotLeadsTracker />
+              <TabsContent value="google-setup">
+                <GoogleBusinessSetup 
+                  industryId={selectedIndustry?.id || 'custom'}
+                  businessName={selectedIndustry?.name || 'Your Business'}
+                />
               </TabsContent>
-              <TabsContent value="lead-sources">
-                <LeadGenerationHub />
-              </TabsContent>
-              <TabsContent value="partnerships">
-                <LocalBusinessDirectory />
-              </TabsContent>
-              <TabsContent value="analytics">
+              <TabsContent value="growth-tools">
                 <BusinessGrowthHub />
               </TabsContent>
             </Tabs>
           </TabsContent>
 
-          {/* Communication Hub Tab */}
-          <TabsContent value="messages">
-            <CommunicationHub />
-          </TabsContent>
-
           {/* Industry-Specific Tools Tab */}
           <TabsContent value="industry-tools">
             <IndustrySpecificFeatures />
-          </TabsContent>
-
-
-
-          {/* Materials Tab */}
-          <TabsContent value="materials">
-            <MaterialCostTracker />
           </TabsContent>
 
           {/* Pet Care Enhancements Tab - Pet Care Only */}
