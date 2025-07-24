@@ -4,7 +4,8 @@ import Booking from "@/pages/Booking";
 import Dashboard from "@/pages/Dashboard";
 import Setup from "@/pages/Setup";
 import Pricing from "@/pages/Pricing";
-import AdminDashboard from "@/pages/AdminDashboard";
+import Admin from "@/pages/Admin";
+import AdminLogin from "@/pages/AdminLogin";
 import IOSTest from "@/pages/IOSTest";
 
 import NotFound from "@/pages/not-found";
@@ -18,7 +19,7 @@ import { ThemeProvider } from "@/lib/themeContext";
 function App() {
   const [location] = useLocation();
   const isSetupPage = location === "/setup" || location === "/";
-  const isAdminPage = location === "/admin";
+  const isAdminPage = location === "/admin" || location === "/admin-login";
 
 
   return (
@@ -34,7 +35,8 @@ function App() {
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/setup" component={Setup} />
             <Route path="/pricing" component={Pricing} />
-            <Route path="/admin" component={AdminDashboard} />
+            <Route path="/admin" component={Admin} />
+            <Route path="/admin-login" component={AdminLogin} />
             <Route path="/checkout" component={Checkout} />
             <Route path="/pay-invoice" component={PayInvoice} />
             <Route path="/ios-test" component={IOSTest} />

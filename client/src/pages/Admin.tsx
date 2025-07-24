@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -42,23 +43,38 @@ interface UserAccount {
 export default function Admin() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPlan, setSelectedPlan] = useState("all");
+  const [_, setLocation] = useLocation();
+
+  // Check admin authentication
+  useEffect(() => {
+    const adminKey = sessionStorage.getItem('admin-key');
+    if (!adminKey) {
+      setLocation('/admin-login');
+    }
+  }, [setLocation]);
+
+  // Get admin key for API requests
+  const getAdminHeaders = () => {
+    const adminKey = sessionStorage.getItem('admin-key');
+    return adminKey ? { 'x-admin-key': adminKey } : {};
+  };
 
   // Fetch admin statistics
   const { data: stats, isLoading: statsLoading } = useQuery<AdminStats>({
     queryKey: ['/api/admin/stats'],
-    queryFn: () => fetch('/api/admin/stats').then(res => res.json())
+    queryFn: () => fetch('/api/admin/stats', { headers: getAdminHeaders() }).then(res => res.json())
   });
 
   // Fetch promo code stats
   const { data: promoStats, isLoading: promoLoading } = useQuery({
     queryKey: ['/api/promo-stats'],
-    queryFn: () => fetch('/api/promo-stats').then(res => res.json())
+    queryFn: () => fetch('/api/promo-stats', { headers: getAdminHeaders() }).then(res => res.json())
   });
 
   // Fetch user accounts
   const { data: users, isLoading: usersLoading } = useQuery<UserAccount[]>({
     queryKey: ['/api/admin/users'],
-    queryFn: () => fetch('/api/admin/users').then(res => res.json())
+    queryFn: () => fetch('/api/admin/users', { headers: getAdminHeaders() }).then(res => res.json())
   });
 
   // Fetch health status
@@ -388,7 +404,7 @@ export default function Admin() {
                   <div className="p-3 border rounded">
                     <div className="flex items-center justify-between">
                       <span>API Response Time</span>
-                      <Badge variant="default">< 200ms</Badge>
+                      <Badge variant="default">&lt; 200ms</Badge>
                     </div>
                   </div>
                 </div>

@@ -74,6 +74,10 @@ export interface IStorage {
   createSchedulingSuggestion(suggestion: InsertSchedulingSuggestion): Promise<SchedulingSuggestion>;
   acceptSchedulingSuggestion(id: number): Promise<void>;
   
+  // Admin methods
+  getAllUsers(): Promise<User[]>;
+  getAllAppointments(): Promise<Appointment[]>;
+  
   // Industry management
   setIndustry(industryId: string): void;
   getCurrentIndustry(): IndustryData;
@@ -981,6 +985,15 @@ export class MemStorage implements IStorage {
     await this.updateJobEstimate(estimateId, { status: 'accepted' });
     
     return invoice;
+  }
+
+  // Admin methods
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async getAllAppointments(): Promise<Appointment[]> {
+    return Array.from(this.appointments.values());
   }
 }
 
