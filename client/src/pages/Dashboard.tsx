@@ -409,7 +409,7 @@ export default function Dashboard() {
         <QuickStats />
 
         {/* Main Dashboard Tabs with Template Theming */}
-        <Tabs defaultValue="appointments" onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="max-w-7xl mx-auto">
           {/* Template-themed accent line */}
           <div 
             className="h-1 w-full rounded-full mb-4"
