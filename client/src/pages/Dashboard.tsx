@@ -63,6 +63,7 @@ import PaymentManagement from '@/components/dashboard/PaymentManagement';
 import PaymentSettingsConfig from '@/components/dashboard/PaymentSettingsConfig';
 import InPersonPayments from '@/components/payments/InPersonPayments';
 import StripeTerminalInfo from '@/components/payments/StripeTerminalInfo';
+import StripeSetupGuide from '@/components/payments/StripeSetupGuide';
 
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
@@ -551,15 +552,19 @@ export default function Dashboard() {
           {/* Payments Tab */}
           <TabsContent value="payments">
             <Tabs defaultValue="payment-management" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="payment-management">Send Payment Requests</TabsTrigger>
+                <TabsTrigger value="stripe-setup">Stripe Setup Guide</TabsTrigger>
                 <TabsTrigger value="in-person">In-Person Payments</TabsTrigger>
                 <TabsTrigger value="job-estimates">Create Estimates</TabsTrigger>
-                <TabsTrigger value="payment-settings">Payment Setup</TabsTrigger>
+                <TabsTrigger value="payment-settings">Payment Settings</TabsTrigger>
                 <TabsTrigger value="payment-options">Payment History</TabsTrigger>
               </TabsList>
               <TabsContent value="payment-management">
                 <PaymentManagement />
+              </TabsContent>
+              <TabsContent value="stripe-setup">
+                <StripeSetupGuide />
               </TabsContent>
               <TabsContent value="in-person">
                 <div className="space-y-6">
