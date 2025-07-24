@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import BoardingDaycareManager from './BoardingDaycareManager';
+import BulkInvoicingAutomation from './BulkInvoicingAutomation';
 import BreedSpecificServices from './BreedSpecificServices';
 import PhotoProgressSharing from './PhotoProgressSharing';
 import { 
@@ -422,19 +423,15 @@ const PetCareEnhancements: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="boarding-daycare">Boarding & Daycare</TabsTrigger>
-          <TabsTrigger value="visit-tracking">Visit Tracking</TabsTrigger>
           <TabsTrigger value="bulk-invoicing">Bulk Invoicing</TabsTrigger>
           <TabsTrigger value="breed-guide">Breed Guide</TabsTrigger>
           <TabsTrigger value="photo-sharing">Photo Sharing</TabsTrigger>
           <TabsTrigger value="profiles">Pet Profiles</TabsTrigger>
+          <TabsTrigger value="seasonal">Seasonal Services</TabsTrigger>
         </TabsList>
         
         <TabsContent value="boarding-daycare" className="space-y-4">
           <BoardingDaycareManager />
-        </TabsContent>
-        
-        <TabsContent value="visit-tracking" className="space-y-4">
-          <VisitTrackingGPS />
         </TabsContent>
         
         <TabsContent value="bulk-invoicing" className="space-y-4">
