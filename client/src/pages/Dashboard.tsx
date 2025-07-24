@@ -61,6 +61,8 @@ import GoogleBusinessSetup from "@/components/dashboard/GoogleBusinessSetup";
 import JobEstimationQuoting from '@/components/dashboard/JobEstimationQuoting';
 import PaymentManagement from '@/components/dashboard/PaymentManagement';
 import PaymentSettingsConfig from '@/components/dashboard/PaymentSettingsConfig';
+import InPersonPayments from '@/components/payments/InPersonPayments';
+import StripeTerminalInfo from '@/components/payments/StripeTerminalInfo';
 
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
@@ -549,14 +551,26 @@ export default function Dashboard() {
           {/* Payments Tab */}
           <TabsContent value="payments">
             <Tabs defaultValue="payment-management" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="payment-management">Send Payment Requests</TabsTrigger>
+                <TabsTrigger value="in-person">In-Person Payments</TabsTrigger>
                 <TabsTrigger value="job-estimates">Create Estimates</TabsTrigger>
                 <TabsTrigger value="payment-settings">Payment Setup</TabsTrigger>
                 <TabsTrigger value="payment-options">Payment History</TabsTrigger>
               </TabsList>
               <TabsContent value="payment-management">
                 <PaymentManagement />
+              </TabsContent>
+              <TabsContent value="in-person">
+                <div className="space-y-6">
+                  <InPersonPayments 
+                    amount={0}
+                    onPaymentComplete={(data) => {
+                      console.log('Payment completed:', data);
+                    }}
+                  />
+                  <StripeTerminalInfo />
+                </div>
               </TabsContent>
               <TabsContent value="job-estimates">
                 <JobEstimationQuoting />

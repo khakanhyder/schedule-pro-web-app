@@ -167,8 +167,8 @@ export default function PaymentSettingsConfig() {
               <div className="flex items-center gap-3">
                 <CreditCard className="w-6 h-6 text-blue-600" />
                 <div>
-                  <h3 className="font-semibold">Stripe (Credit/Debit Cards)</h3>
-                  <p className="text-sm text-gray-600">Accept Visa, Mastercard, Amex, Discover</p>
+                  <h3 className="font-semibold">Stripe (Credit/Debit Cards & In-Person)</h3>
+                  <p className="text-sm text-gray-600">Accept cards online + in-person with Stripe Terminal</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
