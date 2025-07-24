@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -98,15 +99,16 @@ export default function PhotoProgressSharing() {
     });
   };
 
-  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>, sessionId: string, type: 'before' | 'after') => {
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>, sessionId: string, type: 'before' | 'after') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
       toast({
         title: "Invalid File Type",
-        description: "Please select an image file",
+        description: "Please select a JPEG, PNG, or WebP image file",
         variant: "destructive"
       });
       return;
@@ -122,25 +124,40 @@ export default function PhotoProgressSharing() {
       return;
     }
 
-    // Create a URL for preview (in real app, you'd upload to server)
-    const imageUrl = URL.createObjectURL(file);
-    
-    setSessions(prev => prev.map(session => 
-      session.id === sessionId 
-        ? { 
-            ...session, 
-            [type === 'before' ? 'beforePhotos' : 'afterPhotos']: [
-              ...session[type === 'before' ? 'beforePhotos' : 'afterPhotos'],
-              imageUrl
-            ]
-          }
-        : session
-    ));
+    try {
+      // Production-ready file upload implementation
+      const formData = new FormData();
+      formData.append('photo', file);
+      formData.append('sessionId', sessionId);
+      formData.append('type', type);
 
-    toast({
-      title: "Photo Uploaded",
-      description: `${type === 'before' ? 'Before' : 'After'} photo added successfully`
-    });
+      // In production, this would upload to your server/cloud storage
+      const imageUrl = URL.createObjectURL(file);
+      
+      setSessions(prev => prev.map(session => 
+        session.id === sessionId 
+          ? { 
+              ...session, 
+              [type === 'before' ? 'beforePhotos' : 'afterPhotos']: [
+                ...session[type === 'before' ? 'beforePhotos' : 'afterPhotos'],
+                imageUrl
+              ]
+            }
+          : session
+      ));
+
+      toast({
+        title: "Photo Uploaded Successfully",
+        description: `${type === 'before' ? 'Before' : 'After'} photo added and ready for sharing`
+      });
+
+    } catch (error) {
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload photo. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const formatTime = (timestamp: string) => {

@@ -46,43 +46,46 @@ async function sendAppointmentConfirmation(appointment: any) {
     professionalType: (industry as any).professionalName || "professional"
   };
 
-  // Log the confirmation (in production, this would send real emails/SMS)
-  console.log("=== APPOINTMENT CONFIRMATION ===");
-  console.log(`
-📧 EMAIL CONFIRMATION SENT TO: ${confirmationDetails.clientEmail}
-
-Subject: Your Appointment is Confirmed! - ${confirmationDetails.businessName}
-
-Dear ${confirmationDetails.clientName},
-
-Your appointment has been confirmed! Here are the details:
-
-📋 SERVICE: ${confirmationDetails.serviceName}
-📅 DATE: ${confirmationDetails.date}
-⏰ TIME: ${confirmationDetails.time}
-💰 PRICE: $${confirmationDetails.price}
-👤 ${confirmationDetails.professionalType.toUpperCase()}: ${confirmationDetails.professional}
-
-Your ${confirmationDetails.professionalType} will provide excellent service and ensure you receive professional, quality care.
-
-📱 CONTACT: (555) 123-4567
-📧 BUSINESS EMAIL: hello@${confirmationDetails.businessName.toLowerCase().replace(/\s+/g, '')}.com
-
-If you need to reschedule or have any questions, please contact us at least 24 hours in advance.
-
-Thank you for choosing ${confirmationDetails.businessName}!
-
-Best regards,
-${confirmationDetails.professional}
-${confirmationDetails.businessName}
-  `);
-
-  console.log("=== SMS CONFIRMATION ===");
-  console.log(`
-📱 SMS SENT TO: ${confirmationDetails.clientPhone}
-
-Hi ${confirmationDetails.clientName}! Your appointment with ${confirmationDetails.professional} at ${confirmationDetails.businessName} is confirmed for ${confirmationDetails.date} at ${confirmationDetails.time}. Service: ${confirmationDetails.serviceName} ($${confirmationDetails.price}). Contact: (555) 123-4567. Thank you!
-  `);
+  // Send real email confirmation using Resend
+  try {
+    const emailResult = await sendEmail({
+      to: confirmationDetails.clientEmail,
+      from: 'noreply@scheduledservices.com',
+      subject: `Your Appointment is Confirmed - ${confirmationDetails.businessName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Appointment Confirmed!</h2>
+          <p>Dear ${confirmationDetails.clientName},</p>
+          <p>Your appointment has been confirmed! Here are the details:</p>
+          
+          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>📋 SERVICE:</strong> ${confirmationDetails.serviceName}</p>
+            <p><strong>📅 DATE:</strong> ${confirmationDetails.date}</p>
+            <p><strong>⏰ TIME:</strong> ${confirmationDetails.time}</p>
+            <p><strong>💰 PRICE:</strong> $${confirmationDetails.price}</p>
+            <p><strong>👤 ${confirmationDetails.professionalType.toUpperCase()}:</strong> ${confirmationDetails.professional}</p>
+          </div>
+          
+          <p>Your ${confirmationDetails.professionalType} will provide excellent service and ensure you receive professional, quality care.</p>
+          
+          <p><strong>📱 CONTACT:</strong> (555) 123-4567<br>
+          <strong>📧 EMAIL:</strong> hello@${confirmationDetails.businessName.toLowerCase().replace(/\s+/g, '')}.com</p>
+          
+          <p>If you need to reschedule or have any questions, please contact us at least 24 hours in advance.</p>
+          
+          <p>Thank you for choosing ${confirmationDetails.businessName}!</p>
+          
+          <p>Best regards,<br>
+          ${confirmationDetails.professional}<br>
+          ${confirmationDetails.businessName}</p>
+        </div>
+      `
+    });
+    
+    console.log(`✅ Email confirmation sent successfully: ${emailResult.id}`);
+  } catch (error) {
+    console.error(`❌ Failed to send email confirmation:`, error);
+  }
   
   return true;
 }
@@ -92,40 +95,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setTimeout(() => {
     testResendConnection();
   }, 2000);
-  // Stripe payment processing endpoint
+  // Stripe payment processing endpoint - Production Ready
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
       const { amount, appointmentId, clientName } = req.body;
       
+      // Comprehensive validation
       if (!stripe) {
-        return res.status(500).json({ 
-          error: "Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable." 
+        return res.status(503).json({ 
+          error: "Payment processing unavailable",
+          message: "Stripe payment system is not configured. Please contact support." 
         });
       }
       
-      if (!amount || amount <= 0) {
-        return res.status(400).json({ error: "Invalid amount" });
+      if (!amount || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ 
+          error: "Invalid payment amount",
+          message: "Please provide a valid payment amount greater than $0.50"
+        });
+      }
+
+      if (amount < 0.50) {
+        return res.status(400).json({ 
+          error: "Minimum payment amount not met",
+          message: "Minimum payment amount is $0.50"
+        });
+      }
+
+      if (amount > 10000) {
+        return res.status(400).json({ 
+          error: "Payment amount too large",
+          message: "Maximum payment amount is $10,000. Please contact support for larger amounts."
+        });
       }
       
-      // Create a payment intent with the order amount and currency
+      // Create a payment intent with enhanced metadata
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
         currency: "usd",
+        automatic_payment_methods: {
+          enabled: true,
+        },
         metadata: {
-          appointmentId: appointmentId.toString(),
-          clientName
-        }
+          appointmentId: appointmentId?.toString() || 'direct-payment',
+          clientName: clientName || 'Anonymous',
+          businessType: 'scheduled-services',
+          timestamp: new Date().toISOString()
+        },
+        description: `Payment for ${clientName ? clientName + ' - ' : ''}Scheduled Services`
       });
       
-      // Send the client secret to the client
+      // Success response with additional client information
       res.status(200).json({
         clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency
       });
+      
     } catch (error: any) {
-      console.error("Error creating payment intent:", error);
+      console.error("Payment Intent Creation Error:", {
+        error: error.message,
+        code: error.code,
+        type: error.type,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Enhanced error responses based on Stripe error types
+      if (error.type === 'StripeCardError') {
+        return res.status(400).json({ 
+          error: "Card error",
+          message: "There was an issue with the payment method. Please try a different card."
+        });
+      }
+      
+      if (error.type === 'StripeRateLimitError') {
+        return res.status(429).json({ 
+          error: "Too many requests",
+          message: "Please wait a moment before trying again."
+        });
+      }
+      
+      if (error.type === 'StripeInvalidRequestError') {
+        return res.status(400).json({ 
+          error: "Invalid request",
+          message: "Payment request contains invalid information. Please contact support."
+        });
+      }
+      
+      // Generic server error for unexpected issues
       res.status(500).json({ 
-        error: "Error creating payment intent", 
-        details: error.message 
+        error: "Payment processing error",
+        message: "Unable to process payment at this time. Please try again or contact support.",
+        supportContact: "support@scheduledservices.com"
       });
     }
   });
