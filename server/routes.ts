@@ -43,7 +43,7 @@ async function sendAppointmentConfirmation(appointment: any) {
     price: service?.price || "150",
     professional: stylist?.name || "Professional",
     businessName: `${industry.name} Services`,
-    professionalType: industry.professionalName || "professional"
+    professionalType: (industry as any).professionalName || "professional"
   };
 
   // Log the confirmation (in production, this would send real emails/SMS)
@@ -354,7 +354,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Add pet services
       for (const service of petServices) {
-        await storage.createService(service);
+        await storage.createService({
+          name: service.name,
+          description: service.description,
+          price: service.price.toString(),
+          durationMinutes: service.duration
+        });
       }
 
       res.json({ 
@@ -912,7 +917,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       for (const appointment of convertedAppointments) {
         try {
-          await storage.createAppointment(appointment);
+          // Ensure proper data structure with required fields
+          const properAppointment = {
+            date: new Date(appointment.date),
+            serviceId: appointment.serviceId || 1,
+            stylistId: appointment.stylistId || 1,
+            clientName: appointment.clientName,
+            clientEmail: appointment.clientEmail,
+            clientPhone: appointment.clientPhone,
+            durationMinutes: appointment.durationMinutes || 60,
+            notes: appointment.notes
+          };
+          
+          await storage.createAppointment(properAppointment);
           importedCount++;
         } catch (error: any) {
           errors.push(`Failed to import appointment for ${appointment.clientName}: ${error.message}`);

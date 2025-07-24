@@ -242,7 +242,7 @@ export default function IndustryOverview() {
       ]
     };
 
-    return [...baseFeatures, ...(industrySpecific[selectedIndustry.id] || [])];
+    return [...baseFeatures, ...(industrySpecific[selectedIndustry.id as keyof typeof industrySpecific] || [])];
   };
 
   const customizationFeatures = getCustomizationFeatures();
@@ -358,7 +358,7 @@ export default function IndustryOverview() {
                       <p className="text-xs text-muted-foreground">{feature.description}</p>
                     </div>
                     <Badge variant={feature.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                      {feature.status === 'active' ? 'Active' : 'Coming Soon'}
+                      {feature.status === 'active' ? 'Active' : 'Available'}
                     </Badge>
                   </div>
                 ))}

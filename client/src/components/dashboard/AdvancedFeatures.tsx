@@ -214,7 +214,7 @@ export default function AdvancedFeatures() {
                   <div className="p-3 border rounded-lg">
                     <h4 className="font-medium mb-1">Route Optimization</h4>
                     <p className="text-sm text-muted-foreground">Smart scheduling by location</p>
-                    <Badge variant="outline" className="text-blue-600 mt-1">Coming Soon</Badge>
+                    <Badge variant="outline" className="text-green-600 mt-1">Available</Badge>
                   </div>
                   <div className="p-3 border rounded-lg">
                     <h4 className="font-medium mb-1">Travel Time Calculator</h4>

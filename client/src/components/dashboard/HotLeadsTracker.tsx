@@ -55,25 +55,25 @@ export default function HotLeadsTracker() {
   const getLeadSignals = (lead: HotLead): LeadSignal[] => {
     return [
       {
-        type: "high_value",
+        type: "high_value" as const,
         description: `${lead.estimatedValue > 5000 ? 'Large' : lead.estimatedValue > 2000 ? 'Medium' : 'Standard'} project value`,
         points: lead.estimatedValue > 5000 ? 25 : lead.estimatedValue > 2000 ? 15 : 5,
         icon: <DollarSign className="h-4 w-4" />
       },
       {
-        type: "urgent",
+        type: "urgent" as const,
         description: lead.serviceRequested.includes('emergency') ? 'Emergency service needed' : 'Standard timeline',
         points: lead.serviceRequested.includes('emergency') ? 30 : 0,
         icon: <AlertCircle className="h-4 w-4" />
       },
       {
-        type: "referral",
+        type: "referral" as const,
         description: lead.source.includes('referral') ? 'Referred by existing client' : 'Direct inquiry',
         points: lead.source.includes('referral') ? 20 : 0,
         icon: <Star className="h-4 w-4" />
       },
       {
-        type: "repeat_visitor",
+        type: "repeat_visitor" as const,
         description: 'Multiple website visits in past week',
         points: 15,
         icon: <TrendingUp className="h-4 w-4" />
