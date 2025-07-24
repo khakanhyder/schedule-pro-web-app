@@ -19,10 +19,12 @@ A comprehensive business management platform designed to empower service-based e
 ## Recent Changes (July 24, 2025)
 
 ### Essential Business Management Features (Latest)
+- ✅ **Photo Documentation System** - Before/after photos for Beauty, job documentation for Trades, progress photos for Pet Care, portfolio for Creative
 - ✅ **Google Business Setup** - Essential SEO foundation with step-by-step guide for all industries
 - ✅ **Business Hours Management** - Set operating hours, holidays, and blackout dates for all businesses
 - ✅ **Data Import System** - Critical migration tools for businesses switching from other platforms
 - ✅ **Enhanced Settings Tab** - Three-section organization: General Settings, Business Hours, Data Import
+- ✅ **Enhanced Tools Tab** - Two-section organization: Industry Features, Photo Documentation
 - ✅ **Review Platform Expansion** - Added Angi (Angie's List) to review request system for contractor-focused businesses
 - ✅ **Streamlined Dashboard Navigation** - Removed excessive tabs, keeping only core business functions
 - ✅ **Growth Tab Simplified** - Combined Google Business setup (SEO) with basic growth tools

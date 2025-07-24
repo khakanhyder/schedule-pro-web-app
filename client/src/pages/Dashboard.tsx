@@ -56,6 +56,7 @@ import PetCareEnhancements from "@/components/dashboard/PetCareEnhancements";
 import GoogleBusinessSetup from "@/components/dashboard/GoogleBusinessSetup";
 import BusinessHoursManagement from "@/components/dashboard/BusinessHoursManagement";
 import DataImportManager from "@/components/dashboard/DataImportManager";
+import PhotoProgressSharing from "@/components/dashboard/PhotoProgressSharing";
 import JobEstimationQuoting from '@/components/dashboard/JobEstimationQuoting';
 import PaymentManagement from '@/components/dashboard/PaymentManagement';
 import PaymentSettingsConfig from '@/components/dashboard/PaymentSettingsConfig';
@@ -598,7 +599,18 @@ export default function Dashboard() {
 
           {/* Industry-Specific Tools Tab */}
           <TabsContent value="industry-tools">
-            <IndustrySpecificFeatures />
+            <Tabs defaultValue="features" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="features">Industry Features</TabsTrigger>
+                <TabsTrigger value="photos">Photo Documentation</TabsTrigger>
+              </TabsList>
+              <TabsContent value="features">
+                <IndustrySpecificFeatures />
+              </TabsContent>
+              <TabsContent value="photos">
+                <PhotoProgressSharing />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           {/* Pet Care Enhancements Tab - Pet Care Only */}
