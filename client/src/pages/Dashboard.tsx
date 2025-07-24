@@ -54,6 +54,8 @@ import BusinessGrowthHub from "@/components/dashboard/BusinessGrowthHub";
 import QuickStats from "@/components/dashboard/QuickStats";
 import PetCareEnhancements from "@/components/dashboard/PetCareEnhancements";
 import GoogleBusinessSetup from "@/components/dashboard/GoogleBusinessSetup";
+import BusinessHoursManagement from "@/components/dashboard/BusinessHoursManagement";
+import DataImportManager from "@/components/dashboard/DataImportManager";
 import JobEstimationQuoting from '@/components/dashboard/JobEstimationQuoting';
 import PaymentManagement from '@/components/dashboard/PaymentManagement';
 import PaymentSettingsConfig from '@/components/dashboard/PaymentSettingsConfig';
@@ -608,7 +610,22 @@ export default function Dashboard() {
 
           {/* Settings Tab */}
           <TabsContent value="settings">
-            <SettingsManagement />
+            <Tabs defaultValue="general" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="general">General Settings</TabsTrigger>
+                <TabsTrigger value="hours">Business Hours</TabsTrigger>
+                <TabsTrigger value="import">Data Import</TabsTrigger>
+              </TabsList>
+              <TabsContent value="general">
+                <SettingsManagement />
+              </TabsContent>
+              <TabsContent value="hours">
+                <BusinessHoursManagement />
+              </TabsContent>
+              <TabsContent value="import">
+                <DataImportManager />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
 
