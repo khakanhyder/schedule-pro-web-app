@@ -100,39 +100,96 @@ export default function StripeSetupGuide() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Store className="w-5 h-5" />
-            Stripe Payment Setup Guide
+            Payment Options for Your Business
           </CardTitle>
           <p className="text-gray-600">
-            Follow these steps to enable both online and in-person payments for your business.
+            Choose how you want to accept payments. Online payments work immediately, in-person terminals are optional.
           </p>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Setup Progress</span>
-              <span>{completedSteps} of {steps.length} steps complete</span>
-            </div>
-            <Progress value={progressPercentage} className="h-2" />
+          <div className="text-center">
+            <Button
+              onClick={() => window.open('https://dashboard.stripe.com/register', '_blank')}
+              className="mr-3"
+            >
+              Start Stripe Setup
+            </Button>
+            <Button variant="outline">
+              I'll Use Online Payments Only
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Current Status */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <Info className="w-5 h-5 text-blue-600" />
-            <div>
-              <p className="font-medium text-blue-800">Online Payments Ready!</p>
-              <p className="text-sm text-blue-700">
-                Your payment request system is already working. Complete setup below for in-person terminals.
+      {/* Payment Options Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Online Payments - Already Working */}
+        <Card className="bg-green-50 border-green-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <CheckCircle className="w-5 h-5" />
+              Online Payments (Ready Now!)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <p className="text-sm text-green-700">
+                Already working in your "Send Payment Requests" tab:
               </p>
+              <ul className="text-sm text-green-700 space-y-1">
+                <li>• Credit card payments (Stripe)</li>
+                <li>• PayPal payments</li>
+                <li>• Zelle transfers (free)</li>
+                <li>• Venmo payments (free)</li>
+              </ul>
+              <div className="p-3 bg-white rounded border">
+                <p className="text-xs text-gray-600">
+                  <strong>How it works:</strong> Create payment request → Send link to client → They pay with preferred method → Money goes to your accounts
+                </p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Setup Steps */}
+        {/* In-Person Payments - Optional Setup */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <CreditCard className="w-5 h-5" />
+              In-Person Payments (Optional)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <p className="text-sm text-blue-700">
+                Add physical card terminals for checkout:
+              </p>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• Chip & PIN card readers</li>
+                <li>• Contactless/tap payments</li>
+                <li>• Apple Pay & Google Pay</li>
+                <li>• Built-in tip options (15%, 18%, 20%)</li>
+              </ul>
+              <div className="p-3 bg-white rounded border">
+                <p className="text-xs text-gray-600">
+                  <strong>Cost:</strong> $59-$249 for hardware + same 2.9% processing fees
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Setup Steps for In-Person Payments */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Want In-Person Card Terminals? Here's How:</CardTitle>
+          <p className="text-sm text-gray-600">
+            Only follow these steps if you want to accept cards in-person at your location.
+          </p>
+        </CardHeader>
+      </Card>
+      
       <div className="space-y-4">
         {steps.map((step, index) => (
           <Card 
