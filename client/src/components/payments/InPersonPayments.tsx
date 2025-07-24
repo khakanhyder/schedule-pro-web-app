@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { 
   CreditCard, 
   Smartphone, 
@@ -27,7 +28,31 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
   const [paymentAmount, setPaymentAmount] = useState(amount.toString());
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [selectedTip, setSelectedTip] = useState<number>(0);
+  const [customTip, setCustomTip] = useState<string>('');
+  const [showTipping, setShowTipping] = useState(false);
   const { toast } = useToast();
+
+  const tipOptions = [
+    { percentage: 15, label: '15%' },
+    { percentage: 18, label: '18%' },
+    { percentage: 20, label: '20%' }
+  ];
+
+  const calculateTip = (baseAmount: number, tipPercentage: number): number => {
+    return (baseAmount * tipPercentage) / 100;
+  };
+
+  const getTotalAmount = (): number => {
+    const base = parseFloat(paymentAmount) || 0;
+    const tip = selectedTip > 0 ? calculateTip(base, selectedTip) : parseFloat(customTip) || 0;
+    return base + tip;
+  };
+
+  const getTipAmount = (): number => {
+    const base = parseFloat(paymentAmount) || 0;
+    return selectedTip > 0 ? calculateTip(base, selectedTip) : parseFloat(customTip) || 0;
+  };
 
   const processPayment = async (method: string) => {
     setIsProcessing(true);
@@ -37,8 +62,14 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      const baseAmount = parseFloat(paymentAmount);
+      const tipAmount = getTipAmount();
+      const totalAmount = getTotalAmount();
+
       const paymentData = {
-        amount: parseFloat(paymentAmount),
+        baseAmount,
+        tipAmount,
+        totalAmount,
         method,
         timestamp: new Date(),
         clientName: clientName || 'Walk-in Customer',
@@ -47,7 +78,7 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
 
       toast({
         title: "Payment Successful!",
-        description: `${method} payment of $${paymentAmount} completed successfully`
+        description: `${method} payment of $${totalAmount.toFixed(2)} completed successfully${tipAmount > 0 ? ` (includes $${tipAmount.toFixed(2)} tip)` : ''}`
       });
 
       onPaymentComplete?.(paymentData);
@@ -86,18 +117,115 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
             <div>
               <Label className="flex items-center gap-2">
                 <DollarSign className="w-4 h-4" />
-                Payment Amount
+                Service Amount
               </Label>
               <Input
                 type="number"
                 step="0.01"
                 value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
+                onChange={(e) => {
+                  setPaymentAmount(e.target.value);
+                  // Reset tip when amount changes
+                  setSelectedTip(0);
+                  setCustomTip('');
+                }}
                 placeholder="0.00"
                 className="text-2xl font-bold"
               />
             </div>
           </div>
+          
+          {parseFloat(paymentAmount) > 0 && (
+            <>
+              <Separator />
+              
+              {/* Tip Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-lg font-medium">Add Tip (Optional)</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowTipping(!showTipping)}
+                  >
+                    {showTipping ? 'Hide Tip Options' : 'Add Tip'}
+                  </Button>
+                </div>
+                
+                {showTipping && (
+                  <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                    {/* Preset Tip Percentages */}
+                    <div className="grid grid-cols-3 gap-3">
+                      {tipOptions.map((option) => (
+                        <Button
+                          key={option.percentage}
+                          variant={selectedTip === option.percentage ? "default" : "outline"}
+                          onClick={() => {
+                            setSelectedTip(option.percentage);
+                            setCustomTip('');
+                          }}
+                          className="h-16 flex flex-col"
+                        >
+                          <span className="text-lg font-bold">{option.label}</span>
+                          <span className="text-sm">
+                            ${calculateTip(parseFloat(paymentAmount) || 0, option.percentage).toFixed(2)}
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    {/* Custom Tip Amount */}
+                    <div>
+                      <Label>Custom Tip Amount</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={customTip}
+                        onChange={(e) => {
+                          setCustomTip(e.target.value);
+                          setSelectedTip(0); // Clear percentage selection
+                        }}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    
+                    {/* No Tip Option */}
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedTip(0);
+                        setCustomTip('');
+                      }}
+                      className="w-full"
+                    >
+                      No Tip
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Payment Summary */}
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Service Amount:</span>
+                    <span>${parseFloat(paymentAmount).toFixed(2)}</span>
+                  </div>
+                  {getTipAmount() > 0 && (
+                    <div className="flex justify-between">
+                      <span>Tip:</span>
+                      <span>${getTipAmount().toFixed(2)}</span>
+                    </div>
+                  )}
+                  <Separator />
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total:</span>
+                    <span>${getTotalAmount().toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -130,7 +258,7 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
               className="w-full" 
               size="lg"
               onClick={() => processPayment('Card Payment')}
-              disabled={isProcessing}
+              disabled={isProcessing || parseFloat(paymentAmount) <= 0}
             >
               {isProcessing && paymentMethod === 'Card Payment' ? (
                 <>
@@ -140,7 +268,7 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
               ) : (
                 <>
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Process Card Payment
+                  Charge ${getTotalAmount().toFixed(2)}
                 </>
               )}
             </Button>
@@ -178,7 +306,7 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
               className="w-full border-purple-200 hover:bg-purple-50" 
               size="lg"
               onClick={() => processPayment('Digital Wallet')}
-              disabled={isProcessing}
+              disabled={isProcessing || parseFloat(paymentAmount) <= 0}
             >
               {isProcessing && paymentMethod === 'Digital Wallet' ? (
                 <>
@@ -188,7 +316,7 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
               ) : (
                 <>
                   <Nfc className="w-4 h-4 mr-2" />
-                  Accept Digital Payment
+                  Charge ${getTotalAmount().toFixed(2)}
                 </>
               )}
             </Button>
@@ -216,7 +344,7 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
               variant="outline"
               className="border-green-300 hover:bg-green-100"
               onClick={() => processPayment('Cash')}
-              disabled={isProcessing}
+              disabled={isProcessing || parseFloat(paymentAmount) <= 0}
             >
               {isProcessing && paymentMethod === 'Cash' ? (
                 <>
@@ -226,7 +354,7 @@ export default function InPersonPayments({ clientName, amount, onPaymentComplete
               ) : (
                 <>
                   <Banknote className="w-4 h-4 mr-2" />
-                  Record Cash Payment
+                  Record ${getTotalAmount().toFixed(2)} Cash
                 </>
               )}
             </Button>
