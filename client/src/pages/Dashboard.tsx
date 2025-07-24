@@ -65,6 +65,9 @@ import InPersonPayments from '@/components/payments/InPersonPayments';
 import StripeTerminalInfo from '@/components/payments/StripeTerminalInfo';
 import StripeSetupGuide from '@/components/payments/StripeSetupGuide';
 import ReferralTracking from '@/components/analytics/ReferralTracking';
+import LeadGenerationHub from '@/components/dashboard/LeadGenerationHub';
+import LocalBusinessDirectory from '@/components/dashboard/LocalBusinessDirectory';
+import HotLeadsTracker from '@/components/dashboard/HotLeadsTracker';
 
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
 
@@ -599,9 +602,28 @@ export default function Dashboard() {
             <AIInsights />
           </TabsContent>
 
-          {/* Business Growth Hub Tab */}
+          {/* Lead Generation Hub Tab */}
           <TabsContent value="growth">
-            <BusinessGrowthHub />
+            <Tabs defaultValue="hot-leads" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="hot-leads">Hot Leads</TabsTrigger>
+                <TabsTrigger value="lead-sources">Lead Sources</TabsTrigger>
+                <TabsTrigger value="partnerships">Local Partners</TabsTrigger>
+                <TabsTrigger value="analytics">Growth Analytics</TabsTrigger>
+              </TabsList>
+              <TabsContent value="hot-leads">
+                <HotLeadsTracker />
+              </TabsContent>
+              <TabsContent value="lead-sources">
+                <LeadGenerationHub />
+              </TabsContent>
+              <TabsContent value="partnerships">
+                <LocalBusinessDirectory />
+              </TabsContent>
+              <TabsContent value="analytics">
+                <BusinessGrowthHub />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           {/* Communication Hub Tab */}

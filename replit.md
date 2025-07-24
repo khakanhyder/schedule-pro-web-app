@@ -18,7 +18,18 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 24, 2025)
 
-### Pet Care Professional Template Focus (Latest)
+### Comprehensive Lead Generation System (Latest)
+- 🎯 **Hot Leads Tracker** - AI-powered lead scoring system prioritizes prospects by value, urgency, and engagement signals
+- 🚀 **Lead Generation Hub** - Proven strategies for customer acquisition: referral programs, follow-up automation, industry-specific sources
+- 🤝 **Local Business Directory** - Strategic partnership management with complementary businesses for mutual referrals
+- 💼 **Industry-Specific Targeting** - Customized partnership recommendations (contractors → real estate agents, pet care → vets, beauty → wedding vendors)
+- ⚡ **Automated Follow-up Sequences** - Re-engage leads who didn't book initially with smart messaging campaigns
+- 📊 **Lead Source Analytics** - Track ROI and conversion rates across different lead generation channels
+- 🏆 **Partnership ROI Tracking** - Monitor referrals sent/received with local business partners
+- ✅ **Review Platform Expansion** - Added Angi (Angie's List) to review request system for contractor-focused businesses
+- 🎯 **No-fluff approach** - Only high-impact features that actually drive business results and generate revenue
+
+### Pet Care Professional Template Focus (Previous)
 - 🎯 **Traditional pet care focus** - Emphasizing pet boarding, daycare, in-home sitting, and grooming services
 - 🏠 **Removed mobile grooming complexity** - Avoiding GPS routing features that require extensive development  
 - 🐾 **Core services prioritized** - Pet boarding, daycare, in-home sitting, dog walking, grooming, training
