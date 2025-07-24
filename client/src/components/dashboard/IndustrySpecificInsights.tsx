@@ -73,42 +73,81 @@ const industrySpecificInsights = {
     color: "green",
     insights: [
       {
-        category: "Seasonal Demand",
-        title: "Summer Grooming Surge",
-        description: "Pet grooming increases 65% in summer months. Plan capacity accordingly.",
+        category: "Customer Experience",
+        title: "Instant Photo Sharing Success",
+        description: "Before/after grooming photos shared within 30 minutes increase customer satisfaction by 89% and generate 40% more repeat bookings.",
         priority: "high" as const,
         actionable: true,
         recommendations: [
-          "Hire seasonal grooming assistants by April",
-          "Offer early summer booking discounts in March",
-          "Create 'summer comfort' grooming packages",
-          "Extend hours during peak summer months"
+          "Enable automatic photo sharing after each appointment",
+          "Train staff to capture before/during/after photos",
+          "Add personal notes with each photo share",
+          "Request feedback and ratings with photo delivery"
         ]
       },
       {
-        category: "Emergency Services",
-        title: "Holiday Pet Sitting Demand",
-        description: "December holiday bookings fill 3x faster than other months.",
+        category: "Operations Efficiency", 
+        title: "Mobile Route Optimization",
+        description: "Smart route planning saves mobile groomers 45 minutes daily and reduces fuel costs by 25%. Group appointments by geographic area.",
         priority: "high" as const,
         actionable: true,
         recommendations: [
-          "Open holiday bookings in September",
-          "Charge premium rates for holiday dates",
-          "Create 'holiday pet care' packages with photos",
-          "Partner with local veterinarians for emergency coverage"
+          "Use GPS-based route optimization for daily schedules",
+          "Group appointments by zip code and proximity", 
+          "Factor in travel time when setting appointment slots",
+          "Track fuel savings and time efficiency metrics"
         ]
       },
       {
-        category: "Client Education",
-        title: "Preventive Care Opportunities",
-        description: "Pet owners spend 40% more when educated about preventive services.",
+        category: "Revenue Growth",
+        title: "24/7 Online Booking Impact", 
+        description: "Pet parents book 60% more appointments when they can see real-time availability and book online anytime, especially evenings and weekends.",
+        priority: "high" as const,
+        actionable: true,
+        recommendations: [
+          "Enable 24/7 online booking with real-time calendar",
+          "Show available time slots and service duration",
+          "Allow booking modifications and cancellations online",
+          "Send automatic confirmations and reminders"
+        ]
+      },
+      {
+        category: "Service Quality",
+        title: "Breed-Specific Service Recommendations",
+        description: "Using breed databases to suggest appropriate services increases average service value by 30% and improves grooming outcomes.",
         priority: "medium" as const,
         actionable: true,
         recommendations: [
-          "Send monthly pet care tips via email/SMS",
-          "Create seasonal care checklists for pet owners",
-          "Offer preventive care packages at 15% discount",
-          "Share educational content on social media"
+          "Access comprehensive breed grooming database",
+          "Suggest breed-appropriate services and frequency",
+          "Educate pet parents on breed-specific needs",
+          "Adjust pricing based on breed coat complexity"
+        ]
+      },
+      {
+        category: "Communication Excellence",
+        title: "Automated Reminder System",
+        description: "Automated SMS and email reminders reduce no-shows by 75% and improve customer communication satisfaction.",
+        priority: "medium" as const,
+        actionable: true,
+        recommendations: [
+          "Send appointment reminders 24 hours in advance",
+          "Include appointment details and preparation instructions",
+          "Allow easy rescheduling through reminder messages",
+          "Follow up with service feedback requests"
+        ]
+      },
+      {
+        category: "Seasonal Strategy",
+        title: "Seasonal Service Campaigns",
+        description: "Targeted seasonal campaigns (summer de-shedding, holiday grooming, winter paw care) drive 35% revenue increases during peak periods.",
+        priority: "medium" as const,
+        actionable: true,
+        recommendations: [
+          "Launch summer de-shedding campaigns in May-August",
+          "Promote holiday grooming packages in November-December",
+          "Offer winter paw protection services",
+          "Create seasonal service bundles with discounts"
         ]
       }
     ]
