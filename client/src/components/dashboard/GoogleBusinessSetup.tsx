@@ -18,6 +18,7 @@ export default function GoogleBusinessSetup({ industryId, businessName }: Google
     google: '',
     yelp: '',
     facebook: '',
+    angi: '',
     trustpilot: ''
   });
 
@@ -310,6 +311,26 @@ export default function GoogleBusinessSetup({ industryId, businessName }: Google
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="angi-link" className="text-sm font-medium">Angi (Angie's List) URL</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="angi-link"
+                  placeholder="https://angi.com/..."
+                  value={reviewPlatforms.angi}
+                  onChange={(e) => handlePlatformLink('angi', e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('https://leads.angi.com', '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="trustpilot-link" className="text-sm font-medium">Trustpilot URL (Optional)</Label>
               <div className="flex gap-2">
                 <Input
@@ -332,8 +353,8 @@ export default function GoogleBusinessSetup({ industryId, businessName }: Google
           
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Pro Tip:</strong> You don't need all platforms immediately. Start with Google Business (essential) and Yelp (recommended). 
-              Add others as your business grows. Having multiple review platforms increases customer trust by 40%.
+              <strong>Pro Tip:</strong> Start with Google Business (essential) and your industry platform - Yelp for beauty/wellness, Angi for home services, Facebook for pet care. 
+              Having multiple review platforms increases customer trust by 40%.
             </p>
           </div>
         </div>
