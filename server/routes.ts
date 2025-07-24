@@ -9,6 +9,9 @@ import { getPlatformsByIndustry, getPlatformById } from "./industry-platforms";
 import { sendReviewRequestEmail, sendEmail } from "./sendgrid";
 import { testResendConnection } from "./email-test";
 import { sendCoderInvitation } from "./coder-invitation";
+import { performHealthCheck, getSystemInfo } from "./health-check";
+import { createRateLimitMiddleware, paymentLimiter, emailLimiter } from "./rate-limiter";
+import { addSecurityHeaders, addCorsHeaders } from "./security-headers";
 import { 
   insertAppointmentSchema, 
   insertReviewSchema, 
@@ -91,12 +94,39 @@ async function sendAppointmentConfirmation(appointment: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add production security headers
+  addSecurityHeaders(app);
+  addCorsHeaders(app);
+  
   // Test Resend connection on startup
   setTimeout(() => {
     testResendConnection();
   }, 2000);
-  // Stripe payment processing endpoint - Production Ready
-  app.post("/api/create-payment-intent", async (req, res) => {
+
+  // Production health check endpoint
+  app.get("/api/health", async (req, res) => {
+    try {
+      const healthCheck = await performHealthCheck();
+      const systemInfo = getSystemInfo();
+      
+      res.status(healthCheck.status === 'healthy' ? 200 : 
+                healthCheck.status === 'degraded' ? 207 : 503)
+         .json({
+           ...healthCheck,
+           system: systemInfo,
+           version: "1.0.0",
+           service: "Scheduled Business Platform"
+         });
+    } catch (error) {
+      res.status(500).json({
+        status: 'unhealthy',
+        error: 'Health check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+  // Stripe payment processing endpoint - Production Ready with Rate Limiting
+  app.post("/api/create-payment-intent", createRateLimitMiddleware(paymentLimiter), async (req, res) => {
     try {
       const { amount, appointmentId, clientName } = req.body;
       
@@ -750,7 +780,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/review-requests", async (req, res) => {
+  app.post("/api/review-requests", createRateLimitMiddleware(emailLimiter), async (req, res) => {
     try {
       const { clientId, clientName, clientEmail, platform, customMessage } = req.body;
       
