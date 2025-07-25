@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Scissors, Plus, Edit, Trash2, Clock, DollarSign } from "lucide-react";
 import { insertServiceSchema, type Service } from "@shared/schema";
@@ -44,10 +45,11 @@ const DURATION_OPTIONS = [
 export default function ServicesManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { selectedIndustry } = useIndustry();
-  const terminology = getTerminology(selectedIndustry.id);
+  const terminology = getTerminology(selectedIndustry.id as any);
 
   const { data: services = [], isLoading } = useQuery<Service[]>({
     queryKey: ["/api/services"],
@@ -132,8 +134,13 @@ export default function ServicesManagement() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to remove this service?")) {
-      deleteMutation.mutate(id);
+    setDeleteConfirmId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmId) {
+      deleteMutation.mutate(deleteConfirmId);
+      setDeleteConfirmId(null);
     }
   };
 
@@ -368,6 +375,24 @@ export default function ServicesManagement() {
           </Card>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Service</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this service? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove Service
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

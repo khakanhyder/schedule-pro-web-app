@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, Plus, Edit, Trash2, Mail, Phone } from "lucide-react";
 import { insertStylistSchema, type Stylist } from "@shared/schema";
@@ -30,10 +31,11 @@ type FormData = z.infer<typeof formSchema>;
 export default function StaffManagement() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingStylist, setEditingStylist] = useState<Stylist | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { selectedIndustry } = useIndustry();
-  const terminology = getTerminology(selectedIndustry.id);
+  const terminology = getTerminology(selectedIndustry.id as any);
 
   const { data: stylists = [], isLoading } = useQuery<Stylist[]>({
     queryKey: ["/api/stylists"],
@@ -116,16 +118,21 @@ export default function StaffManagement() {
     setEditingStylist(stylist);
     form.reset({
       name: stylist.name,
-      bio: stylist.bio,
-      specialties: Array.isArray(stylist.specialties) ? stylist.specialties.join(", ") : stylist.specialties || "",
+      bio: stylist.bio || "",
+      specialties: Array.isArray(stylist.specialties) ? stylist.specialties.join(", ") : (stylist.specialties || ""),
       email: stylist.email || "",
       phone: stylist.phone || ""
     });
   };
 
   const handleDelete = (id: number) => {
-    if (confirm(`Are you sure you want to remove this ${terminology.professional.toLowerCase()}?`)) {
-      deleteMutation.mutate(id);
+    setDeleteConfirmId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmId) {
+      deleteMutation.mutate(deleteConfirmId);
+      setDeleteConfirmId(null);
     }
   };
 
@@ -359,6 +366,24 @@ export default function StaffManagement() {
           </Card>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {terminology.professional}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this {terminology.professional.toLowerCase()}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove {terminology.professional}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

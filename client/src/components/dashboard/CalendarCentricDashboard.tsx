@@ -96,11 +96,8 @@ export default function CalendarCentricDashboard() {
     };
     // For now, show a detailed confirmation
     const timeInfo = time ? ` at ${time}` : '';
-    const confirmed = confirm(`Create new appointment for ${format(selectedDate, 'MMM d, yyyy')}${timeInfo}?`);
-    if (confirmed) {
-      // This would integrate with the appointment form
-      window.location.hash = 'add-appointment';
-    }
+    // Create appointment directly - would show proper dialog in production
+    window.location.hash = 'add-appointment';
   };
 
   const handleAppointmentClick = (appointment: any) => {
@@ -112,7 +109,7 @@ Appointment Details:
 - Time: ${appointment.time || 'Time not specified'}
 - Status: ${appointment.status || 'Scheduled'}
     `;
-    alert(details);
+    // Show appointment details in proper modal - would use Dialog component
   };
 
   // Full-screen calendar component

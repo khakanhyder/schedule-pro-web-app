@@ -16,7 +16,7 @@ export default function Marketing() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Demo request submitted! We will contact you within 24 hours.');
+    // Demo request submitted - would show toast notification
   };
 
   return (

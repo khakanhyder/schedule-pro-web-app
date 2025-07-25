@@ -97,9 +97,9 @@ export default function StripeSetupGuide() {
       existingReferrals.push(referralData);
       localStorage.setItem('stripe_referrals', JSON.stringify(existingReferrals));
       
-      console.log('Stripe referral tracked:', action);
+      // Stripe referral tracked
     } catch (error) {
-      console.log('Referral tracking error (non-critical):', error);
+      // Referral tracking error (non-critical)
     }
   };
 

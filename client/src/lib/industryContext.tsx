@@ -231,7 +231,7 @@ export const IndustryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (industry) {
           return industry;
         }
-        console.error('Failed to find industry by ID:', storedIndustry);
+        // Failed to find industry by ID, using default
       }
     }
     return defaultIndustry;
@@ -270,7 +270,7 @@ export const IndustryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         queryClient.invalidateQueries({ queryKey: ['/api/stylists'] });
         queryClient.invalidateQueries({ queryKey: ['/api/reviews'] });
       } catch (error) {
-        console.error('Error setting industry on server:', error);
+        // Error setting industry on server
         throw error;
       }
     }

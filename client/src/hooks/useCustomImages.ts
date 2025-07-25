@@ -15,7 +15,7 @@ export function useCustomImages() {
         const parsed = JSON.parse(savedImages);
         setCustomImages(parsed);
       } catch (error) {
-        console.error('Error parsing custom images:', error);
+        // Error parsing custom images
       }
     }
   }, []);

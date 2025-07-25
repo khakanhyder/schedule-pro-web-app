@@ -113,7 +113,7 @@ export default function MarketingSite() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Demo request:', formData);
+    // Demo request submitted
     // Handle form submission
   };
 

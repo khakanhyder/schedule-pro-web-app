@@ -144,7 +144,7 @@ export default function ReviewRequestManager() {
       });
     },
     onError: (error: any) => {
-      console.error('Review request failed:', error);
+      // Review request failed
       toast({
         title: "Failed to Send Review Request",
         description: error.message || "Something went wrong. Please try again.",

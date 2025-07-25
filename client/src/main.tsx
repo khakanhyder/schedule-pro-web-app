@@ -11,11 +11,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      .then(() => {
+        // Service worker registered successfully
       })
-      .catch(error => {
-        console.error('ServiceWorker registration failed: ', error);
+      .catch(() => {
+        // Service worker registration failed
       });
   });
 }

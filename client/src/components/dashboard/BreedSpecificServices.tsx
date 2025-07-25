@@ -418,7 +418,7 @@ export default function BreedSpecificServices() {
                   size="sm"
                   className="border-green-300 text-green-700 hover:bg-green-100"
                   onClick={() => {
-                    console.log(`Adding ${service.service} to services menu`);
+                    // Adding service to services menu
                     // This would integrate with the services management system
                   }}
                 >

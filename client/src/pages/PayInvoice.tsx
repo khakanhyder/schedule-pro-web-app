@@ -33,7 +33,7 @@ export default function PayInvoice() {
   }, [location]);
 
   const handlePaymentComplete = (method: string, details: any) => {
-    console.log('Payment completed:', { method, details });
+    // Payment completed
     // Handle payment completion - update database, send confirmations, etc.
   };
 

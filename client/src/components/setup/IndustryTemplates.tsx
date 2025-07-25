@@ -22,7 +22,7 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
 
   const handleSelectTemplate = (templateId: string) => {
     try {
-      console.log('Template selected:', templateId);
+      // Template selected
       setSelectedTemplate(templateId);
       onSelectTemplate(templateId);
       
@@ -31,7 +31,7 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
         description: `Selected ${templateId} template`,
       });
     } catch (error) {
-      console.error('Error in handleSelectTemplate:', error);
+      // Error in handleSelectTemplate
     }
   };
 
@@ -56,7 +56,7 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log(`${template.name} card clicked`);
+              // Template card clicked
               handleSelectTemplate(template.id);
             }}
           >
@@ -127,7 +127,7 @@ export default function IndustryTemplates({ onSelectTemplate }: IndustryTemplate
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log(`${template.name} button clicked - event object:`, e);
+                  // Template button clicked
                   handleSelectTemplate(template.id);
                 }}
               >

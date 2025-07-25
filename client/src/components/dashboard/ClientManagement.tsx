@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Users, Phone, Mail, Calendar } from "lucide-react";
 import { insertClientSchema, type Client } from "@shared/schema";
@@ -36,9 +37,10 @@ export default function ClientManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteConfirmClient, setDeleteConfirmClient] = useState<Client | null>(null);
   const { toast } = useToast();
   const { selectedIndustry } = useIndustry();
-  const terms = getTerminology(selectedIndustry);
+  const terms = getTerminology(selectedIndustry as any);
   const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
@@ -128,8 +130,13 @@ export default function ClientManagement() {
   };
 
   const handleDelete = (client: Client) => {
-    if (confirm(`Are you sure you want to remove ${client.name} from your client list?`)) {
-      deleteMutation.mutate(client.id);
+    setDeleteConfirmClient(client);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirmClient) {
+      deleteMutation.mutate(deleteConfirmClient.id);
+      setDeleteConfirmClient(null);
     }
   };
 
@@ -220,7 +227,7 @@ export default function ClientManagement() {
                         <FormItem>
                           <FormLabel>Preferred Service</FormLabel>
                           <FormControl>
-                            <Input placeholder="Most common service" {...field} />
+                            <Input placeholder="Most common service" {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -235,7 +242,8 @@ export default function ClientManagement() {
                           <FormControl>
                             <Textarea 
                               placeholder="Preferences, allergies, special instructions..." 
-                              {...field} 
+                              {...field}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />
@@ -366,6 +374,24 @@ export default function ClientManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmClient} onOpenChange={() => setDeleteConfirmClient(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove {deleteConfirmClient?.name || 'this client'} from your {terms.client} list? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove {terms.client.charAt(0).toUpperCase() + terms.client.slice(1)}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

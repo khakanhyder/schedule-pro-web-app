@@ -190,7 +190,7 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ['/api/appointments'] });
       setIsAddAppointmentOpen(false);
     } catch (error) {
-      console.error('Error creating appointment:', error);
+      // Error creating appointment
     }
   };
 
@@ -551,7 +551,7 @@ export default function Dashboard() {
                   <InPersonPayments 
                     amount={0}
                     onPaymentComplete={(data) => {
-                      console.log('Payment completed:', data);
+                      // Payment completed
                     }}
                   />
                   <StripeTerminalInfo />

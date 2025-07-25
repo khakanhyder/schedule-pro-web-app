@@ -133,7 +133,7 @@ export default function BulkInvoicingAutomation() {
 
   const handleBulkAction = () => {
     if (bulkAction && selectedInvoices.length > 0) {
-      console.log(`Performing ${bulkAction} on ${selectedInvoices.length} invoices`);
+      // Performing bulk action on invoices
       // Handle bulk actions like send, download, mark as paid, etc.
       
       if (bulkAction === 'send') {

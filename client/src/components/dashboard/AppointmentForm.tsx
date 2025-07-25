@@ -97,7 +97,7 @@ export default function AppointmentForm({
         smsConfirmation: data.smsConfirmation === undefined ? false : data.smsConfirmation
       };
       
-      console.log("Submitting appointment data:", appointmentData);
+      // Submitting appointment data
       
       // Send the data to the API
       const endpoint = mode === "create" 
@@ -112,7 +112,7 @@ export default function AppointmentForm({
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Server error response:", errorData);
+        // Server error response
         throw new Error(errorData.message || "Failed to create appointment");
       }
       
@@ -127,7 +127,7 @@ export default function AppointmentForm({
         onSuccess();
       }
     } catch (error: any) {
-      console.error("Form submission error:", error);
+      // Form submission error
       toast({
         title: "Error",
         description: error.message || "An error occurred",
