@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,17 @@ export default function Setup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { selectIndustryById } = useIndustry();
+  
+  // Redirect to dashboard if setup is already completed
+  useEffect(() => {
+    const setupCompleted = localStorage.getItem('setupCompleted');
+    const hasServices = localStorage.getItem('hasServices');
+    const hasStaff = localStorage.getItem('hasStaff');
+    
+    if (setupCompleted && hasServices && hasStaff) {
+      setLocation("/dashboard");
+    }
+  }, [setLocation]);
   
   const handleTemplateSelection = (templateId: string) => {
     setSelectedTemplate(templateId);
