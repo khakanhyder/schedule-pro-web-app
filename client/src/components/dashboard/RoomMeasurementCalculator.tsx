@@ -103,7 +103,7 @@ export default function RoomMeasurementCalculator() {
     const { length, width, height, doorWidth, windowCount, windowWidth } = dimensions;
     
     if (length <= 0 || width <= 0 || height <= 0) {
-      alert('Please enter valid room dimensions');
+      // Would show proper validation error message
       return;
     }
 

@@ -207,7 +207,7 @@ export default function IOSTest() {
           {activeTab === 'assets' && "Assets will be processed during the iOS build."}
           {activeTab === 'info' && "This information is documented in ios-assets/app-store-info.md."}
         </p>
-        <Button onClick={() => alert("When you're ready, follow the instructions in ios-assets/mac-preparation-guide.md to build the iOS app.")}>
+        <Button onClick={() => window.open('/ios-assets/mac-preparation-guide.md', '_blank')}>
           Test iOS Preparation
         </Button>
       </div>

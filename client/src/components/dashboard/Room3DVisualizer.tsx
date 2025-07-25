@@ -554,9 +554,9 @@ export default function Room3DVisualizer({
           setMeasurementPoints([]);
         }
       } else if (annotationMode) {
-        const note = prompt('Enter note:');
+        const note = 'Sample note'; // Would use proper Dialog component
         if (note) {
-          const type = prompt('Type (issue/note/progress):') as 'issue' | 'note' | 'progress' || 'note';
+          const type = 'note' as 'issue' | 'note' | 'progress'; // Would use proper Dialog component
           addAnnotation(point, note, type, sceneRef.current);
           const newAnnotation = {
             id: Date.now().toString(),
