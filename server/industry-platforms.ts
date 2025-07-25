@@ -109,6 +109,238 @@ export const industryPlatforms: Record<string, SchedulingPlatform[]> = {
     }
   ],
 
+  // Wellness Industry  
+  wellness: [
+    {
+      id: 'mindbody',
+      name: 'MindBody',
+      description: 'Leading wellness business management platform',
+      category: 'Wellness',
+      marketShare: 45,
+      exportMethod: 'csv',
+      apiAvailable: true,
+      exportInstructions: [
+        'Log into MindBody Business',
+        'Go to Reports → Visit Reports',
+        'Select "Appointments" and date range',
+        'Export to CSV format'
+      ],
+      csvFields: ['Client', 'Class/Service', 'Date', 'Time', 'Status', 'Price', 'Instructor'],
+      icon: '🧘',
+      website: 'https://mindbodyonline.com'
+    },
+    {
+      id: 'acuity',
+      name: 'Acuity Scheduling',
+      description: 'Professional appointment scheduling software',
+      category: 'Wellness',
+      marketShare: 25,
+      exportMethod: 'csv',
+      apiAvailable: true,
+      exportInstructions: [
+        'Access Acuity admin panel',
+        'Navigate to Business Tools → Export',
+        'Select "Appointments" data type',
+        'Download CSV export'
+      ],
+      csvFields: ['Name', 'Appointment Type', 'Date', 'Time', 'Status', 'Amount', 'Provider'],
+      icon: '📋',
+      website: 'https://acuityscheduling.com'
+    },
+    {
+      id: 'schedulicity',
+      name: 'Schedulicity',
+      description: 'Online appointment booking for wellness',
+      category: 'Wellness',
+      marketShare: 18,
+      exportMethod: 'csv',
+      apiAvailable: false,
+      exportInstructions: [
+        'Log into Schedulicity dashboard',
+        'Go to Reports section',
+        'Select "Appointment Export"',
+        'Choose date range and download'
+      ],
+      csvFields: ['Client Name', 'Service', 'Date', 'Time', 'Status', 'Fee', 'Provider'],
+      icon: '⏰',
+      website: 'https://schedulicity.com'
+    }
+  ],
+
+  // Pet Care Industry
+  pet_care: [
+    {
+      id: 'gingr',
+      name: 'Gingr',
+      description: 'Pet boarding and daycare management software',
+      category: 'Pet Care',
+      marketShare: 40,
+      exportMethod: 'csv',
+      apiAvailable: false,
+      exportInstructions: [
+        'Log into Gingr admin panel',
+        'Go to Reports → Reservation Reports',
+        'Select date range for export',
+        'Download reservations CSV file'
+      ],
+      csvFields: ['Pet Owner', 'Pet Name', 'Service', 'Check-in', 'Check-out', 'Status', 'Rate'],
+      icon: '🐕',
+      website: 'https://gingrapp.com'
+    },
+    {
+      id: 'pet-sitter-plus',
+      name: 'Pet Sitter Plus',
+      description: 'Professional pet sitting management',
+      category: 'Pet Care',
+      marketShare: 25,
+      exportMethod: 'csv',
+      apiAvailable: false,
+      exportInstructions: [
+        'Access Pet Sitter Plus dashboard',
+        'Navigate to Reports section',
+        'Select "Booking Export"',
+        'Choose dates and download CSV'
+      ],
+      csvFields: ['Client', 'Pet', 'Service Type', 'Start Date', 'End Date', 'Status', 'Total'],
+      icon: '🐾',
+      website: 'https://petsitterplus.com'
+    },
+    {
+      id: 'pawloyalty',
+      name: 'PawLoyalty',
+      description: 'Pet care business management platform',
+      category: 'Pet Care',
+      marketShare: 20,
+      exportMethod: 'csv',
+      apiAvailable: false,
+      exportInstructions: [
+        'Open PawLoyalty business portal',
+        'Go to Data Management',
+        'Select "Export Appointments"',
+        'Download appointment data as CSV'
+      ],
+      csvFields: ['Owner Name', 'Pet Name', 'Service', 'Date', 'Time', 'Status', 'Price'],
+      icon: '🎾',
+      website: 'https://pawloyalty.com'
+    }
+  ],
+
+  // Creative Services Industry
+  creative: [
+    {
+      id: 'honeybook',
+      name: 'HoneyBook',
+      description: 'All-in-one creative business management',
+      category: 'Creative Services',
+      marketShare: 45,
+      exportMethod: 'csv',
+      apiAvailable: true,
+      exportInstructions: [
+        'Log into HoneyBook account',
+        'Go to Projects section',
+        'Use "Export Projects" feature',
+        'Download CSV with project details'
+      ],
+      csvFields: ['Client', 'Project Type', 'Event Date', 'Status', 'Contract Value', 'Photographer'],
+      icon: '📸',
+      website: 'https://honeybook.com'
+    },
+    {
+      id: 'pixieset',
+      name: 'Pixieset',
+      description: 'Photography business management platform',
+      category: 'Creative Services',
+      marketShare: 30,
+      exportMethod: 'csv',
+      apiAvailable: false,
+      exportInstructions: [
+        'Access Pixieset studio dashboard',
+        'Navigate to Client Management',
+        'Export client and session data',
+        'Download CSV file'
+      ],
+      csvFields: ['Client Name', 'Session Type', 'Date', 'Status', 'Package', 'Total'],
+      icon: '🖼️',
+      website: 'https://pixieset.com'
+    },
+    {
+      id: 'studio-ninja',
+      name: 'Studio Ninja',
+      description: 'Photography studio management software',
+      category: 'Creative Services',
+      marketShare: 25,
+      exportMethod: 'csv',
+      apiAvailable: false,
+      exportInstructions: [
+        'Open Studio Ninja dashboard',
+        'Go to Leads & Jobs section',
+        'Use export functionality',
+        'Download jobs CSV file'
+      ],
+      csvFields: ['Client', 'Job Type', 'Shoot Date', 'Status', 'Quote Value', 'Photographer'],
+      icon: '🥷',
+      website: 'https://studioninja.co'
+    }
+  ],
+
+  // Custom/General Industry
+  custom: [
+    {
+      id: 'calendly',
+      name: 'Calendly',
+      description: 'General purpose appointment scheduling',
+      category: 'General Scheduling',
+      marketShare: 40,
+      exportMethod: 'csv',
+      apiAvailable: true,
+      exportInstructions: [
+        'Log into Calendly account',
+        'Go to Analytics & Reports',
+        'Select "Export Scheduled Events"',
+        'Download CSV file'
+      ],
+      csvFields: ['Invitee', 'Event Type', 'Start Time', 'End Time', 'Status', 'Location'],
+      icon: '📅',
+      website: 'https://calendly.com'
+    },
+    {
+      id: 'setmore',
+      name: 'Setmore',
+      description: 'Free appointment scheduling software',
+      category: 'General Scheduling',
+      marketShare: 25,
+      exportMethod: 'csv',
+      apiAvailable: true,
+      exportInstructions: [
+        'Access Setmore dashboard',
+        'Navigate to Reports',
+        'Select "Appointment Report"',
+        'Export to CSV format'
+      ],
+      csvFields: ['Customer', 'Service', 'Date', 'Time', 'Status', 'Staff', 'Notes'],
+      icon: '⚙️',
+      website: 'https://setmore.com'
+    },
+    {
+      id: 'simplybook',
+      name: 'SimplyBook.me',
+      description: 'Online booking and scheduling system',
+      category: 'General Scheduling',
+      marketShare: 20,
+      exportMethod: 'csv',
+      apiAvailable: true,
+      exportInstructions: [
+        'Log into SimplyBook admin',
+        'Go to Reports section',
+        'Select booking export options',
+        'Download CSV report'
+      ],
+      csvFields: ['Client Name', 'Service', 'Date', 'Time', 'Status', 'Provider', 'Price'],
+      icon: '📖',
+      website: 'https://simplybook.me'
+    }
+  ],
+
   // Pet Services Industry
   pets: [
     {
