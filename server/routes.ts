@@ -1807,7 +1807,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const appointment = await storage.approveAppointment(id, operatorNotes);
       
       // Send approval confirmation to client
-      // TODO: Implement approval email notification
+      try {
+        const service = await storage.getService(appointment.serviceId);
+        const stylist = await storage.getStylist(appointment.stylistId);
+        const industry = storage.getCurrentIndustry();
+        
+        await sendEmail({
+          to: appointment.clientEmail,
+          subject: `Appointment Confirmed - ${appointment.clientName}`,
+          html: `
+            <h2>Great news! Your appointment has been approved</h2>
+            <p>Hello ${appointment.clientName},</p>
+            <p>Your appointment request has been approved and confirmed:</p>
+            <ul>
+              <li><strong>Service:</strong> ${service?.name || 'Service'}</li>
+              <li><strong>Date & Time:</strong> ${new Date(appointment.date).toLocaleDateString()} at ${new Date(appointment.date).toLocaleTimeString()}</li>
+              <li><strong>With:</strong> ${stylist?.name || 'Professional'}</li>
+              ${operatorNotes ? `<li><strong>Notes:</strong> ${operatorNotes}</li>` : ''}
+            </ul>
+            <p>We look forward to seeing you!</p>
+          `
+        });
+      } catch (emailError) {
+        console.log('Email notification failed:', emailError);
+      }
       
       res.json({
         appointment,
@@ -1831,7 +1854,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const appointment = await storage.declineAppointment(id, reason);
       
       // Send decline notification to client
-      // TODO: Implement decline email notification
+      try {
+        await sendEmail({
+          to: appointment.clientEmail,
+          subject: `Appointment Update - ${appointment.clientName}`,
+          html: `
+            <h2>Appointment Update</h2>
+            <p>Hello ${appointment.clientName},</p>
+            <p>Unfortunately, we're unable to accommodate your appointment request at the requested time.</p>
+            <p><strong>Reason:</strong> ${reason}</p>
+            <p>Please feel free to book a different time slot or contact us to discuss alternatives.</p>
+            <p>We appreciate your understanding and look forward to serving you soon.</p>
+          `
+        });
+      } catch (emailError) {
+        console.log('Email notification failed:', emailError);
+      }
       
       res.json({
         appointment,

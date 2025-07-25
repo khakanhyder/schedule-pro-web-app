@@ -239,10 +239,12 @@ export default function Setup() {
 
             {step === 3 && selectedTemplate && (
               <div className="space-y-6">
-                <ImageUploadManager 
-                  selectedIndustry={industryTemplates.find(t => t.id === selectedTemplate)!}
-                  onImagesUpdate={handleImagesUpdate}
-                />
+                {/* Image upload functionality moved to click-to-edit interface in dashboard */}
+                <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                  <p className="text-sm text-gray-600 text-center">
+                    You can customize business images after setup in your dashboard
+                  </p>
+                </div>
               </div>
             )}
 

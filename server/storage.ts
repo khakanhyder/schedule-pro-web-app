@@ -56,6 +56,12 @@ export interface IStorage {
   getAppointmentsByDate(date: Date): Promise<Appointment[]>;
   createAppointment(appointment: InsertAppointment): Promise<Appointment>;
   
+  // Appointment Approval System
+  getPendingAppointments(): Promise<Appointment[]>;
+  getAppointmentsByStatus(status: string): Promise<Appointment[]>;
+  approveAppointment(id: number, operatorNotes?: string): Promise<Appointment>;
+  declineAppointment(id: number, reason: string): Promise<Appointment>;
+  
   // Reviews
   getReviews(): Promise<Review[]>;
   getPublishedReviews(): Promise<Review[]>;

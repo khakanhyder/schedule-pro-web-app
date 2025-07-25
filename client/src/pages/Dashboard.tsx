@@ -649,6 +649,7 @@ export default function Dashboard() {
               Schedule a new {terms.appointment} for your {terms.client}
             </DialogDescription>
             <AppointmentForm 
+              mode="create"
               onSuccess={() => {
                 setIsAddAppointmentOpen(false);
                 queryClient.invalidateQueries({ queryKey: ['/api/appointments'] });
