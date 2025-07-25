@@ -262,6 +262,16 @@ export default function Setup() {
             )}
           </CardFooter>
         </Card>
+
+        {/* Admin Access Button */}
+        <div className="mt-8 text-center border-t pt-6">
+          <p className="text-xs text-muted-foreground mb-2">System Administration</p>
+          <Link href="/admin-login">
+            <Button variant="ghost" size="sm" className="text-xs">
+              Admin Access
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );
