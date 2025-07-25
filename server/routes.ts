@@ -20,8 +20,11 @@ import {
   insertInvoiceSchema,
   insertRoomProjectSchema,
   insertRoomMaterialSchema,
-  insertJobEstimateSchema
+  insertJobEstimateSchema,
+  insertBusinessProfileSchema,
+  insertBookingQRCodeSchema
 } from "@shared/schema";
+import QRCode from "qrcode";
 
 // Initialize Stripe with the secret key
 const stripe = process.env.STRIPE_SECRET_KEY 
@@ -1523,6 +1526,242 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       res.status(500).json({ message: "Error converting estimate to invoice: " + error.message });
+    }
+  });
+
+  // ========================================
+  // DIRECT BOOKING SYSTEM API ROUTES
+  // ========================================
+
+  // Business Profiles Management
+  app.get("/api/business-profiles", async (req, res) => {
+    try {
+      const profiles = await storage.getBusinessProfiles();
+      res.json(profiles);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching business profiles: " + error.message });
+    }
+  });
+
+  app.get("/api/business-profiles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const profile = await storage.getBusinessProfile(id);
+      if (!profile) {
+        return res.status(404).json({ message: "Business profile not found" });
+      }
+      res.json(profile);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching business profile: " + error.message });
+    }
+  });
+
+  // Get business profile by slug (for direct booking links)
+  app.get("/api/book/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const profile = await storage.getBusinessProfileBySlug(slug);
+      
+      if (!profile) {
+        return res.status(404).json({ message: "Business not found" });
+      }
+
+      if (!profile.isActive || !profile.bookingEnabled) {
+        return res.status(403).json({ message: "Booking is currently disabled for this business" });
+      }
+
+      // Get business services and staff
+      const services = await storage.getServices();
+      const stylists = await storage.getStylists();
+      
+      res.json({
+        business: profile,
+        services,
+        staff: stylists,
+        bookingInfo: {
+          instantBooking: profile.instantBooking,
+          requiresApproval: !profile.instantBooking
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching booking information: " + error.message });
+    }
+  });
+
+  // Create business profile
+  app.post("/api/business-profiles", async (req, res) => {
+    try {
+      const validatedData = insertBusinessProfileSchema.parse(req.body);
+      const profile = await storage.createBusinessProfile(validatedData);
+      res.status(201).json(profile);
+    } catch (error: any) {
+      res.status(400).json({ message: "Error creating business profile: " + error.message });
+    }
+  });
+
+  // Update business profile
+  app.put("/api/business-profiles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const profile = await storage.updateBusinessProfile(id, updates);
+      res.json(profile);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error updating business profile: " + error.message });
+    }
+  });
+
+  // Delete business profile
+  app.delete("/api/business-profiles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBusinessProfile(id);
+      res.json({ message: "Business profile deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error deleting business profile: " + error.message });
+    }
+  });
+
+  // QR Code Management
+  app.get("/api/qr-codes", async (req, res) => {
+    try {
+      const { businessId } = req.query;
+      const qrCodes = await storage.getBookingQRCodes(businessId ? parseInt(businessId as string) : undefined);
+      res.json(qrCodes);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching QR codes: " + error.message });
+    }
+  });
+
+  app.get("/api/qr-codes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const qrCode = await storage.getBookingQRCode(id);
+      if (!qrCode) {
+        return res.status(404).json({ message: "QR code not found" });
+      }
+      res.json(qrCode);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching QR code: " + error.message });
+    }
+  });
+
+  // Generate QR code for business
+  app.post("/api/qr-codes", async (req, res) => {
+    try {
+      const { businessId, codeType, serviceId, displayName } = req.body;
+      
+      // Get business profile to build the URL
+      const business = await storage.getBusinessProfile(businessId);
+      if (!business) {
+        return res.status(404).json({ message: "Business not found" });
+      }
+
+      // Build the booking URL
+      let bookingUrl = `${req.protocol}://${req.get('host')}/book/${business.slug}`;
+      
+      // Add service parameter if service-specific QR code
+      if (codeType === 'service_specific' && serviceId) {
+        bookingUrl += `?service=${serviceId}`;
+      }
+
+      // Generate QR code as base64 data URL
+      const qrCodeDataUrl = await QRCode.toDataURL(bookingUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+
+      // Create QR code record
+      const qrCodeData: any = {
+        businessId,
+        codeType,
+        serviceId: serviceId || null,
+        qrCodeData: bookingUrl,
+        displayName
+      };
+
+      const validatedData = insertBookingQRCodeSchema.parse(qrCodeData);
+      const qrCode = await storage.createBookingQRCode(validatedData);
+
+      res.status(201).json({
+        qrCode,
+        qrCodeImage: qrCodeDataUrl,
+        bookingUrl
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: "Error creating QR code: " + error.message });
+    }
+  });
+
+  // Track QR code scan
+  app.post("/api/qr-codes/:id/scan", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.updateQRCodeScanCount(id);
+      res.json({ message: "Scan tracked successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error tracking scan: " + error.message });
+    }
+  });
+
+  // Delete QR code
+  app.delete("/api/qr-codes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBookingQRCode(id);
+      res.json({ message: "QR code deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error deleting QR code: " + error.message });
+    }
+  });
+
+  // Direct booking appointment creation (with business context)
+  app.post("/api/book/:slug/appointment", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      
+      // Get business profile
+      const business = await storage.getBusinessProfileBySlug(slug);
+      if (!business) {
+        return res.status(404).json({ message: "Business not found" });
+      }
+
+      if (!business.isActive || !business.bookingEnabled) {
+        return res.status(403).json({ message: "Booking is currently disabled for this business" });
+      }
+
+      // Create appointment with business context
+      const appointmentData = {
+        ...req.body,
+        date: new Date(req.body.date)
+      };
+      
+      const validatedData = insertAppointmentSchema.parse(appointmentData);
+      const appointment = await storage.createAppointment(validatedData);
+      
+      // Send confirmation with business branding
+      await sendAppointmentConfirmation(appointment);
+      
+      res.status(201).json({ 
+        appointment, 
+        business: {
+          name: business.businessName,
+          phone: business.phone,
+          email: business.email
+        },
+        message: "Appointment booked successfully!",
+        confirmations: ["email", "SMS"]
+      });
+    } catch (error: any) {
+      console.error("Direct booking error:", error);
+      if (error.name === "ZodError") {
+        return res.status(400).json({ message: "Invalid booking data", details: error.errors });
+      }
+      res.status(500).json({ message: "Error creating appointment: " + error.message });
     }
   });
 

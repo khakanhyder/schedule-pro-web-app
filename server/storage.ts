@@ -16,7 +16,9 @@ import {
   reviewRequests, type ReviewRequest, type InsertReviewRequest,
   reviewSubmissions, type ReviewSubmission, type InsertReviewSubmission,
   roomProjects, type RoomProject, type InsertRoomProject,
-  roomMaterials, type RoomMaterial, type InsertRoomMaterial
+  roomMaterials, type RoomMaterial, type InsertRoomMaterial,
+  businessProfiles, type BusinessProfile, type InsertBusinessProfile,
+  bookingQRCodes, type BookingQRCode, type InsertBookingQRCode
 } from "@shared/schema";
 import { type IndustryData, industryDatabase } from "./industryData";
 
@@ -123,6 +125,21 @@ export interface IStorage {
   deleteRoomMaterial(id: number): Promise<void>;
   getRoomMaterialsByCategory(category: string): Promise<RoomMaterial[]>;
   
+  // Business Profiles (Direct Booking)
+  getBusinessProfiles(): Promise<BusinessProfile[]>;
+  getBusinessProfile(id: number): Promise<BusinessProfile | undefined>;
+  getBusinessProfileBySlug(slug: string): Promise<BusinessProfile | undefined>;
+  createBusinessProfile(profile: InsertBusinessProfile): Promise<BusinessProfile>;
+  updateBusinessProfile(id: number, updates: Partial<InsertBusinessProfile>): Promise<BusinessProfile>;
+  deleteBusinessProfile(id: number): Promise<void>;
+  
+  // QR Codes for Booking
+  getBookingQRCodes(businessId?: number): Promise<BookingQRCode[]>;
+  getBookingQRCode(id: number): Promise<BookingQRCode | undefined>;
+  createBookingQRCode(qrCode: InsertBookingQRCode): Promise<BookingQRCode>;
+  updateQRCodeScanCount(id: number): Promise<void>;
+  deleteBookingQRCode(id: number): Promise<void>;
+  
   // Job Estimates
   getJobEstimates(): Promise<JobEstimate[]>;
   getJobEstimate(id: number): Promise<JobEstimate | undefined>;
@@ -151,6 +168,8 @@ export class MemStorage implements IStorage {
   private roomProjects = new Map<number, RoomProject>();
   private roomMaterials = new Map<number, RoomMaterial>();
   private jobEstimates = new Map<number, JobEstimate>();
+  private businessProfiles = new Map<number, BusinessProfile>();
+  private bookingQRCodes = new Map<number, BookingQRCode>();
   
   private userCurrentId = 1;
   private serviceCurrentId = 1;
@@ -170,6 +189,8 @@ export class MemStorage implements IStorage {
   private roomProjectCurrentId = 1;
   private roomMaterialCurrentId = 1;
   private jobEstimateCurrentId = 1;
+  private businessProfileCurrentId = 1;
+  private qrCodeCurrentId = 1;
   
   // Track the current industry
   private currentIndustryId = "home_services";
@@ -994,6 +1015,107 @@ export class MemStorage implements IStorage {
 
   async getAllAppointments(): Promise<Appointment[]> {
     return Array.from(this.appointments.values());
+  }
+
+  // Business Profiles (Direct Booking) Implementation
+  async getBusinessProfiles(): Promise<BusinessProfile[]> {
+    return Array.from(this.businessProfiles.values());
+  }
+
+  async getBusinessProfile(id: number): Promise<BusinessProfile | undefined> {
+    return this.businessProfiles.get(id);
+  }
+
+  async getBusinessProfileBySlug(slug: string): Promise<BusinessProfile | undefined> {
+    const profiles = Array.from(this.businessProfiles.values());
+    return profiles.find(profile => profile.slug === slug);
+  }
+
+  async createBusinessProfile(insertProfile: InsertBusinessProfile): Promise<BusinessProfile> {
+    const id = this.businessProfileCurrentId++;
+    const profile: BusinessProfile = {
+      id,
+      businessName: insertProfile.businessName,
+      ownerName: insertProfile.ownerName,
+      slug: insertProfile.slug,
+      industry: insertProfile.industry,
+      phone: insertProfile.phone,
+      email: insertProfile.email,
+      address: insertProfile.address || null,
+      city: insertProfile.city || null,
+      state: insertProfile.state || null,
+      zipCode: insertProfile.zipCode || null,
+      website: insertProfile.website || null,
+      description: insertProfile.description || null,
+      profileImage: insertProfile.profileImage || null,
+      coverImage: insertProfile.coverImage || null,
+      socialLinks: insertProfile.socialLinks || null,
+      isActive: insertProfile.isActive !== undefined ? insertProfile.isActive : true,
+      bookingEnabled: insertProfile.bookingEnabled !== undefined ? insertProfile.bookingEnabled : true,
+      instantBooking: insertProfile.instantBooking !== undefined ? insertProfile.instantBooking : true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.businessProfiles.set(id, profile);
+    return profile;
+  }
+
+  async updateBusinessProfile(id: number, updates: Partial<InsertBusinessProfile>): Promise<BusinessProfile> {
+    const profile = this.businessProfiles.get(id);
+    if (!profile) {
+      throw new Error(`Business profile ${id} not found`);
+    }
+    const updatedProfile = { ...profile, ...updates, updatedAt: new Date() };
+    this.businessProfiles.set(id, updatedProfile);
+    return updatedProfile;
+  }
+
+  async deleteBusinessProfile(id: number): Promise<void> {
+    this.businessProfiles.delete(id);
+  }
+
+  // QR Codes Implementation
+  async getBookingQRCodes(businessId?: number): Promise<BookingQRCode[]> {
+    const qrCodes = Array.from(this.bookingQRCodes.values());
+    if (businessId) {
+      return qrCodes.filter(qr => qr.businessId === businessId);
+    }
+    return qrCodes;
+  }
+
+  async getBookingQRCode(id: number): Promise<BookingQRCode | undefined> {
+    return this.bookingQRCodes.get(id);
+  }
+
+  async createBookingQRCode(insertQRCode: InsertBookingQRCode): Promise<BookingQRCode> {
+    const id = this.qrCodeCurrentId++;
+    const qrCode: BookingQRCode = {
+      id,
+      businessId: insertQRCode.businessId,
+      codeType: insertQRCode.codeType,
+      serviceId: insertQRCode.serviceId || null,
+      qrCodeData: insertQRCode.qrCodeData,
+      displayName: insertQRCode.displayName,
+      scanCount: 0,
+      isActive: true,
+      createdAt: new Date(),
+      lastScanned: null
+    };
+    this.bookingQRCodes.set(id, qrCode);
+    return qrCode;
+  }
+
+  async updateQRCodeScanCount(id: number): Promise<void> {
+    const qrCode = this.bookingQRCodes.get(id);
+    if (qrCode) {
+      qrCode.scanCount = (qrCode.scanCount || 0) + 1;
+      qrCode.lastScanned = new Date();
+      this.bookingQRCodes.set(id, qrCode);
+    }
+  }
+
+  async deleteBookingQRCode(id: number): Promise<void> {
+    this.bookingQRCodes.delete(id);
   }
 }
 

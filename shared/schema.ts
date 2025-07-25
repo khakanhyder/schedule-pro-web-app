@@ -342,6 +342,79 @@ export type ClientInsight = typeof clientInsights.$inferSelect;
 export type InsertClientInsight = z.infer<typeof insertClientInsightSchema>;
 export type SchedulingSuggestion = typeof schedulingSuggestions.$inferSelect;
 export type InsertSchedulingSuggestion = z.infer<typeof insertSchedulingSuggestionSchema>;
+
+// Business/Operator Profiles for Direct Booking
+export const businessProfiles = pgTable("business_profiles", {
+  id: serial("id").primaryKey(),
+  businessName: text("business_name").notNull(),
+  ownerName: text("owner_name").notNull(),
+  slug: text("slug").notNull().unique(), // URL-friendly identifier like "johns-salon-downtown"
+  industry: text("industry").notNull(), // beauty, trades, wellness, etc.
+  phone: text("phone").notNull(),
+  email: text("email").notNull(),
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  zipCode: text("zip_code"),
+  website: text("website"),
+  description: text("description"),
+  profileImage: text("profile_image"),
+  coverImage: text("cover_image"),
+  socialLinks: text("social_links"), // JSON string
+  isActive: boolean("is_active").default(true),
+  bookingEnabled: boolean("booking_enabled").default(true),
+  instantBooking: boolean("instant_booking").default(true), // Allow instant booking or require approval
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertBusinessProfileSchema = createInsertSchema(businessProfiles).pick({
+  businessName: true,
+  ownerName: true,
+  slug: true,
+  industry: true,
+  phone: true,
+  email: true,
+  address: true,
+  city: true,
+  state: true,
+  zipCode: true,
+  website: true,
+  description: true,
+  profileImage: true,
+  coverImage: true,
+  socialLinks: true,
+  bookingEnabled: true,
+  instantBooking: true,
+});
+
+export type InsertBusinessProfile = z.infer<typeof insertBusinessProfileSchema>;
+export type BusinessProfile = typeof businessProfiles.$inferSelect;
+
+// QR Codes for direct booking links
+export const bookingQRCodes = pgTable("booking_qr_codes", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id").notNull().references(() => businessProfiles.id),
+  codeType: text("code_type").notNull(), // 'general', 'service_specific', 'location_specific'
+  serviceId: integer("service_id"), // Optional - for service-specific QR codes
+  qrCodeData: text("qr_code_data").notNull(), // The URL that the QR code points to
+  displayName: text("display_name").notNull(), // Human readable name like "Book Hair Cut"
+  scanCount: integer("scan_count").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastScanned: timestamp("last_scanned"),
+});
+
+export const insertBookingQRCodeSchema = createInsertSchema(bookingQRCodes).pick({
+  businessId: true,
+  codeType: true,
+  serviceId: true,
+  qrCodeData: true,
+  displayName: true,
+});
+
+export type InsertBookingQRCode = z.infer<typeof insertBookingQRCodeSchema>;
+export type BookingQRCode = typeof bookingQRCodes.$inferSelect;
 // Review Request Management
 export const reviewRequests = pgTable("review_requests", {
   id: serial("id").primaryKey(),
