@@ -1,6 +1,7 @@
 import { Switch, Route, useLocation } from "wouter";
 import Home from "@/pages/Home";
 import Booking from "@/pages/Booking";
+import DirectBooking from "@/pages/DirectBooking";
 import Dashboard from "@/pages/Dashboard";
 import Setup from "@/pages/Setup";
 import Pricing from "@/pages/Pricing";
@@ -32,6 +33,7 @@ function App() {
             <Route path="/" component={Setup} />
             <Route path="/home" component={Home} />
             <Route path="/booking" component={Booking} />
+            <Route path="/book/:slug" component={DirectBooking} />
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/setup" component={Setup} />
             <Route path="/pricing" component={Pricing} />

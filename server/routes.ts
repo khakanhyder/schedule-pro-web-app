@@ -1737,7 +1737,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create appointment with business context
       const appointmentData = {
         ...req.body,
-        date: new Date(req.body.date)
+        date: new Date(req.body.date),
+        businessId: business.id,
+        isDirectBooking: true,
+        status: business.instantBooking ? "approved" : "pending"
       };
       
       const validatedData = insertAppointmentSchema.parse(appointmentData);
@@ -1746,6 +1749,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send confirmation with business branding
       await sendAppointmentConfirmation(appointment);
       
+      const responseMessage = business.instantBooking 
+        ? "Appointment booked successfully!" 
+        : "Appointment request submitted! The business will confirm your booking shortly.";
+      
       res.status(201).json({ 
         appointment, 
         business: {
@@ -1753,7 +1760,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           phone: business.phone,
           email: business.email
         },
-        message: "Appointment booked successfully!",
+        message: responseMessage,
+        requiresApproval: !business.instantBooking,
         confirmations: ["email", "SMS"]
       });
     } catch (error: any) {
@@ -1762,6 +1770,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid booking data", details: error.errors });
       }
       res.status(500).json({ message: "Error creating appointment: " + error.message });
+    }
+  });
+
+  // ========================================
+  // APPOINTMENT APPROVAL SYSTEM API ROUTES
+  // ========================================
+
+  // Get pending appointments (operator dashboard)
+  app.get("/api/appointments/pending", async (req, res) => {
+    try {
+      const pendingAppointments = await storage.getPendingAppointments();
+      res.json(pendingAppointments);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching pending appointments: " + error.message });
+    }
+  });
+
+  // Get appointments by status
+  app.get("/api/appointments/status/:status", async (req, res) => {
+    try {
+      const { status } = req.params;
+      const appointments = await storage.getAppointmentsByStatus(status);
+      res.json(appointments);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching appointments: " + error.message });
+    }
+  });
+
+  // Approve appointment
+  app.post("/api/appointments/:id/approve", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { operatorNotes } = req.body;
+      
+      const appointment = await storage.approveAppointment(id, operatorNotes);
+      
+      // Send approval confirmation to client
+      // TODO: Implement approval email notification
+      
+      res.json({
+        appointment,
+        message: "Appointment approved successfully"
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error approving appointment: " + error.message });
+    }
+  });
+
+  // Decline appointment
+  app.post("/api/appointments/:id/decline", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { reason } = req.body;
+      
+      if (!reason || reason.trim().length === 0) {
+        return res.status(400).json({ message: "Decline reason is required" });
+      }
+      
+      const appointment = await storage.declineAppointment(id, reason);
+      
+      // Send decline notification to client
+      // TODO: Implement decline email notification
+      
+      res.json({
+        appointment,
+        message: "Appointment declined"
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error declining appointment: " + error.message });
+    }
+  });
+
+  // Bulk approve/decline appointments
+  app.post("/api/appointments/bulk-action", async (req, res) => {
+    try {
+      const { appointmentIds, action, reason, operatorNotes } = req.body;
+      
+      if (!appointmentIds || !Array.isArray(appointmentIds) || appointmentIds.length === 0) {
+        return res.status(400).json({ message: "Invalid appointment IDs" });
+      }
+      
+      if (!["approve", "decline"].includes(action)) {
+        return res.status(400).json({ message: "Invalid action. Must be 'approve' or 'decline'" });
+      }
+      
+      if (action === "decline" && (!reason || reason.trim().length === 0)) {
+        return res.status(400).json({ message: "Decline reason is required for bulk decline" });
+      }
+      
+      const results = [];
+      
+      for (const appointmentId of appointmentIds) {
+        try {
+          const id = parseInt(appointmentId);
+          let appointment;
+          
+          if (action === "approve") {
+            appointment = await storage.approveAppointment(id, operatorNotes);
+          } else {
+            appointment = await storage.declineAppointment(id, reason);
+          }
+          
+          results.push({ id, status: "success", appointment });
+        } catch (error: any) {
+          results.push({ id: appointmentId, status: "error", error: error.message });
+        }
+      }
+      
+      res.json({
+        message: `Bulk ${action} completed`,
+        results,
+        successCount: results.filter(r => r.status === "success").length,
+        errorCount: results.filter(r => r.status === "error").length
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error processing bulk action: " + error.message });
     }
   });
 

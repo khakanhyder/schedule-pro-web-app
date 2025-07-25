@@ -98,6 +98,12 @@ export const appointments = pgTable("appointments", {
   confirmed: boolean("confirmed").default(false),
   emailConfirmation: boolean("email_confirmation").default(true),
   smsConfirmation: boolean("sms_confirmation").default(false),
+  status: text("status").default("pending"), // 'pending', 'approved', 'declined', 'completed'
+  businessId: integer("business_id"), // Link to business profile for direct bookings
+  isDirectBooking: boolean("is_direct_booking").default(false),
+  approvedAt: timestamp("approved_at"),
+  declinedAt: timestamp("declined_at"),
+  declineReason: text("decline_reason"),
 });
 
 export const insertAppointmentSchema = createInsertSchema(appointments).pick({
@@ -112,6 +118,9 @@ export const insertAppointmentSchema = createInsertSchema(appointments).pick({
   professionalNotes: true,
   emailConfirmation: true,
   smsConfirmation: true,
+  status: true,
+  businessId: true,
+  isDirectBooking: true,
 });
 
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
@@ -124,7 +133,7 @@ export const reviews = pgTable("reviews", {
   email: text("email").notNull(),
   rating: integer("rating").notNull(),
   text: text("text").notNull(),
-  date: timestamp("date").notNull().defaultNow(),
+  date: timestamp("date").defaultNow(),
   publishConsent: boolean("publish_consent").default(false),
   published: boolean("published").default(false),
 });

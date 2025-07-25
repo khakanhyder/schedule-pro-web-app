@@ -140,6 +140,12 @@ export interface IStorage {
   updateQRCodeScanCount(id: number): Promise<void>;
   deleteBookingQRCode(id: number): Promise<void>;
   
+  // Appointment Approval System
+  approveAppointment(id: number, operatorNotes?: string): Promise<Appointment>;
+  declineAppointment(id: number, reason: string): Promise<Appointment>;
+  getPendingAppointments(): Promise<Appointment[]>;
+  getAppointmentsByStatus(status: string): Promise<Appointment[]>;
+  
   // Job Estimates
   getJobEstimates(): Promise<JobEstimate[]>;
   getJobEstimate(id: number): Promise<JobEstimate | undefined>;
@@ -479,10 +485,18 @@ export class MemStorage implements IStorage {
       clientName: insertAppointment.clientName,
       clientEmail: insertAppointment.clientEmail,
       clientPhone: insertAppointment.clientPhone,
+      durationMinutes: insertAppointment.durationMinutes || 60,
       notes: insertAppointment.notes || null,
-      confirmed: insertAppointment.confirmed || null,
-      emailConfirmation: insertAppointment.emailConfirmation || null,
-      smsConfirmation: insertAppointment.smsConfirmation || null
+      professionalNotes: null,
+      confirmed: false,
+      emailConfirmation: insertAppointment.emailConfirmation !== false,
+      smsConfirmation: insertAppointment.smsConfirmation || false,
+      status: insertAppointment.status || (insertAppointment.isDirectBooking ? "pending" : "approved"),
+      businessId: insertAppointment.businessId || null,
+      isDirectBooking: insertAppointment.isDirectBooking || false,
+      approvedAt: null,
+      declinedAt: null,
+      declineReason: null
     };
     this.appointments.set(id, appointment);
     return appointment;
@@ -504,9 +518,9 @@ export class MemStorage implements IStorage {
       email: insertReview.email,
       rating: insertReview.rating,
       text: insertReview.text,
-      date: insertReview.date,
-      publishConsent: insertReview.publishConsent || null,
-      published: insertReview.published || null
+      date: new Date(),
+      publishConsent: insertReview.publishConsent || false,
+      published: false
     };
     this.reviews.set(id, review);
     return review;
@@ -796,12 +810,8 @@ export class MemStorage implements IStorage {
     this.initializeStylists();
   }
 
-  getCurrentIndustry(): { id: string; name: string } {
-    const industry = industryDatabase[this.currentIndustryId];
-    return {
-      id: this.currentIndustryId,
-      name: industry?.name || 'Unknown Industry'
-    };
+  getCurrentIndustry(): IndustryData {
+    return industryDatabase[this.currentIndustryId] || industryDatabase.custom;
   }
 
   // Room Projects Implementation
@@ -1116,6 +1126,49 @@ export class MemStorage implements IStorage {
 
   async deleteBookingQRCode(id: number): Promise<void> {
     this.bookingQRCodes.delete(id);
+  }
+
+  // Appointment Approval System Implementation
+  async approveAppointment(id: number, operatorNotes?: string): Promise<Appointment> {
+    const appointment = this.appointments.get(id);
+    if (!appointment) {
+      throw new Error("Appointment not found");
+    }
+    
+    const updatedAppointment = {
+      ...appointment,
+      status: "approved",
+      approvedAt: new Date(),
+      professionalNotes: operatorNotes || appointment.professionalNotes
+    };
+    
+    this.appointments.set(id, updatedAppointment);
+    return updatedAppointment;
+  }
+
+  async declineAppointment(id: number, reason: string): Promise<Appointment> {
+    const appointment = this.appointments.get(id);
+    if (!appointment) {
+      throw new Error("Appointment not found");
+    }
+    
+    const updatedAppointment = {
+      ...appointment,
+      status: "declined",
+      declinedAt: new Date(),
+      declineReason: reason
+    };
+    
+    this.appointments.set(id, updatedAppointment);
+    return updatedAppointment;
+  }
+
+  async getPendingAppointments(): Promise<Appointment[]> {
+    return Array.from(this.appointments.values()).filter(appt => appt.status === "pending");
+  }
+
+  async getAppointmentsByStatus(status: string): Promise<Appointment[]> {
+    return Array.from(this.appointments.values()).filter(appt => appt.status === status);
   }
 }
 
