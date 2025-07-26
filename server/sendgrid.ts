@@ -56,7 +56,7 @@ export async function sendReviewRequestEmail(
   businessName: string = "Your Business"
 ): Promise<boolean> {
   // For testing: Use verified email address instead of client email
-  const testEmailMode = true;
+  const testEmailMode = false; // Set to true to test emails to your inbox only
   const actualRecipient = testEmailMode ? "kbkrystalbeeler@gmail.com" : clientEmail;
   const platformUrls: Record<string, string> = {
     google: "https://www.google.com/search?q=" + encodeURIComponent(businessName),
@@ -114,7 +114,7 @@ If you have any questions, please contact us directly.
 
   return await sendEmail({
     to: actualRecipient,
-    from: 'onboarding@resend.dev', // Resend's verified sending domain
+    from: 'kbkrystalbeeler@gmail.com', // Your verified email address
     subject: `Please share your experience with ${businessName}`,
     text: textContent,
     html: htmlContent
