@@ -55,6 +55,9 @@ export async function sendReviewRequestEmail(
   customMessage: string,
   businessName: string = "Your Business"
 ): Promise<boolean> {
+  // For testing: Use verified email address instead of client email
+  const testEmailMode = true;
+  const actualRecipient = testEmailMode ? "kbkrystalbeeler@gmail.com" : clientEmail;
   const platformUrls: Record<string, string> = {
     google: "https://www.google.com/search?q=" + encodeURIComponent(businessName),
     yelp: "https://www.yelp.com/writeareview/biz/" + encodeURIComponent(businessName.toLowerCase().replace(/\s+/g, '-')),
@@ -110,7 +113,7 @@ If you have any questions, please contact us directly.
   `;
 
   return await sendEmail({
-    to: clientEmail,
+    to: actualRecipient,
     from: 'onboarding@resend.dev', // Resend's verified sending domain
     subject: `Please share your experience with ${businessName}`,
     text: textContent,
