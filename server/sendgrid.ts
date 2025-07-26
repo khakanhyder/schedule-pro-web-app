@@ -114,7 +114,7 @@ If you have any questions, please contact us directly.
 
   return await sendEmail({
     to: actualRecipient,
-    from: 'kbkrystalbeeler@gmail.com', // Your verified email address
+    from: 'reviews@scheduledpros.com', // Your verified domain
     subject: `Please share your experience with ${businessName}`,
     text: textContent,
     html: htmlContent
