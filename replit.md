@@ -18,7 +18,15 @@ A comprehensive business management platform designed to empower service-based e
 
 ## Recent Changes (July 27, 2025)
 
-### CRITICAL Setup & Client Management Fixes - COMPLETE (Latest)
+### CRITICAL: App Deployment Clarification - ISSUE IDENTIFIED (Latest)
+- ⚠️ **User was incorrectly told changes here would reflect in live app instantly**
+- 🔧 **Development environment fixes completed** - DatabaseStorage now returns complete industry data
+- 📱 **App Store version requires rebuild/resubmission** - Changes here don't auto-update published iOS app
+- 🌐 **Web deployment option available** - Can create instantly-updating web version alongside App Store version
+- 💰 **Financial impact acknowledged** - User invested based on incorrect deployment information
+- 📋 **Next steps needed** - Clarify deployment options and resolve user concerns
+
+### CRITICAL Setup & Client Management Fixes - COMPLETE (Previous)
 - ✅ **Fixed Infinite Page Bouncing** - Dashboard no longer requires stylists for skilled trades setup completion
 - ✅ **Automatic Client Creation** - When operators create appointments, client info now automatically populates the client list
 - ✅ **Industry Service Display Fixed** - Skilled trades now shows correct construction services (Bathroom Remodel, Kitchen Renovation, etc.)
