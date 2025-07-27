@@ -223,6 +223,10 @@ export class MemStorage implements IStorage {
     this.initializeStylists();
     this.initializeReviews();
     this.initializeRoomMaterials();
+    
+    // Force log to verify correct initialization
+    console.log(`🏗️ Storage initialized with industry: ${this.currentIndustryId}`);
+    console.log(`📋 Services loaded: ${Array.from(this.services.values()).map(s => s.name).join(', ')}`);
   }
   
 
@@ -1193,7 +1197,7 @@ export class DatabaseStorage implements IStorage {
   private currentIndustryId = "home_services";
   private currentIndustry: IndustryData = {
     id: "home_services",
-    name: "Home Services",
+    name: "Home Services", 
     services: []
   };
   async getUser(id: number): Promise<User | undefined> {
