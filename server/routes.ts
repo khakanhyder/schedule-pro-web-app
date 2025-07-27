@@ -89,7 +89,7 @@ async function sendAppointmentConfirmation(appointment: any) {
       `
     });
     
-    console.log(`✅ Email confirmation sent successfully: ${emailResult.id}`);
+    console.log(`✅ Email confirmation sent successfully: ${emailResult?.id || 'success'}`);
   } catch (error) {
     console.error(`❌ Failed to send email confirmation:`, error);
   }
@@ -460,7 +460,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/setup-pet-business", async (req, res) => {
     try {
       // Set up the pet care industry
-      storage.setIndustry("petcare");
+      await storage.setIndustryData("petcare");
       
       // Create Krystal Bueller as the pet sitter
       const krystal = await storage.createStylist({
@@ -1895,6 +1895,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         await sendEmail({
           to: appointment.clientEmail,
+          from: 'noreply@scheduledservices.com',
           subject: `Appointment Confirmed - ${appointment.clientName}`,
           html: `
             <h2>Great news! Your appointment has been approved</h2>
@@ -1938,6 +1939,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         await sendEmail({
           to: appointment.clientEmail,
+          from: 'noreply@scheduledservices.com',
           subject: `Appointment Update - ${appointment.clientName}`,
           html: `
             <h2>Appointment Update</h2>

@@ -93,8 +93,6 @@ export interface IStorage {
   // Business Profiles
   getBusinessProfiles(): Promise<BusinessProfile[]>;
   createBusinessProfile(profile: InsertBusinessProfile): Promise<BusinessProfile>;
-  getBusinessProfile(slug: string): Promise<BusinessProfile | undefined>;
-  getBusinessProfileBySlug(slug: string): Promise<BusinessProfile | undefined>;
   
   // QR Codes
   getBookingQRCodes(): Promise<BookingQRCode[]>;
@@ -124,7 +122,7 @@ export interface IStorage {
   
   // Industry management
   setIndustry(industryId: string): Promise<void>;
-  getCurrentIndustry(): { id: string; name: string };
+  getCurrentIndustry(): IndustryData;
   
   // Room Projects (3D Visualization)
   getRoomProjects(): Promise<RoomProject[]>;
@@ -746,6 +744,8 @@ export class MemStorage implements IStorage {
     const request: ReviewRequest = {
       ...insertRequest,
       id,
+      clientId: insertRequest.clientId || null,
+      customMessage: insertRequest.customMessage || null,
       status: 'sent',
       sentAt: new Date(),
       openedAt: null,
@@ -779,6 +779,8 @@ export class MemStorage implements IStorage {
     const submission: ReviewSubmission = {
       ...insertSubmission,
       id,
+      reviewRequestId: insertSubmission.reviewRequestId || null,
+      operatorNotes: insertSubmission.operatorNotes || null,
       submittedAt: new Date(),
       isApproved: false,
       isPublished: false,
@@ -985,6 +987,7 @@ export class MemStorage implements IStorage {
     const newEstimate: JobEstimate = {
       ...estimate,
       id,
+      notes: estimate.notes || null,
       createdAt: new Date()
     };
     this.jobEstimates.set(id, newEstimate);
@@ -1457,7 +1460,12 @@ export class DatabaseStorage implements IStorage {
     this.currentIndustry = {
       id: industryData.id,
       name: industryData.name,
-      services: []
+      professionalName: industryData.professionalName,
+      professionalTitle: industryData.professionalTitle,
+      services: industryData.services,
+      serviceDescriptions: industryData.serviceDescriptions,
+      professionalNames: industryData.professionalNames,
+      professionalBios: industryData.professionalBios
     };
 
     // Clear existing data only if changing industries
