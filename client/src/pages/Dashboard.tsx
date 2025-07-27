@@ -86,13 +86,28 @@ export default function Dashboard() {
 
   // Check if setup is completed
   useEffect(() => {
-    const setupCompleted = localStorage.getItem('setupCompleted');
-    const hasServices = localStorage.getItem('hasServices');
-    const hasStaff = localStorage.getItem('hasStaff');
-
-    if (!setupCompleted || !hasServices || !hasStaff) {
-      setLocation("/setup");
-    }
+    const checkSetupStatus = async () => {
+      try {
+        const setupCompleted = localStorage.getItem('setupCompleted');
+        
+        // Check if we have actual data from server
+        const [servicesRes, stylistsRes] = await Promise.all([
+          fetch('/api/services'),
+          fetch('/api/stylists')
+        ]);
+        const services = await servicesRes.json();
+        const stylists = await stylistsRes.json();
+        
+        // Redirect to setup if no data or setup not completed
+        if (!setupCompleted || services.length === 0 || stylists.length === 0) {
+          setLocation("/setup");
+        }
+      } catch (error) {
+        setLocation("/setup");
+      }
+    };
+    
+    checkSetupStatus();
   }, [setLocation]);
 
   // Force refresh of services when industry changes

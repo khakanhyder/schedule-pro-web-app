@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update the industry and regenerate services/staff
-      await storage.setIndustry(industryId);
+      await storage.setIndustryData(industryId);
       res.json({ success: true, industryId });
     } catch (error) {
       console.error("Error setting industry:", error);
@@ -283,6 +283,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRUD operations for stylists
   app.post("/api/stylists", async (req, res) => {
     try {
+      // Validate required fields
+      if (!req.body.name) {
+        return res.status(400).json({ message: "Missing required field: name" });
+      }
       const stylist = await storage.createStylist(req.body);
       res.json(stylist);
     } catch (error: any) {
@@ -352,6 +356,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRUD operations for services
   app.post("/api/services", async (req, res) => {
     try {
+      // Validate required fields
+      if (!req.body.name || !req.body.description || !req.body.price || !req.body.durationMinutes) {
+        return res.status(400).json({ message: "Missing required fields: name, description, price, durationMinutes" });
+      }
       const service = await storage.createService(req.body);
       res.json(service);
     } catch (error: any) {

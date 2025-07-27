@@ -87,8 +87,18 @@ export interface IStorage {
   getAllAppointments(): Promise<Appointment[]>;
   
   // Industry management
-  setIndustry(industryId: string): void;
+  setIndustryData(industryId: string): Promise<void>;
   getCurrentIndustry(): IndustryData;
+  
+  // Business Profiles
+  getBusinessProfiles(): Promise<BusinessProfile[]>;
+  createBusinessProfile(profile: InsertBusinessProfile): Promise<BusinessProfile>;
+  getBusinessProfile(slug: string): Promise<BusinessProfile | undefined>;
+  getBusinessProfileBySlug(slug: string): Promise<BusinessProfile | undefined>;
+  
+  // QR Codes
+  getBookingQRCodes(): Promise<BookingQRCode[]>;
+  createBookingQRCode(qrCode: InsertBookingQRCode): Promise<BookingQRCode>;
   
   // Invoice tracking
   getInvoices(): Promise<Invoice[]>;
@@ -1183,6 +1193,12 @@ import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
+  private currentIndustry: IndustryData = {
+    id: "beauty",
+    name: "Beauty & Salon",
+    services: [],
+    stylists: []
+  };
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
@@ -1392,13 +1408,24 @@ export class DatabaseStorage implements IStorage {
     const [newMaterial] = await db.insert(roomMaterials).values(material).returning();
     return newMaterial;
   }
-  async getBusinessProfiles(): Promise<BusinessProfile[]> { return []; }
+  async getBusinessProfiles(): Promise<BusinessProfile[]> { 
+    return db.select().from(businessProfiles);
+  }
   async createBusinessProfile(profile: InsertBusinessProfile): Promise<BusinessProfile> { 
     const [newProfile] = await db.insert(businessProfiles).values(profile).returning();
     return newProfile;
   }
-  async getBusinessProfile(slug: string): Promise<BusinessProfile | undefined> { return undefined; }
-  async getBookingQRCodes(): Promise<BookingQRCode[]> { return []; }
+  async getBusinessProfile(slug: string): Promise<BusinessProfile | undefined> { 
+    const profiles = await db.select().from(businessProfiles);
+    return profiles.find(profile => profile.slug === slug);
+  }
+  async getBusinessProfileBySlug(slug: string): Promise<BusinessProfile | undefined> { 
+    const profiles = await db.select().from(businessProfiles);
+    return profiles.find(profile => profile.slug === slug);
+  }
+  async getBookingQRCodes(): Promise<BookingQRCode[]> { 
+    return db.select().from(bookingQRCodes);
+  }
   async createBookingQRCode(qrCode: InsertBookingQRCode): Promise<BookingQRCode> { 
     const [newQRCode] = await db.insert(bookingQRCodes).values(qrCode).returning();
     return newQRCode;
@@ -1407,17 +1434,100 @@ export class DatabaseStorage implements IStorage {
     const industryData = industryDatabase[industryId as keyof typeof industryDatabase];
     if (!industryData) return;
 
+    // Update current industry
+    this.currentIndustry = {
+      id: industryData.id,
+      name: industryData.name,
+      services: [],
+      stylists: []
+    };
+
     // Clear existing data
     await db.delete(services);
     await db.delete(stylists);
 
-    // Insert new industry-specific data
-    for (const service of industryData.services) {
-      await this.createService(service);
+    // Transform and insert services
+    for (let i = 0; i < industryData.services.length; i++) {
+      const serviceData = {
+        name: industryData.services[i],
+        description: industryData.serviceDescriptions[i] || "Professional service",
+        price: "$150",
+        durationMinutes: 60,
+        category: "standard"
+      };
+
+      await this.createService(serviceData);
     }
-    for (const stylist of industryData.stylists) {
-      await this.createStylist(stylist);
+
+    // Transform and insert stylists
+    for (let i = 0; i < industryData.professionalNames.length; i++) {
+      const stylistData = {
+        name: industryData.professionalNames[i],
+        bio: industryData.professionalBios[i] || "Experienced professional",
+        imageUrl: null,
+        email: `${industryData.professionalNames[i].toLowerCase().replace(/\s+/g, '.')}@business.com`,
+        phone: `(555) 123-${4567 + i}`,
+        specialties: [industryData.services[0], industryData.services[1]] // First two services as specialties
+      };
+      await this.createStylist(stylistData);
     }
+  }
+
+  getCurrentIndustry(): IndustryData {
+    return this.currentIndustry;
+  }
+
+  // Missing interface methods - basic implementations
+  async updateMarketingCampaign(id: number, updates: Partial<MarketingCampaign>): Promise<MarketingCampaign> {
+    throw new Error("Not implemented");
+  }
+  
+  async getClientInsights(clientEmail: string): Promise<ClientInsight[]> { 
+    return []; 
+  }
+  
+  async getSchedulingSuggestions(appointmentId?: number): Promise<SchedulingSuggestion[]> { 
+    return []; 
+  }
+  
+  async acceptSchedulingSuggestion(id: number): Promise<void> {
+    // Not implemented yet
+  }
+  
+  async getAllUsers(): Promise<User[]> {
+    return db.select().from(users);
+  }
+  
+  async getAllAppointments(): Promise<Appointment[]> {
+    return db.select().from(appointments);
+  }
+  
+  async getInvoice(id: number): Promise<Invoice | undefined> {
+    const [invoice] = await db.select().from(invoices).where(eq(invoices.id, id));
+    return invoice || undefined;
+  }
+  
+  async getInvoiceByPublicUrl(publicUrl: string): Promise<Invoice | undefined> {
+    const invoicesList = await db.select().from(invoices);
+    return invoicesList.find(inv => inv.publicUrl === publicUrl);
+  }
+  
+  async trackInvoiceView(view: InsertInvoiceView): Promise<InvoiceView> {
+    const [newView] = await db.insert(invoiceViews).values(view).returning();
+    return newView;
+  }
+  
+  async getInvoiceViewCount(invoiceId: number): Promise<number> {
+    const views = await db.select().from(invoiceViews);
+    return views.filter(view => view.invoiceId === invoiceId).length;
+  }
+  
+  async updateInvoiceViewDuration(invoiceId: number, duration: number): Promise<void> {
+    // Basic implementation - would need proper SQL update
+  }
+  
+  async markNotificationAsRead(id: number): Promise<void> {
+    // Basic implementation - would need proper SQL update
   }
 }
 

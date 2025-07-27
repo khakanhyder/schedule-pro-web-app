@@ -18,26 +18,60 @@ export default function Setup() {
   const { toast } = useToast();
   const { selectIndustryById } = useIndustry();
   
-  // Redirect to dashboard if setup is already completed
+  // Check if setup is completed by checking actual data from server
   useEffect(() => {
-    const setupCompleted = localStorage.getItem('setupCompleted');
-    const hasServices = localStorage.getItem('hasServices');
-    const hasStaff = localStorage.getItem('hasStaff');
+    const checkSetupStatus = async () => {
+      try {
+        const [servicesRes, stylistsRes] = await Promise.all([
+          fetch('/api/services'),
+          fetch('/api/stylists')
+        ]);
+        const services = await servicesRes.json();
+        const stylists = await stylistsRes.json();
+        
+        // Only redirect if we have actual data
+        if (services.length > 0 && stylists.length > 0) {
+          const setupCompleted = localStorage.getItem('setupCompleted');
+          if (setupCompleted) {
+            setLocation("/dashboard");
+          }
+        }
+      } catch (error) {
+        console.log("Setup check failed, staying on setup page");
+      }
+    };
     
-    if (setupCompleted && hasServices && hasStaff) {
-      setLocation("/dashboard");
-    }
+    checkSetupStatus();
   }, [setLocation]);
   
-  const handleTemplateSelection = (templateId: string) => {
+  const handleTemplateSelection = async (templateId: string) => {
     setSelectedTemplate(templateId);
     selectIndustryById(templateId);
-    setStep(2);
     
-    toast({
-      title: "Industry Selected",
-      description: "Now customize your business details."
-    });
+    // Set industry data on server to populate services and stylists
+    try {
+      const response = await fetch('/api/set-industry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ industryId: templateId })
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Industry Selected",
+          description: "Your services and staff have been configured. Now customize your business details."
+        });
+        setStep(2);
+      } else {
+        throw new Error('Failed to set industry');
+      }
+    } catch (error) {
+      toast({
+        title: "Setup Error",
+        description: "Failed to configure your industry. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleBusinessDetails = () => {
@@ -73,10 +107,8 @@ export default function Setup() {
       return;
     }
     
-    // Save all setup data including custom images
+    // Save all setup data
     localStorage.setItem('setupCompleted', 'true');
-    localStorage.setItem('hasServices', 'true');
-    localStorage.setItem('hasStaff', 'true');
     localStorage.setItem('selectedIndustry', selectedTemplate);
     localStorage.setItem('businessName', businessName);
     // Custom images handled via click-to-edit
