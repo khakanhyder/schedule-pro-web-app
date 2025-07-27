@@ -697,6 +697,8 @@ export default function Dashboard() {
             </DialogDescription>
             <AppointmentForm 
               mode="create"
+              services={services}
+              stylists={staff}
               onSuccess={() => {
                 setIsAddAppointmentOpen(false);
                 queryClient.invalidateQueries({ queryKey: ['/api/appointments'] });

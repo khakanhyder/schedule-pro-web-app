@@ -3,7 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format } from "date-fns";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon, Clock, Plus, User, Briefcase } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { insertAppointmentSchema, type Service, type Stylist } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -56,6 +59,11 @@ export default function AppointmentForm({
   const { toast } = useToast();
   const { selectedIndustry } = useIndustry();
   const [activeTab, setActiveTab] = useState<"client" | "schedule" | "notes">("client");
+  const [showAddService, setShowAddService] = useState(false);
+  const [showAddStaff, setShowAddStaff] = useState(false);
+  const [newServiceData, setNewServiceData] = useState({ name: "", price: "", durationMinutes: 60 });
+  const [newStaffData, setNewStaffData] = useState({ name: "", bio: "", email: "", phone: "" });
+  const queryClient = useQueryClient();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,6 +83,97 @@ export default function AppointmentForm({
       smsConfirmation: initialValues?.smsConfirmation || false,
     },
   });
+
+  // Watch form values for dynamic updates
+  const watchServiceId = form.watch("serviceId");
+  const watchStylistId = form.watch("stylistId");
+
+  // Add service mutation
+  const addServiceMutation = useMutation({
+    mutationFn: async (serviceData: any) => {
+      const response = await apiRequest('POST', '/api/services', {
+        ...serviceData,
+        description: `Custom ${serviceData.name} service`,
+        category: "custom"
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create service');
+      }
+      return response.json();
+    },
+    onSuccess: (newService: Service) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/services'] });
+      form.setValue('serviceId', newService.id);
+      setShowAddService(false);
+      setNewServiceData({ name: "", price: "", durationMinutes: 60 });
+      toast({
+        title: "Service Added",
+        description: "Custom service created and selected."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Adding Service",
+        description: error.message || "Failed to create service.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Add staff mutation
+  const addStaffMutation = useMutation({
+    mutationFn: async (staffData: any) => {
+      const response = await apiRequest('POST', '/api/stylists', {
+        ...staffData,
+        specialties: []
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create team member');
+      }
+      return response.json();
+    },
+    onSuccess: (newStaff: Stylist) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/stylists'] });
+      form.setValue('stylistId', newStaff.id);
+      setShowAddStaff(false);
+      setNewStaffData({ name: "", bio: "", email: "", phone: "" });
+      toast({
+        title: "Team Member Added",
+        description: "Custom team member created and selected."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Adding Team Member",
+        description: error.message || "Failed to create team member.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleAddService = () => {
+    if (!newServiceData.name || !newServiceData.price) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter service name and price.",
+        variant: "destructive"
+      });
+      return;
+    }
+    addServiceMutation.mutate(newServiceData);
+  };
+
+  const handleAddStaff = () => {
+    if (!newStaffData.name) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter team member name.",
+        variant: "destructive"
+      });
+      return;
+    }
+    addStaffMutation.mutate(newStaffData);
+  };
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
@@ -135,9 +234,6 @@ export default function AppointmentForm({
       });
     }
   }
-  
-  const watchServiceId = form.watch("serviceId");
-  const watchStylistId = form.watch("stylistId");
   
   const handleNextTab = () => {
     if (activeTab === "client") {
@@ -259,6 +355,16 @@ export default function AppointmentForm({
                                 {service.name} - {service.price}
                               </SelectItem>
                             ))}
+                            <div className="border-t border-gray-200 mt-2 pt-2">
+                              <button
+                                type="button"
+                                className="w-full flex items-center gap-2 px-2 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded"
+                                onClick={() => setShowAddService(true)}
+                              >
+                                <Plus className="w-4 h-4" />
+                                Add Custom Service
+                              </button>
+                            </div>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -287,6 +393,16 @@ export default function AppointmentForm({
                                 {stylist.name}
                               </SelectItem>
                             ))}
+                            <div className="border-t border-gray-200 mt-2 pt-2">
+                              <button
+                                type="button"
+                                className="w-full flex items-center gap-2 px-2 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded"
+                                onClick={() => setShowAddStaff(true)}
+                              >
+                                <Plus className="w-4 h-4" />
+                                Add Team Member
+                              </button>
+                            </div>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -506,6 +622,135 @@ export default function AppointmentForm({
           ) : "Select service and provider to continue"}
         </p>
       </CardFooter>
+
+      {/* Add Custom Service Dialog */}
+      <Dialog open={showAddService} onOpenChange={setShowAddService}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Briefcase className="w-5 h-5" />
+              Add Custom Service
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="service-name">Service Name *</Label>
+              <Input
+                id="service-name"
+                value={newServiceData.name}
+                onChange={(e) => setNewServiceData({...newServiceData, name: e.target.value})}
+                placeholder="e.g., Kitchen Remodel, Hair Color, Consultation"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="service-price">Price *</Label>
+                <Input
+                  id="service-price"
+                  value={newServiceData.price}
+                  onChange={(e) => setNewServiceData({...newServiceData, price: e.target.value})}
+                  placeholder="$150"
+                />
+              </div>
+              <div>
+                <Label htmlFor="service-duration">Duration (minutes)</Label>
+                <Select 
+                  value={newServiceData.durationMinutes.toString()} 
+                  onValueChange={(value) => setNewServiceData({...newServiceData, durationMinutes: parseInt(value)})}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="45">45 minutes</SelectItem>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="90">1.5 hours</SelectItem>
+                    <SelectItem value="120">2 hours</SelectItem>
+                    <SelectItem value="180">3 hours</SelectItem>
+                    <SelectItem value="240">4 hours</SelectItem>
+                    <SelectItem value="480">8 hours</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setShowAddService(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddService}
+                disabled={addServiceMutation.isPending}
+              >
+                {addServiceMutation.isPending ? "Adding..." : "Add Service"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Custom Staff Dialog */}
+      <Dialog open={showAddStaff} onOpenChange={setShowAddStaff}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Add Team Member
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="staff-name">Name *</Label>
+              <Input
+                id="staff-name"
+                value={newStaffData.name}
+                onChange={(e) => setNewStaffData({...newStaffData, name: e.target.value})}
+                placeholder="Full name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="staff-email">Email</Label>
+              <Input
+                id="staff-email"
+                type="email"
+                value={newStaffData.email}
+                onChange={(e) => setNewStaffData({...newStaffData, email: e.target.value})}
+                placeholder="email@example.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="staff-phone">Phone</Label>
+              <Input
+                id="staff-phone"
+                value={newStaffData.phone}
+                onChange={(e) => setNewStaffData({...newStaffData, phone: e.target.value})}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            <div>
+              <Label htmlFor="staff-bio">Bio / Experience</Label>
+              <Textarea
+                id="staff-bio"
+                value={newStaffData.bio}
+                onChange={(e) => setNewStaffData({...newStaffData, bio: e.target.value})}
+                placeholder="Describe their experience and specialties"
+                rows={2}
+              />
+            </div>
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setShowAddStaff(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddStaff}
+                disabled={addStaffMutation.isPending}
+              >
+                {addStaffMutation.isPending ? "Adding..." : "Add Team Member"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
