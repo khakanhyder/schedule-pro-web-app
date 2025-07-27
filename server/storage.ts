@@ -1198,16 +1198,22 @@ import { eq, and, gte, lte } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
   private currentIndustryId = "home_services";
-  private currentIndustry: IndustryData = {
-    id: "home_services",
-    name: "Home Services",
-    professionalName: "technician",
-    professionalTitle: "Skilled-Trades Technician", 
-    services: [],
-    serviceDescriptions: [],
-    professionalNames: [],
-    professionalBios: []
-  };
+  private currentIndustry: IndustryData;
+
+  constructor() {
+    // Initialize with complete industry data from industryDatabase
+    const industryData = industryDatabase[this.currentIndustryId];
+    this.currentIndustry = {
+      id: industryData.id,
+      name: industryData.name,
+      professionalName: industryData.professionalName,
+      professionalTitle: industryData.professionalTitle,
+      services: industryData.services,
+      serviceDescriptions: industryData.serviceDescriptions,
+      professionalNames: industryData.professionalNames,
+      professionalBios: industryData.professionalBios
+    };
+  }
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
