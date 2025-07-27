@@ -29,8 +29,8 @@ export default function Setup() {
         const services = await servicesRes.json();
         const stylists = await stylistsRes.json();
         
-        // Only redirect if we have actual data
-        if (services.length > 0 && stylists.length > 0) {
+        // Only redirect if we have services (stylists can be empty initially for some industries)
+        if (services.length > 0) {
           const setupCompleted = localStorage.getItem('setupCompleted');
           if (setupCompleted) {
             setLocation("/dashboard");

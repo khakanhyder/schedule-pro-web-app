@@ -1435,6 +1435,12 @@ export class DatabaseStorage implements IStorage {
     const industryData = industryDatabase[industryId as keyof typeof industryDatabase];
     if (!industryData) return;
 
+    // Check if this industry is already set to prevent duplicate service creation
+    if (this.currentIndustryId === industryId) {
+      console.log(`Industry ${industryId} already set, skipping recreation`);
+      return;
+    }
+
     // Update current industry ID
     this.currentIndustryId = industryId;
 
@@ -1442,11 +1448,10 @@ export class DatabaseStorage implements IStorage {
     this.currentIndustry = {
       id: industryData.id,
       name: industryData.name,
-      services: [],
-
+      services: []
     };
 
-    // Clear existing data
+    // Clear existing data only if changing industries
     await db.delete(services);
     await db.delete(stylists);
 
@@ -1464,6 +1469,8 @@ export class DatabaseStorage implements IStorage {
 
       await this.createService(serviceData);
     }
+    
+    console.log(`Industry ${industryId} set successfully with ${uniqueServices.length} services`);
 
     // Start with empty staff list - users will add their own team members
     // This creates a more personalized experience
