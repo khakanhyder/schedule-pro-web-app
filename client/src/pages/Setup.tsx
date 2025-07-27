@@ -18,31 +18,13 @@ export default function Setup() {
   const { toast } = useToast();
   const { selectIndustryById } = useIndustry();
   
-  // Check if setup is completed by checking actual data from server
+  // Clear any potential redirect loops on load
   useEffect(() => {
-    const checkSetupStatus = async () => {
-      try {
-        const [servicesRes, stylistsRes] = await Promise.all([
-          fetch('/api/services'),
-          fetch('/api/stylists')
-        ]);
-        const services = await servicesRes.json();
-        const stylists = await stylistsRes.json();
-        
-        // Only redirect if we have services (stylists can be empty initially for some industries)
-        if (services.length > 0) {
-          const setupCompleted = localStorage.getItem('setupCompleted');
-          if (setupCompleted) {
-            setLocation("/dashboard");
-          }
-        }
-      } catch (error) {
-        console.log("Setup check failed, staying on setup page");
-      }
-    };
-    
-    checkSetupStatus();
-  }, [setLocation]);
+    // Clear any existing setup state to prevent loops
+    if (window.location.pathname === '/setup' || window.location.pathname === '/') {
+      localStorage.removeItem('setupCompleted');
+    }
+  }, []);
   
   const handleTemplateSelection = async (templateId: string) => {
     setSelectedTemplate(templateId);

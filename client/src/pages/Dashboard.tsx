@@ -86,22 +86,21 @@ export default function Dashboard() {
   // Get current industry template for theming
   const currentTemplate = selectedIndustry || industryTemplates[0];
 
-  // Check if setup is completed
+  // Check if setup is completed - fixed for skilled trades
   useEffect(() => {
     const checkSetupStatus = async () => {
       try {
         const setupCompleted = localStorage.getItem('setupCompleted');
         
         // Check if we have actual data from server
-        const [servicesRes, stylistsRes] = await Promise.all([
-          fetch('/api/services'),
-          fetch('/api/stylists')
+        const [servicesRes] = await Promise.all([
+          fetch('/api/services')
         ]);
         const services = await servicesRes.json();
-        const stylists = await stylistsRes.json();
         
-        // Redirect to setup if no data or setup not completed
-        if (!setupCompleted || services.length === 0 || stylists.length === 0) {
+        // Only redirect to setup if no services exist or setup not completed
+        // Note: Stylists can be empty initially for some industries like skilled trades
+        if (!setupCompleted || services.length === 0) {
           setLocation("/setup");
         }
       } catch (error) {
