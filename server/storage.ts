@@ -1212,7 +1212,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getServices(): Promise<Service[]> {
-    return db.select().from(services);
+    const serviceList = await db.select().from(services);
+    // Sort alphabetically by name for better organization
+    return serviceList.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async getService(id: number): Promise<Service | undefined> {
@@ -1235,7 +1237,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getStylists(): Promise<Stylist[]> {
-    return db.select().from(stylists);
+    const stylistList = await db.select().from(stylists);
+    // Sort alphabetically by name for better organization
+    return stylistList.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async getStylist(id: number): Promise<Stylist | undefined> {
