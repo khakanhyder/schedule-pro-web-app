@@ -34,10 +34,7 @@ export default function ServiceManager() {
 
   // Create service mutation
   const createServiceMutation = useMutation({
-    mutationFn: (serviceData: any) => apiRequest('/api/services', {
-      method: 'POST',
-      body: JSON.stringify(serviceData)
-    }),
+    mutationFn: (serviceData: any) => apiRequest('POST', '/api/services', serviceData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/services'] });
       resetForm();
@@ -59,10 +56,7 @@ export default function ServiceManager() {
   // Update service mutation
   const updateServiceMutation = useMutation({
     mutationFn: ({ id, data }: { id: number, data: any }) => 
-      apiRequest(`/api/services/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data)
-      }),
+      apiRequest('PUT', `/api/services/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/services'] });
       resetForm();

@@ -19,7 +19,7 @@ import { ThemeProvider } from "@/lib/themeContext";
 
 function App() {
   const [location] = useLocation();
-  const isSetupPage = location === "/setup" || location === "/";
+  const isSetupPage = location === "/setup";
   const isAdminPage = location === "/admin" || location === "/admin-login";
 
 
@@ -30,7 +30,7 @@ function App() {
           {!isSetupPage && !isAdminPage && <Navbar />}
           <main className="flex-grow">
           <Switch>
-            <Route path="/" component={Setup} />
+            <Route path="/" component={Home} />
             <Route path="/home" component={Home} />
             <Route path="/booking" component={Booking} />
             <Route path="/book/:slug" component={DirectBooking} />
