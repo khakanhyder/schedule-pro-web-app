@@ -64,6 +64,8 @@ import InPersonPayments from '@/components/payments/InPersonPayments';
 import StripeTerminalInfo from '@/components/payments/StripeTerminalInfo';
 import StripeSetupGuide from '@/components/payments/StripeSetupGuide';
 import ReferralTracking from '@/components/analytics/ReferralTracking';
+import ServiceManager from '@/components/dashboard/ServiceManager';
+import StaffManager from '@/components/dashboard/StaffManager';
 
 
 import { useIndustry, getTerminology, industryTemplates } from "@/lib/industryContext";
@@ -431,7 +433,7 @@ export default function Dashboard() {
             style={{ backgroundColor: currentTemplate.primaryColor }}
           />
           
-          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7'}`}>
+          <TabsList className={`grid w-full mb-8 h-auto p-1 bg-slate-100 rounded-lg ${isPetCareIndustry ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-10' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-9'}`}>
             <TabsTrigger 
               value="appointments" 
               className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
@@ -481,6 +483,26 @@ export default function Dashboard() {
               } : {}}
             >
               AI Insights
+            </TabsTrigger>
+            <TabsTrigger 
+              value="services" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'services' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Services
+            </TabsTrigger>
+            <TabsTrigger 
+              value="staff" 
+              className="text-xs sm:text-sm py-3 data-[state=active]:text-white transition-all duration-200"
+              style={selectedTab === 'staff' ? {
+                backgroundColor: currentTemplate.primaryColor,
+                color: 'white'
+              } : {}}
+            >
+              Team
             </TabsTrigger>
             <TabsTrigger 
               value="growth" 
@@ -542,6 +564,16 @@ export default function Dashboard() {
           {/* Clients Tab */}
           <TabsContent value="clients">
             <ClientManagement />
+          </TabsContent>
+
+          {/* Services Management Tab */}
+          <TabsContent value="services">
+            <ServiceManager />
+          </TabsContent>
+
+          {/* Staff Management Tab */}
+          <TabsContent value="staff">
+            <StaffManager />
           </TabsContent>
 
           {/* Payments Tab */}

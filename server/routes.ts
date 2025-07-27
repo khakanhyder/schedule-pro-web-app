@@ -297,6 +297,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/stylists/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      // Validate required fields for update
+      if (!req.body.name) {
+        return res.status(400).json({ message: "Missing required field: name" });
+      }
       const stylist = await storage.updateStylist(id, req.body);
       res.json(stylist);
     } catch (error: any) {
@@ -370,6 +374,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/services/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      // Validate required fields for update
+      if (!req.body.name || !req.body.description || !req.body.price || !req.body.durationMinutes) {
+        return res.status(400).json({ message: "Missing required fields: name, description, price, durationMinutes" });
+      }
       const service = await storage.updateService(id, req.body);
       res.json(service);
     } catch (error: any) {
