@@ -527,6 +527,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // This will validate and convert the data format
       const validatedData = insertAppointmentSchema.parse(appointmentData);
       
+      // AUTO-CREATE CLIENT: Check if client exists, create if not
+      try {
+        const existingClient = await storage.getClientByEmail(validatedData.clientEmail);
+        if (!existingClient) {
+          // Create new client automatically
+          const newClient = await storage.createClient({
+            name: validatedData.clientName,
+            email: validatedData.clientEmail,
+            phone: validatedData.clientPhone,
+            preferredService: "General", // Default value
+            notes: "Auto-created from appointment booking"
+          });
+          console.log(`✅ Auto-created client: ${newClient.name} (ID: ${newClient.id})`);
+        }
+      } catch (error) {
+        console.log("Client auto-creation skipped:", error);
+      }
+      
       // Create the appointment
       const appointment = await storage.createAppointment(validatedData);
       
@@ -1788,6 +1806,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const validatedData = insertAppointmentSchema.parse(appointmentData);
+      
+      // AUTO-CREATE CLIENT: Check if client exists, create if not
+      try {
+        const existingClient = await storage.getClientByEmail(validatedData.clientEmail);
+        if (!existingClient) {
+          // Create new client automatically
+          const newClient = await storage.createClient({
+            name: validatedData.clientName,
+            email: validatedData.clientEmail,
+            phone: validatedData.clientPhone,
+            preferredService: "General", // Default value
+            notes: "Auto-created from direct booking"
+          });
+          console.log(`✅ Auto-created client from direct booking: ${newClient.name} (ID: ${newClient.id})`);
+        }
+      } catch (error) {
+        console.log("Client auto-creation skipped:", error);
+      }
+      
       const appointment = await storage.createAppointment(validatedData);
       
       // Send confirmation with business branding
