@@ -1197,8 +1197,13 @@ export class DatabaseStorage implements IStorage {
   private currentIndustryId = "home_services";
   private currentIndustry: IndustryData = {
     id: "home_services",
-    name: "Home Services", 
-    services: []
+    name: "Home Services",
+    professionalName: "technician",
+    professionalTitle: "Skilled-Trades Technician", 
+    services: [],
+    serviceDescriptions: [],
+    professionalNames: [],
+    professionalBios: []
   };
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
