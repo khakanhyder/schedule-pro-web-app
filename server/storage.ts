@@ -332,7 +332,9 @@ export class MemStorage implements IStorage {
   }
 
   async getServices(): Promise<Service[]> {
-    return Array.from(this.services.values());
+    const services = Array.from(this.services.values());
+    // Sort alphabetically by name for better organization
+    return services.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async getService(id: number): Promise<Service | undefined> {
@@ -367,7 +369,9 @@ export class MemStorage implements IStorage {
   }
 
   async getStylists(): Promise<Stylist[]> {
-    return Array.from(this.stylists.values());
+    const stylists = Array.from(this.stylists.values());
+    // Sort alphabetically by name for better organization
+    return stylists.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async getStylist(id: number): Promise<Stylist | undefined> {
