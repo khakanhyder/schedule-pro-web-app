@@ -240,7 +240,7 @@ export class MemStorage implements IStorage {
     this.serviceCurrentId = 1;
     
     // Create unique services based on current industry
-    const uniqueServices = [...new Set(industry.services)]; // Remove duplicates
+    const uniqueServices = Array.from(new Set(industry.services)); // Remove duplicates
     
     for (let i = 0; i < uniqueServices.length; i++) {
       const name = uniqueServices[i];
@@ -1193,8 +1193,7 @@ export class DatabaseStorage implements IStorage {
   private currentIndustry: IndustryData = {
     id: "beauty",
     name: "Beauty & Salon",
-    services: [],
-    stylists: []
+    services: []
   };
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -1451,7 +1450,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(stylists);
 
     // Create unique services (remove duplicates)
-    const uniqueServices = [...new Set(industryData.services)];
+    const uniqueServices = Array.from(new Set(industryData.services));
     
     for (let i = 0; i < uniqueServices.length; i++) {
       const serviceData = {
@@ -1478,13 +1477,7 @@ export class DatabaseStorage implements IStorage {
     throw new Error("Not implemented");
   }
   
-  async getClientInsights(clientEmail: string): Promise<ClientInsight[]> { 
-    return []; 
-  }
-  
-  async getSchedulingSuggestions(appointmentId?: number): Promise<SchedulingSuggestion[]> { 
-    return []; 
-  }
+  // Removed duplicate implementations - they're already defined above
   
   async acceptSchedulingSuggestion(id: number): Promise<void> {
     // Not implemented yet
