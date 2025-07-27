@@ -88,7 +88,7 @@ export default function Setup() {
 
   // Image handling moved to click-to-edit interface
 
-  const completeSetup = () => {
+  const completeSetup = async () => {
     if (!selectedTemplate) {
       toast({
         title: "Please select an industry",
@@ -107,18 +107,43 @@ export default function Setup() {
       return;
     }
     
-    // Save all setup data
-    localStorage.setItem('setupCompleted', 'true');
-    localStorage.setItem('selectedIndustry', selectedTemplate);
-    localStorage.setItem('businessName', businessName);
-    // Custom images handled via click-to-edit
-    
-    setLocation("/dashboard");
-    
-    toast({
-      title: "Setup Complete!",
-      description: "Your personalized business profile has been configured successfully."
-    });
+    try {
+      // Verify server has data before completing setup
+      const [servicesRes, stylistsRes] = await Promise.all([
+        fetch('/api/services'),
+        fetch('/api/stylists')
+      ]);
+      const services = await servicesRes.json();
+      const stylists = await stylistsRes.json();
+      
+      // Only complete setup if we have services (stylists can be empty initially)
+      if (services.length > 0) {
+        // Save all setup data
+        localStorage.setItem('setupCompleted', 'true');
+        localStorage.setItem('selectedIndustry', selectedTemplate);
+        localStorage.setItem('businessName', businessName);
+        
+        setLocation("/dashboard");
+        
+        toast({
+          title: "Setup Complete!",
+          description: "Your personalized business profile has been configured successfully."
+        });
+      } else {
+        toast({
+          title: "Setup Error",
+          description: "Services not properly configured. Please try selecting your industry again.",
+          variant: "destructive"
+        });
+        setStep(1);
+      }
+    } catch (error) {
+      toast({
+        title: "Setup Error",
+        description: "Failed to verify setup. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

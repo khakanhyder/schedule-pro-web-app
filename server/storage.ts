@@ -1190,9 +1190,10 @@ import { db } from "./db";
 import { eq, and, gte, lte } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
+  private currentIndustryId = "home_services";
   private currentIndustry: IndustryData = {
-    id: "beauty",
-    name: "Beauty & Salon",
+    id: "home_services",
+    name: "Home Services",
     services: []
   };
   async getUser(id: number): Promise<User | undefined> {
@@ -1442,7 +1443,7 @@ export class DatabaseStorage implements IStorage {
       id: industryData.id,
       name: industryData.name,
       services: [],
-      stylists: []
+
     };
 
     // Clear existing data
