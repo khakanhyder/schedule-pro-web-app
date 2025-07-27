@@ -428,6 +428,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint to get individual appointment
+  app.get("/api/appointment/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const appointment = await storage.getAppointment(id);
+      if (!appointment) {
+        return res.status(404).json({ message: "Appointment not found" });
+      }
+      res.json(appointment);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching appointment" });
+    }
+  });
+
+  // API endpoint to get individual service
+  app.get("/api/services/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const service = await storage.getService(id);
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      res.json(service);
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching service" });
+    }
+  });
+
   // Pet sitting business setup endpoint
   app.post("/api/setup-pet-business", async (req, res) => {
     try {

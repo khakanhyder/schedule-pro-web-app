@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Card,
   CardContent, 
@@ -21,14 +22,15 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Copy, DollarSign, CreditCard, AlertCircle, CheckCircle } from "lucide-react";
+import { type Service, type Appointment } from "@shared/schema";
 
 interface PaymentOptionsProps {
   appointmentId: number;
   clientName: string;
-  amount: number;
+  amount?: number; // Make optional since we'll calculate from service
 }
 
-export default function PaymentOptions({ appointmentId, clientName, amount }: PaymentOptionsProps) {
+export default function PaymentOptions({ appointmentId, clientName, amount: propAmount }: PaymentOptionsProps) {
   const [paymentMethod, setPaymentMethod] = useState<string>("card");
   const [receiptSent, setReceiptSent] = useState(false);
   const [invoiceSent, setInvoiceSent] = useState(false);
@@ -39,6 +41,23 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
   const [invoiceViews, setInvoiceViews] = useState<{timestamp: string, count: number}[]>([]);
   const [clientEmail, setClientEmail] = useState<string>("");
   const { toast } = useToast();
+
+  // Fetch appointment details to get the actual service pricing
+  const { data: appointment } = useQuery<Appointment>({
+    queryKey: ['/api/appointments', appointmentId],
+    queryFn: () => fetch(`/api/appointment/${appointmentId}`).then(res => res.json()),
+    enabled: !!appointmentId
+  });
+
+  // Fetch service details to get custom pricing
+  const { data: service } = useQuery<Service>({
+    queryKey: ['/api/services', appointment?.serviceId],
+    queryFn: () => fetch(`/api/services/${appointment?.serviceId}`).then(res => res.json()),
+    enabled: !!appointment?.serviceId
+  });
+
+  // Calculate the actual amount from service pricing, with fallback to prop
+  const amount = service?.price ? parseFloat(service.price.replace(/[^0-9.]/g, '')) : (propAmount || 0);
   
   // Digital payment details - in production this would come from the professional's profile
   const digitalPayments = {
@@ -238,6 +257,26 @@ export default function PaymentOptions({ appointmentId, clientName, amount }: Pa
           
           <TabsContent value="invoice">
             <div className="grid gap-4 py-4">
+              {/* Service Details for Invoice */}
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-sm mb-2">Service Details</h4>
+                <div className="flex justify-between text-sm">
+                  <span>{service?.name || 'Service'}</span>
+                  <span className="font-medium">{service?.price || '$0'}</span>
+                </div>
+                {service?.durationMinutes && (
+                  <div className="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>Duration</span>
+                    <span>{service.durationMinutes} minutes</span>
+                  </div>
+                )}
+                {service?.description && (
+                  <div className="text-xs text-gray-600 mt-2">
+                    <span>{service.description}</span>
+                  </div>
+                )}
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="client-email">Client Email</Label>
                 <Input 

@@ -16,9 +16,20 @@ A comprehensive business management platform designed to empower service-based e
 - iOS App Store deployment targeting premium pricing ($299-499/month)
 - Focus on seamless data migration to remove adoption barriers
 
+## Recent Changes (July 27, 2025)
+
+### Enhanced Custom Pricing Integration - COMPLETE (Latest)
+- ✅ **Alphabetical Sorting Implemented** - Both services and staff lists now sort alphabetically as users add custom entries
+- ✅ **Custom Service Pricing Integration** - Service pricing from appointment booking flows directly to invoice generation 
+- ✅ **Enhanced Invoice Display** - Service details (name, price, duration, description) shown prominently in invoice tab
+- ✅ **Database-Level Sorting** - Alphabetical ordering implemented in both MemStorage and DatabaseStorage classes
+- ✅ **API Endpoints Added** - Individual appointment and service retrieval endpoints for proper pricing integration
+- ✅ **Personalized System Growth** - Lists become more customized and organized as skilled tradesmen add detailed job entries
+- 🎯 **Perfect for Skilled Trades** - System starts with industry basics but grows highly personalized through daily use
+
 ## Recent Changes (July 25, 2025)
 
-### Apple App Store Compliance COMPLETE - 100% SUBMISSION READY (Latest)
+### Apple App Store Compliance COMPLETE - 100% SUBMISSION READY (Previous)
 - ✅ **ALL Alert/Confirm/Prompt Dialogs Replaced** - Zero native browser dialogs, all use proper UI AlertDialog components
 - ✅ **ALL Console Statements Removed** - Zero debug code or console logs remaining in production build
 - ✅ **ALL TypeScript Errors Fixed** - Clean compilation with zero errors or warnings
