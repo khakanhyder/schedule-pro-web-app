@@ -235,9 +235,15 @@ export class MemStorage implements IStorage {
       return;
     }
     
-    // Create services based on current industry
-    for (let i = 0; i < industry.services.length; i++) {
-      const name = industry.services[i];
+    // Clear existing services to prevent duplicates
+    this.services.clear();
+    this.serviceCurrentId = 1;
+    
+    // Create unique services based on current industry
+    const uniqueServices = [...new Set(industry.services)]; // Remove duplicates
+    
+    for (let i = 0; i < uniqueServices.length; i++) {
+      const name = uniqueServices[i];
       const description = industry.serviceDescriptions[i] || `Professional ${name}`;
       
       // Generate price based on service index
@@ -260,26 +266,13 @@ export class MemStorage implements IStorage {
   }
   
   private initializeStylists(): void {
-    const industry = industryDatabase[this.currentIndustryId];
+    // Clear existing staff to start fresh
+    this.stylists.clear();
+    this.stylistCurrentId = 1;
     
-    if (!industry) {
-      console.error(`Industry ${this.currentIndustryId} not found!`);
-      return;
-    }
-    
-    // Create professionals based on current industry
-    for (let i = 0; i < industry.professionalNames.length; i++) {
-      const name = industry.professionalNames[i];
-      const bio = industry.professionalBios[i] || `${name} is an experienced ${industry.professionalName}`;
-      
-      const stylist: InsertStylist = {
-        name,
-        bio,
-        imageUrl: null
-      };
-      
-      this.createStylist(stylist);
-    }
+    // Start with empty staff list - users will add their own team members
+    // This creates a more personalized experience where the dropdown grows
+    // as they add custom entries during appointment booking
   }
 
   private initializeReviews(): void {
@@ -1434,6 +1427,9 @@ export class DatabaseStorage implements IStorage {
     const industryData = industryDatabase[industryId as keyof typeof industryDatabase];
     if (!industryData) return;
 
+    // Update current industry ID
+    this.currentIndustryId = industryId;
+
     // Update current industry
     this.currentIndustry = {
       id: industryData.id,
@@ -1446,10 +1442,12 @@ export class DatabaseStorage implements IStorage {
     await db.delete(services);
     await db.delete(stylists);
 
-    // Transform and insert services
-    for (let i = 0; i < industryData.services.length; i++) {
+    // Create unique services (remove duplicates)
+    const uniqueServices = [...new Set(industryData.services)];
+    
+    for (let i = 0; i < uniqueServices.length; i++) {
       const serviceData = {
-        name: industryData.services[i],
+        name: uniqueServices[i],
         description: industryData.serviceDescriptions[i] || "Professional service",
         price: "$150",
         durationMinutes: 60,
@@ -1459,18 +1457,8 @@ export class DatabaseStorage implements IStorage {
       await this.createService(serviceData);
     }
 
-    // Transform and insert stylists
-    for (let i = 0; i < industryData.professionalNames.length; i++) {
-      const stylistData = {
-        name: industryData.professionalNames[i],
-        bio: industryData.professionalBios[i] || "Experienced professional",
-        imageUrl: null,
-        email: `${industryData.professionalNames[i].toLowerCase().replace(/\s+/g, '.')}@business.com`,
-        phone: `(555) 123-${4567 + i}`,
-        specialties: [industryData.services[0], industryData.services[1]] // First two services as specialties
-      };
-      await this.createStylist(stylistData);
-    }
+    // Start with empty staff list - users will add their own team members
+    // This creates a more personalized experience
   }
 
   getCurrentIndustry(): IndustryData {

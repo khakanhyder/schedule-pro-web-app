@@ -108,7 +108,7 @@ export default function AppointmentForm({
       setNewServiceData({ name: "", price: "", durationMinutes: 60 });
       toast({
         title: "Service Added",
-        description: "Custom service created and selected."
+        description: `${newService.name} has been added to your services and will appear in future bookings.`
       });
     },
     onError: (error: any) => {
@@ -138,8 +138,8 @@ export default function AppointmentForm({
       setShowAddStaff(false);
       setNewStaffData({ name: "", bio: "", email: "", phone: "" });
       toast({
-        title: "Team Member Added",
-        description: "Custom team member created and selected."
+        title: "Team Member Added", 
+        description: `${newStaff.name} has been added to your team and will appear in future bookings.`
       });
     },
     onError: (error: any) => {
