@@ -35,7 +35,7 @@ export default function StaffManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { selectedIndustry } = useIndustry();
-  const terminology = getTerminology(selectedIndustry.id as any);
+  const terminology = getTerminology(selectedIndustry);
 
   const { data: stylists = [], isLoading } = useQuery<Stylist[]>({
     queryKey: ["/api/stylists"],
