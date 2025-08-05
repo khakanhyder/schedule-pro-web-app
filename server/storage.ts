@@ -90,13 +90,13 @@ export interface IStorage {
   setIndustryData(industryId: string): Promise<void>;
   getCurrentIndustry(): IndustryData;
   
-  // Business Profiles
-  getBusinessProfiles(): Promise<BusinessProfile[]>;
-  createBusinessProfile(profile: InsertBusinessProfile): Promise<BusinessProfile>;
+  // Business Profiles - Remove duplicate declaration
+  // getBusinessProfiles(): Promise<BusinessProfile[]>;
+  // createBusinessProfile(profile: InsertBusinessProfile): Promise<BusinessProfile>;
   
-  // QR Codes
-  getBookingQRCodes(): Promise<BookingQRCode[]>;
-  createBookingQRCode(qrCode: InsertBookingQRCode): Promise<BookingQRCode>;
+  // QR Codes - Remove duplicate declaration
+  // getBookingQRCodes(): Promise<BookingQRCode[]>;
+  // createBookingQRCode(qrCode: InsertBookingQRCode): Promise<BookingQRCode>;
   
   // Invoice tracking
   getInvoices(): Promise<Invoice[]>;
@@ -120,9 +120,9 @@ export interface IStorage {
   approveReviewSubmission(id: number, operatorNotes?: string): Promise<void>;
   publishReviewSubmission(id: number): Promise<void>;
   
-  // Industry management
-  setIndustry(industryId: string): Promise<void>;
-  getCurrentIndustry(): IndustryData;
+  // Industry management - Remove duplicate
+  // setIndustry(industryId: string): Promise<void>;
+  // getCurrentIndustry(): IndustryData;
   
   // Room Projects (3D Visualization)
   getRoomProjects(): Promise<RoomProject[]>;
@@ -141,7 +141,7 @@ export interface IStorage {
   
   // Business Profiles (Direct Booking)
   getBusinessProfiles(): Promise<BusinessProfile[]>;
-  getBusinessProfile(id: number): Promise<BusinessProfile | undefined>;
+  getBusinessProfile(slug: string): Promise<BusinessProfile | undefined>;
   getBusinessProfileBySlug(slug: string): Promise<BusinessProfile | undefined>;
   createBusinessProfile(profile: InsertBusinessProfile): Promise<BusinessProfile>;
   updateBusinessProfile(id: number, updates: Partial<InsertBusinessProfile>): Promise<BusinessProfile>;
@@ -833,6 +833,12 @@ export class MemStorage implements IStorage {
     return industryDatabase[this.currentIndustryId] || industryDatabase.custom;
   }
 
+  async setIndustryData(industryId: string): Promise<void> {
+    this.currentIndustryId = industryId;
+    // Reinitialize services for the new industry
+    this.initializeServices();
+  }
+
   // Room Projects Implementation
   async getRoomProjects(): Promise<RoomProject[]> {
     return Array.from(this.roomProjects.values());
@@ -1052,8 +1058,8 @@ export class MemStorage implements IStorage {
     return Array.from(this.businessProfiles.values());
   }
 
-  async getBusinessProfile(id: number): Promise<BusinessProfile | undefined> {
-    return this.businessProfiles.get(id);
+  async getBusinessProfile(slug: string): Promise<BusinessProfile | undefined> {
+    return Array.from(this.businessProfiles.values()).find(profile => profile.slug === slug);
   }
 
   async getBusinessProfileBySlug(slug: string): Promise<BusinessProfile | undefined> {
@@ -1080,7 +1086,7 @@ export class MemStorage implements IStorage {
       profileImage: insertProfile.profileImage || null,
       coverImage: insertProfile.coverImage || null,
       socialLinks: insertProfile.socialLinks || null,
-      isActive: insertProfile.isActive !== undefined ? insertProfile.isActive : true,
+      isActive: true, // Set default value since isActive doesn't exist in InsertBusinessProfile
       bookingEnabled: insertProfile.bookingEnabled !== undefined ? insertProfile.bookingEnabled : true,
       instantBooking: insertProfile.instantBooking !== undefined ? insertProfile.instantBooking : true,
       createdAt: new Date(),
@@ -1551,4 +1557,6 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Use MemStorage for full functionality during development
+// Switch to DatabaseStorage when all methods are implemented
+export const storage = new MemStorage();
