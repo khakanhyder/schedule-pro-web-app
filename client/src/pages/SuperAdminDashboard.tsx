@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -19,7 +18,13 @@ import {
   Trash2,
   LogOut,
   MoreHorizontal,
-  AlertCircle
+  AlertCircle,
+  Menu,
+  BarChart3,
+  Settings,
+  UserPlus,
+  CreditCard,
+  Home
 } from "lucide-react";
 
 interface Client {
@@ -58,7 +63,8 @@ interface Analytics {
 }
 
 export default function SuperAdminDashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeView, setActiveView] = useState("overview");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isAddingClient, setIsAddingClient] = useState(false);
@@ -104,7 +110,7 @@ export default function SuperAdminDashboard() {
     queryKey: ['/api/analytics/revenue']
   });
 
-  const { data: onboardingSessions = [] } = useQuery({
+  const { data: onboardingSessions = [] } = useQuery<any[]>({
     queryKey: ['/api/onboarding/sessions']
   });
 
@@ -269,35 +275,87 @@ export default function SuperAdminDashboard() {
     return colors[status as keyof typeof colors] || colors.INACTIVE;
   };
 
+  const menuItems = [
+    { id: "overview", label: "Overview", icon: Home },
+    { id: "clients", label: "Clients", icon: Users },
+    { id: "plans", label: "Plans", icon: CreditCard },
+    { id: "onboarding", label: "Onboarding", icon: UserPlus },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
-              <p className="text-sm text-gray-600">Welcome back, {user.email}</p>
-            </div>
-            
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className={`bg-white shadow-lg transition-all duration-300 ${
+        isSidebarOpen ? 'w-64' : 'w-16'
+      } flex flex-col`}>
+        <div className="p-4 border-b">
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="mr-2"
+            >
+              <Menu className="w-5 h-5" />
             </Button>
+            {isSidebarOpen && (
+              <h2 className="font-bold text-lg text-gray-900">Admin Panel</h2>
+            )}
           </div>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="clients">Clients</TabsTrigger>
-            <TabsTrigger value="plans">Plans</TabsTrigger>
-            <TabsTrigger value="onboarding">Onboarding</TabsTrigger>
-          </TabsList>
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.id}>
+                  <Button
+                    variant={activeView === item.id ? "default" : "ghost"}
+                    className={`w-full justify-start ${!isSidebarOpen ? 'px-2' : ''}`}
+                    onClick={() => setActiveView(item.id)}
+                  >
+                    <Icon className={`w-5 h-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
+                    {isSidebarOpen && item.label}
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-          <TabsContent value="overview" className="space-y-6">
+        <div className="p-4 border-t">
+          <Button
+            variant="outline"
+            className={`w-full justify-start ${!isSidebarOpen ? 'px-2' : ''}`}
+            onClick={handleLogout}
+          >
+            <LogOut className={`w-5 h-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
+            {isSidebarOpen && "Logout"}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="px-6 py-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
+                <p className="text-sm text-gray-600">Welcome back, {user.email}</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 p-6 overflow-auto">
+          <div className="max-w-7xl mx-auto">{/* Content goes here */}
+
+            {activeView === "overview" && (
+              <div className="space-y-6">
             {/* Stats Cards */}
             <div className="grid gap-4 md:grid-cols-4">
               <Card>
@@ -404,9 +462,11 @@ export default function SuperAdminDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+              </div>
+            )}
 
-          <TabsContent value="clients" className="space-y-6">
+            {activeView === "clients" && (
+              <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Client Management</h2>
               <Sheet open={isAddingClient} onOpenChange={setIsAddingClient}>
@@ -779,9 +839,11 @@ export default function SuperAdminDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+              </div>
+            )}
 
-          <TabsContent value="plans" className="space-y-6">
+            {activeView === "plans" && (
+              <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Plan Management</h2>
               <Sheet open={isAddingPlan} onOpenChange={setIsAddingPlan}>
@@ -1073,9 +1135,11 @@ export default function SuperAdminDashboard() {
                 </Card>
               ))}
             </div>
-          </TabsContent>
+              </div>
+            )}
 
-          <TabsContent value="onboarding" className="space-y-6">
+            {activeView === "onboarding" && (
+              <div className="space-y-6">
             <h2 className="text-2xl font-bold">Onboarding Analytics</h2>
             
             <div className="grid gap-4 md:grid-cols-3">
@@ -1084,7 +1148,7 @@ export default function SuperAdminDashboard() {
                   <CardTitle>Total Sessions</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{onboardingSessions.length}</div>
+                  <div className="text-3xl font-bold">{Array.isArray(onboardingSessions) ? onboardingSessions.length : 0}</div>
                 </CardContent>
               </Card>
 
@@ -1094,7 +1158,7 @@ export default function SuperAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    {onboardingSessions.filter((s: any) => s.isCompleted).length}
+                    {Array.isArray(onboardingSessions) ? onboardingSessions.filter((s: any) => s.isCompleted).length : 0}
                   </div>
                 </CardContent>
               </Card>
@@ -1105,7 +1169,7 @@ export default function SuperAdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">
-                    {onboardingSessions.length > 0 
+                    {Array.isArray(onboardingSessions) && onboardingSessions.length > 0 
                       ? Math.round((onboardingSessions.filter((s: any) => s.isCompleted).length / onboardingSessions.length) * 100)
                       : 0
                     }%
@@ -1120,7 +1184,7 @@ export default function SuperAdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {onboardingSessions.slice(0, 10).map((session: any) => (
+                  {Array.isArray(onboardingSessions) ? onboardingSessions.slice(0, 10).map((session: any) => (
                     <div key={session.id} className="flex items-center justify-between p-4 border rounded">
                       <div>
                         <p className="font-medium">{session.planName}</p>
@@ -1135,12 +1199,14 @@ export default function SuperAdminDashboard() {
                         </p>
                       </div>
                     </div>
-                  ))}
+                  )) : []}
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   );
