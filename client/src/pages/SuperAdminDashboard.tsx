@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Users, 
   DollarSign, 
@@ -13,7 +17,9 @@ import {
   Eye,
   Edit,
   Trash2,
-  LogOut
+  LogOut,
+  MoreHorizontal,
+  AlertCircle
 } from "lucide-react";
 
 interface Client {
@@ -23,6 +29,7 @@ interface Client {
   email: string;
   status: string;
   plan: string;
+  planId?: string;
   monthlyRevenue: number;
   createdAt: string;
   lastLogin: string | null;
@@ -32,6 +39,7 @@ interface Plan {
   id: string;
   name: string;
   price: number;
+  billing: string;
   features: string[];
   maxUsers: number;
   storageGB: number;
@@ -51,6 +59,31 @@ interface Analytics {
 
 export default function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [isAddingClient, setIsAddingClient] = useState(false);
+  const [isAddingPlan, setIsAddingPlan] = useState(false);
+  const [clientForm, setClientForm] = useState({
+    businessName: '',
+    contactPerson: '',
+    email: '',
+    phone: '',
+    businessAddress: '',
+    industry: '',
+    planId: '',
+    status: 'TRIAL'
+  });
+  const [planForm, setPlanForm] = useState({
+    name: '',
+    price: 0,
+    billing: 'MONTHLY',
+    features: [] as string[],
+    maxUsers: 1,
+    storageGB: 10
+  });
+  const [newFeature, setNewFeature] = useState('');
+
+  const queryClient = useQueryClient();
 
   // Check authentication
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -75,9 +108,155 @@ export default function SuperAdminDashboard() {
     queryKey: ['/api/onboarding/sessions']
   });
 
+  // Mutations for client management
+  const createClientMutation = useMutation({
+    mutationFn: async (clientData: typeof clientForm) => {
+      const response = await fetch('/api/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clientData)
+      });
+      if (!response.ok) throw new Error('Failed to create client');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/analytics/revenue'] });
+      setIsAddingClient(false);
+      setClientForm({
+        businessName: '',
+        contactPerson: '',
+        email: '',
+        phone: '',
+        businessAddress: '',
+        industry: '',
+        planId: '',
+        status: 'TRIAL'
+      });
+    }
+  });
+
+  const updateClientMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<typeof clientForm> }) => {
+      const response = await fetch(`/api/clients/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      if (!response.ok) throw new Error('Failed to update client');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/analytics/revenue'] });
+      setSelectedClient(null);
+    }
+  });
+
+  const deleteClientMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/clients/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete client');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/analytics/revenue'] });
+    }
+  });
+
+  // Mutations for plan management
+  const createPlanMutation = useMutation({
+    mutationFn: async (planData: typeof planForm) => {
+      const response = await fetch('/api/plans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(planData)
+      });
+      if (!response.ok) throw new Error('Failed to create plan');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/plans'] });
+      setIsAddingPlan(false);
+      setPlanForm({
+        name: '',
+        price: 0,
+        billing: 'MONTHLY',
+        features: [],
+        maxUsers: 1,
+        storageGB: 10
+      });
+    }
+  });
+
+  const updatePlanMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<typeof planForm> }) => {
+      const response = await fetch(`/api/plans/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+      if (!response.ok) throw new Error('Failed to update plan');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/plans'] });
+      setSelectedPlan(null);
+    }
+  });
+
+  const deletePlanMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/plans/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete plan');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/plans'] });
+    }
+  });
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     window.location.href = '/admin';
+  };
+
+  const handleAddFeature = () => {
+    if (newFeature.trim()) {
+      if (selectedPlan) {
+        setSelectedPlan({
+          ...selectedPlan,
+          features: [...selectedPlan.features, newFeature.trim()]
+        });
+      } else {
+        setPlanForm({
+          ...planForm,
+          features: [...planForm.features, newFeature.trim()]
+        });
+      }
+      setNewFeature('');
+    }
+  };
+
+  const handleRemoveFeature = (index: number) => {
+    if (selectedPlan) {
+      const updatedFeatures = selectedPlan.features.filter((_, i) => i !== index);
+      setSelectedPlan({
+        ...selectedPlan,
+        features: updatedFeatures
+      });
+    } else {
+      const updatedFeatures = planForm.features.filter((_, i) => i !== index);
+      setPlanForm({
+        ...planForm,
+        features: updatedFeatures
+      });
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -230,10 +409,134 @@ export default function SuperAdminDashboard() {
           <TabsContent value="clients" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Client Management</h2>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Client
-              </Button>
+              <Sheet open={isAddingClient} onOpenChange={setIsAddingClient}>
+                <SheetTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Client
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+                  <SheetHeader>
+                    <SheetTitle>Add New Client</SheetTitle>
+                    <SheetDescription>
+                      Create a new client account and assign them to a plan
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="businessName">Business Name *</Label>
+                        <Input
+                          id="businessName"
+                          value={clientForm.businessName}
+                          onChange={(e) => setClientForm({ ...clientForm, businessName: e.target.value })}
+                          placeholder="Business Name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="contactPerson">Contact Person *</Label>
+                        <Input
+                          id="contactPerson"
+                          value={clientForm.contactPerson}
+                          onChange={(e) => setClientForm({ ...clientForm, contactPerson: e.target.value })}
+                          placeholder="Full Name"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={clientForm.email}
+                        onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+                        placeholder="business@example.com"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="phone">Phone</Label>
+                        <Input
+                          id="phone"
+                          value={clientForm.phone}
+                          onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="industry">Industry</Label>
+                        <select
+                          id="industry"
+                          className="w-full p-2 border rounded-md"
+                          value={clientForm.industry}
+                          onChange={(e) => setClientForm({ ...clientForm, industry: e.target.value })}
+                        >
+                          <option value="">Select Industry</option>
+                          <option value="Technology">Technology</option>
+                          <option value="Consulting">Consulting</option>
+                          <option value="Retail">Retail</option>
+                          <option value="Healthcare">Healthcare</option>
+                          <option value="Education">Education</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="businessAddress">Business Address</Label>
+                      <Input
+                        id="businessAddress"
+                        value={clientForm.businessAddress}
+                        onChange={(e) => setClientForm({ ...clientForm, businessAddress: e.target.value })}
+                        placeholder="123 Main St, City, State"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="planId">Plan *</Label>
+                        <select
+                          id="planId"
+                          className="w-full p-2 border rounded-md"
+                          value={clientForm.planId}
+                          onChange={(e) => setClientForm({ ...clientForm, planId: e.target.value })}
+                        >
+                          <option value="">Select Plan</option>
+                          {plans.map((plan) => (
+                            <option key={plan.id} value={plan.id}>
+                              {plan.name} - ${plan.price}/month
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor="status">Status</Label>
+                        <select
+                          id="status"
+                          className="w-full p-2 border rounded-md"
+                          value={clientForm.status}
+                          onChange={(e) => setClientForm({ ...clientForm, status: e.target.value })}
+                        >
+                          <option value="TRIAL">Trial</option>
+                          <option value="ACTIVE">Active</option>
+                          <option value="INACTIVE">Inactive</option>
+                          <option value="CANCELLED">Cancelled</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => createClientMutation.mutate(clientForm)}
+                      disabled={createClientMutation.isPending || !clientForm.businessName || !clientForm.contactPerson || !clientForm.email || !clientForm.planId}
+                    >
+                      {createClientMutation.isPending ? "Creating..." : "Create Client"}
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsAddingClient(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
 
             <Card>
@@ -289,14 +592,183 @@ export default function SuperAdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex space-x-2">
-                              <Button variant="ghost" size="sm">
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm">
-                                <Trash2 className="w-4 h-4" />
+                              <Sheet>
+                                <SheetTrigger asChild>
+                                  <Button variant="ghost" size="sm" onClick={() => setSelectedClient(client)}>
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                </SheetTrigger>
+                                <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+                                  <SheetHeader>
+                                    <SheetTitle>Client Details</SheetTitle>
+                                    <SheetDescription>
+                                      View and manage client information
+                                    </SheetDescription>
+                                  </SheetHeader>
+                                  {selectedClient && (
+                                    <div className="space-y-4 py-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label>Business Name</Label>
+                                          <p className="font-medium">{selectedClient.businessName}</p>
+                                        </div>
+                                        <div>
+                                          <Label>Contact Person</Label>
+                                          <p className="font-medium">{selectedClient.contactPerson}</p>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label>Email</Label>
+                                        <p className="font-medium">{selectedClient.email}</p>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label>Plan</Label>
+                                          <p className="font-medium">{selectedClient.plan}</p>
+                                        </div>
+                                        <div>
+                                          <Label>Status</Label>
+                                          <Badge className={getStatusBadge(selectedClient.status)}>
+                                            {selectedClient.status}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label>Monthly Revenue</Label>
+                                        <p className="font-medium">${selectedClient.monthlyRevenue.toFixed(2)}</p>
+                                      </div>
+                                      <div>
+                                        <Label>Created</Label>
+                                        <p className="font-medium">{new Date(selectedClient.createdAt).toLocaleDateString()}</p>
+                                      </div>
+                                      <div>
+                                        <Label>Last Login</Label>
+                                        <p className="font-medium">
+                                          {selectedClient.lastLogin 
+                                            ? new Date(selectedClient.lastLogin).toLocaleDateString()
+                                            : 'Never'
+                                          }
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </SheetContent>
+                              </Sheet>
+                              
+                              <Sheet>
+                                <SheetTrigger asChild>
+                                  <Button variant="ghost" size="sm" onClick={() => {
+                                    setSelectedClient(client);
+                                    setClientForm({
+                                      businessName: client.businessName,
+                                      contactPerson: client.contactPerson,
+                                      email: client.email,
+                                      phone: '',
+                                      businessAddress: '',
+                                      industry: '',
+                                      planId: client.planId || '',
+                                      status: client.status
+                                    });
+                                  }}>
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                </SheetTrigger>
+                                <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+                                  <SheetHeader>
+                                    <SheetTitle>Edit Client</SheetTitle>
+                                    <SheetDescription>
+                                      Update client information and settings
+                                    </SheetDescription>
+                                  </SheetHeader>
+                                  {selectedClient && (
+                                    <div className="space-y-4 py-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label htmlFor="edit-businessName">Business Name *</Label>
+                                          <Input
+                                            id="edit-businessName"
+                                            value={clientForm.businessName}
+                                            onChange={(e) => setClientForm({ ...clientForm, businessName: e.target.value })}
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-contactPerson">Contact Person *</Label>
+                                          <Input
+                                            id="edit-contactPerson"
+                                            value={clientForm.contactPerson}
+                                            onChange={(e) => setClientForm({ ...clientForm, contactPerson: e.target.value })}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <Label htmlFor="edit-email">Email *</Label>
+                                        <Input
+                                          id="edit-email"
+                                          type="email"
+                                          value={clientForm.email}
+                                          onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+                                        />
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <Label htmlFor="edit-planId">Plan *</Label>
+                                          <select
+                                            id="edit-planId"
+                                            className="w-full p-2 border rounded-md"
+                                            value={clientForm.planId}
+                                            onChange={(e) => setClientForm({ ...clientForm, planId: e.target.value })}
+                                          >
+                                            {plans.map((plan) => (
+                                              <option key={plan.id} value={plan.id}>
+                                                {plan.name} - ${plan.price}/month
+                                              </option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-status">Status</Label>
+                                          <select
+                                            id="edit-status"
+                                            className="w-full p-2 border rounded-md"
+                                            value={clientForm.status}
+                                            onChange={(e) => setClientForm({ ...clientForm, status: e.target.value })}
+                                          >
+                                            <option value="TRIAL">Trial</option>
+                                            <option value="ACTIVE">Active</option>
+                                            <option value="INACTIVE">Inactive</option>
+                                            <option value="CANCELLED">Cancelled</option>
+                                          </select>
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button 
+                                          onClick={() => updateClientMutation.mutate({
+                                            id: selectedClient.id,
+                                            updates: clientForm
+                                          })}
+                                          disabled={updateClientMutation.isPending}
+                                        >
+                                          {updateClientMutation.isPending ? "Updating..." : "Update Client"}
+                                        </Button>
+                                        <Button variant="outline" onClick={() => setSelectedClient(null)}>
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </SheetContent>
+                              </Sheet>
+                              
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  if (confirm(`Are you sure you want to delete ${client.businessName}?`)) {
+                                    deleteClientMutation.mutate(client.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4 text-red-500" />
                               </Button>
                             </div>
                           </td>
@@ -312,10 +784,123 @@ export default function SuperAdminDashboard() {
           <TabsContent value="plans" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Plan Management</h2>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Plan
-              </Button>
+              <Sheet open={isAddingPlan} onOpenChange={setIsAddingPlan}>
+                <SheetTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Plan
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+                  <SheetHeader>
+                    <SheetTitle>Create New Plan</SheetTitle>
+                    <SheetDescription>
+                      Design a new subscription plan for your platform
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="planName">Plan Name *</Label>
+                        <Input
+                          id="planName"
+                          value={planForm.name}
+                          onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
+                          placeholder="e.g., Starter, Pro, Enterprise"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="planPrice">Price *</Label>
+                        <Input
+                          id="planPrice"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={planForm.price}
+                          onChange={(e) => setPlanForm({ ...planForm, price: parseFloat(e.target.value) || 0 })}
+                          placeholder="29.99"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="maxUsers">Max Users *</Label>
+                        <Input
+                          id="maxUsers"
+                          type="number"
+                          min="1"
+                          value={planForm.maxUsers}
+                          onChange={(e) => setPlanForm({ ...planForm, maxUsers: parseInt(e.target.value) || 1 })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="storageGB">Storage (GB) *</Label>
+                        <Input
+                          id="storageGB"
+                          type="number"
+                          min="1"
+                          value={planForm.storageGB}
+                          onChange={(e) => setPlanForm({ ...planForm, storageGB: parseInt(e.target.value) || 1 })}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="billing">Billing Cycle</Label>
+                      <select
+                        id="billing"
+                        className="w-full p-2 border rounded-md"
+                        value={planForm.billing}
+                        onChange={(e) => setPlanForm({ ...planForm, billing: e.target.value })}
+                      >
+                        <option value="MONTHLY">Monthly</option>
+                        <option value="YEARLY">Yearly</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Features</Label>
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Input
+                            value={newFeature}
+                            onChange={(e) => setNewFeature(e.target.value)}
+                            placeholder="Add a feature..."
+                            onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
+                          />
+                          <Button type="button" onClick={handleAddFeature} size="sm">
+                            Add
+                          </Button>
+                        </div>
+                        <div className="space-y-1">
+                          {planForm.features.map((feature, index) => (
+                            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                              <span className="text-sm">{feature}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveFeature(index)}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => createPlanMutation.mutate(planForm)}
+                      disabled={createPlanMutation.isPending || !planForm.name || planForm.price <= 0}
+                    >
+                      {createPlanMutation.isPending ? "Creating..." : "Create Plan"}
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsAddingPlan(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
@@ -341,11 +926,146 @@ export default function SuperAdminDashboard() {
                         {clients.filter(c => c.plan === plan.name).length} clients
                       </span>
                       <div className="flex space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="w-4 h-4" />
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button variant="ghost" size="sm" onClick={() => {
+                              setSelectedPlan(plan);
+                              setPlanForm({
+                                name: plan.name,
+                                price: plan.price,
+                                billing: plan.billing,
+                                features: [...plan.features],
+                                maxUsers: plan.maxUsers,
+                                storageGB: plan.storageGB
+                              });
+                            }}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+                            <SheetHeader>
+                              <SheetTitle>Edit Plan</SheetTitle>
+                              <SheetDescription>
+                                Update plan details and features
+                              </SheetDescription>
+                            </SheetHeader>
+                            {selectedPlan && (
+                              <div className="space-y-4 py-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="editPlanName">Plan Name *</Label>
+                                    <Input
+                                      id="editPlanName"
+                                      value={planForm.name}
+                                      onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="editPlanPrice">Price *</Label>
+                                    <Input
+                                      id="editPlanPrice"
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      value={planForm.price}
+                                      onChange={(e) => setPlanForm({ ...planForm, price: parseFloat(e.target.value) || 0 })}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="editMaxUsers">Max Users *</Label>
+                                    <Input
+                                      id="editMaxUsers"
+                                      type="number"
+                                      min="1"
+                                      value={planForm.maxUsers}
+                                      onChange={(e) => setPlanForm({ ...planForm, maxUsers: parseInt(e.target.value) || 1 })}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="editStorageGB">Storage (GB) *</Label>
+                                    <Input
+                                      id="editStorageGB"
+                                      type="number"
+                                      min="1"
+                                      value={planForm.storageGB}
+                                      onChange={(e) => setPlanForm({ ...planForm, storageGB: parseInt(e.target.value) || 1 })}
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label htmlFor="editBilling">Billing Cycle</Label>
+                                  <select
+                                    id="editBilling"
+                                    className="w-full p-2 border rounded-md"
+                                    value={planForm.billing}
+                                    onChange={(e) => setPlanForm({ ...planForm, billing: e.target.value })}
+                                  >
+                                    <option value="MONTHLY">Monthly</option>
+                                    <option value="YEARLY">Yearly</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <Label>Features</Label>
+                                  <div className="space-y-2">
+                                    <div className="flex gap-2">
+                                      <Input
+                                        value={newFeature}
+                                        onChange={(e) => setNewFeature(e.target.value)}
+                                        placeholder="Add a feature..."
+                                        onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
+                                      />
+                                      <Button type="button" onClick={handleAddFeature} size="sm">
+                                        Add
+                                      </Button>
+                                    </div>
+                                    <div className="space-y-1">
+                                      {planForm.features.map((feature, index) => (
+                                        <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                                          <span className="text-sm">{feature}</span>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleRemoveFeature(index)}
+                                          >
+                                            <Trash2 className="w-3 h-3" />
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    onClick={() => updatePlanMutation.mutate({
+                                      id: selectedPlan.id,
+                                      updates: planForm
+                                    })}
+                                    disabled={updatePlanMutation.isPending}
+                                  >
+                                    {updatePlanMutation.isPending ? "Updating..." : "Update Plan"}
+                                  </Button>
+                                  <Button variant="outline" onClick={() => setSelectedPlan(null)}>
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </SheetContent>
+                        </Sheet>
+                        
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to delete the ${plan.name} plan?`)) {
+                              deletePlanMutation.mutate(plan.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
                       </div>
                     </div>
