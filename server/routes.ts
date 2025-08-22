@@ -9,7 +9,12 @@ import {
   insertOnboardingSessionSchema,
   insertClientSchema,
   insertServiceSchema,
-  insertReviewSchema
+  insertReviewSchema,
+  insertClientServiceSchema,
+  insertAppointmentSchema,
+  insertOperatingHoursSchema,
+  insertLeadSchema,
+  insertClientWebsiteSchema
 } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 
@@ -65,6 +70,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // Client Login
+  app.post("/api/auth/client-login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      const user = await storage.getUserByEmail(email);
+      if (!user || user.password !== password || user.role !== "CLIENT") {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const client = await storage.getClientByEmail(email);
+      if (!client) {
+        return res.status(404).json({ error: "Client profile not found" });
+      }
+
+      res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        },
+        client: client,
+        message: "Client login successful"
+      });
+    } catch (error) {
+      console.error("Client login error:", error);
+      res.status(500).json({ error: "Client login failed" });
     }
   });
 
@@ -497,6 +532,342 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Payment processing error:", error);
       res.status(500).json({ error: "Payment processing failed" });
+    }
+  });
+
+  // =============================================================================
+  // CLIENT DASHBOARD ROUTES
+  // =============================================================================
+
+  // Get client dashboard data
+  app.get("/api/client/:clientId/dashboard", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const client = await storage.getClient(clientId);
+      
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      const services = await storage.getClientServices(clientId);
+      const appointments = await storage.getAppointments(clientId);
+      const leads = await storage.getLeads(clientId);
+      const operatingHours = await storage.getOperatingHours(clientId);
+      const website = await storage.getClientWebsite(clientId);
+
+      // Calculate dashboard metrics
+      const thisMonth = new Date();
+      const startOfMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth(), 1);
+      
+      const thisMonthAppointments = appointments.filter(a => 
+        a.appointmentDate && new Date(a.appointmentDate) >= startOfMonth
+      );
+      const thisMonthRevenue = thisMonthAppointments.reduce((sum, a) => sum + a.totalPrice, 0);
+      const newLeadsThisMonth = leads.filter(l => 
+        l.createdAt && new Date(l.createdAt) >= startOfMonth
+      );
+
+      res.json({
+        client,
+        services,
+        appointments: appointments.slice(-10), // Recent 10 appointments
+        leads: leads.slice(-10), // Recent 10 leads
+        operatingHours,
+        website,
+        metrics: {
+          totalAppointments: appointments.length,
+          thisMonthAppointments: thisMonthAppointments.length,
+          thisMonthRevenue,
+          totalLeads: leads.length,
+          newLeadsThisMonth: newLeadsThisMonth.length,
+          conversionRate: leads.length > 0 ? 
+            (leads.filter(l => l.convertedToAppointment).length / leads.length * 100) : 0
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching client dashboard:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard data" });
+    }
+  });
+
+  // Client Services Management
+  app.get("/api/client/:clientId/services", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const services = await storage.getClientServices(clientId);
+      res.json(services);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch client services" });
+    }
+  });
+
+  app.post("/api/client/:clientId/services", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const serviceData = { ...insertClientServiceSchema.parse(req.body), clientId };
+      const service = await storage.createClientService(serviceData);
+      res.json(service);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create service" });
+    }
+  });
+
+  app.put("/api/client/:clientId/services/:serviceId", async (req, res) => {
+    try {
+      const { serviceId } = req.params;
+      const updates = req.body;
+      const service = await storage.updateClientService(serviceId, updates);
+      res.json(service);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update service" });
+    }
+  });
+
+  app.delete("/api/client/:clientId/services/:serviceId", async (req, res) => {
+    try {
+      const { serviceId } = req.params;
+      await storage.deleteClientService(serviceId);
+      res.json({ message: "Service deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete service" });
+    }
+  });
+
+  // Appointments Management
+  app.get("/api/client/:clientId/appointments", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const appointments = await storage.getAppointments(clientId);
+      res.json(appointments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch appointments" });
+    }
+  });
+
+  app.post("/api/client/:clientId/appointments", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const appointmentData = { ...insertAppointmentSchema.parse(req.body), clientId };
+      const appointment = await storage.createAppointment(appointmentData);
+      res.json(appointment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create appointment" });
+    }
+  });
+
+  app.put("/api/client/:clientId/appointments/:appointmentId", async (req, res) => {
+    try {
+      const { appointmentId } = req.params;
+      const updates = req.body;
+      const appointment = await storage.updateAppointment(appointmentId, updates);
+      res.json(appointment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update appointment" });
+    }
+  });
+
+  app.delete("/api/client/:clientId/appointments/:appointmentId", async (req, res) => {
+    try {
+      const { appointmentId } = req.params;
+      await storage.deleteAppointment(appointmentId);
+      res.json({ message: "Appointment deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete appointment" });
+    }
+  });
+
+  // Operating Hours Management
+  app.get("/api/client/:clientId/operating-hours", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const hours = await storage.getOperatingHours(clientId);
+      res.json(hours);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch operating hours" });
+    }
+  });
+
+  app.post("/api/client/:clientId/operating-hours", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const hoursData = req.body.map((h: any) => ({ ...h, clientId }));
+      const hours = await storage.setOperatingHours(clientId, hoursData);
+      res.json(hours);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update operating hours" });
+    }
+  });
+
+  // Leads Management
+  app.get("/api/client/:clientId/leads", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const leads = await storage.getLeads(clientId);
+      res.json(leads);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch leads" });
+    }
+  });
+
+  app.post("/api/client/:clientId/leads", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const leadData = { ...insertLeadSchema.parse(req.body), clientId };
+      const lead = await storage.createLead(leadData);
+      res.json(lead);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create lead" });
+    }
+  });
+
+  app.put("/api/client/:clientId/leads/:leadId", async (req, res) => {
+    try {
+      const { leadId } = req.params;
+      const updates = req.body;
+      const lead = await storage.updateLead(leadId, updates);
+      res.json(lead);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update lead" });
+    }
+  });
+
+  app.delete("/api/client/:clientId/leads/:leadId", async (req, res) => {
+    try {
+      const { leadId } = req.params;
+      await storage.deleteLead(leadId);
+      res.json({ message: "Lead deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete lead" });
+    }
+  });
+
+  // Client Website Management
+  app.get("/api/client/:clientId/website", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const website = await storage.getClientWebsite(clientId);
+      res.json(website);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch website settings" });
+    }
+  });
+
+  app.post("/api/client/:clientId/website", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const websiteData = { ...insertClientWebsiteSchema.parse(req.body), clientId };
+      const website = await storage.createClientWebsite(websiteData);
+      res.json(website);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create website" });
+    }
+  });
+
+  app.put("/api/client/:clientId/website", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const updates = req.body;
+      const website = await storage.updateClientWebsite(clientId, updates);
+      res.json(website);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update website" });
+    }
+  });
+
+  // Public Website Routes
+  app.get("/api/public/website/:subdomain", async (req, res) => {
+    try {
+      const { subdomain } = req.params;
+      const website = await storage.getPublicWebsite(subdomain);
+      
+      if (!website) {
+        return res.status(404).json({ error: "Website not found" });
+      }
+
+      const client = await storage.getClient(website.clientId);
+      const services = await storage.getClientServices(website.clientId);
+      const operatingHours = await storage.getOperatingHours(website.clientId);
+
+      res.json({
+        website,
+        client,
+        services: services.filter(s => s.isActive),
+        operatingHours
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch public website" });
+    }
+  });
+
+  // Public appointment booking
+  app.post("/api/public/website/:subdomain/book-appointment", async (req, res) => {
+    try {
+      const { subdomain } = req.params;
+      const website = await storage.getPublicWebsite(subdomain);
+      
+      if (!website || !website.allowOnlineBooking) {
+        return res.status(404).json({ error: "Booking not available" });
+      }
+
+      const appointmentData = { 
+        ...insertAppointmentSchema.parse(req.body), 
+        clientId: website.clientId,
+        status: "SCHEDULED"
+      };
+      
+      const appointment = await storage.createAppointment(appointmentData);
+      
+      // Also create a lead
+      await storage.createLead({
+        clientId: website.clientId,
+        name: appointment.customerName,
+        email: appointment.customerEmail,
+        phone: appointment.customerPhone || "",
+        source: "website",
+        status: "CONVERTED",
+        convertedToAppointment: true,
+        appointmentId: appointment.id,
+        interestedServices: [appointment.serviceId]
+      });
+
+      res.json({ 
+        message: "Appointment booked successfully",
+        appointment 
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to book appointment" });
+    }
+  });
+
+  // Client authentication route
+  app.post("/api/auth/client-login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user || user.role !== 'CLIENT') {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Verify password (simple comparison for demo)
+      if (user.password !== password) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Find client by email
+      const client = await storage.getClientByEmail(email);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      
+      res.json({
+        user: { id: user.id, email: user.email, role: user.role },
+        client
+      });
+    } catch (error) {
+      console.error("Client login error:", error);
+      res.status(500).json({ error: "Login failed" });
     }
   });
 

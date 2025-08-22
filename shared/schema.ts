@@ -31,6 +31,8 @@ export const plans = pgTable("plans", {
   maxUsers: integer("max_users").notNull(),
   storageGB: integer("storage_gb").notNull(),
   isActive: boolean("is_active").default(true),
+  isFreeTrial: boolean("is_free_trial").default(false),
+  trialDays: integer("trial_days").default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -42,6 +44,8 @@ export const insertPlanSchema = createInsertSchema(plans).pick({
   maxUsers: true,
   storageGB: true,
   isActive: true,
+  isFreeTrial: true,
+  trialDays: true,
 });
 
 export type InsertPlan = z.infer<typeof insertPlanSchema>;
@@ -155,3 +159,168 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
 
 export type InsertReview = z.infer<typeof insertReviewSchema>;
 export type Review = typeof reviews.$inferSelect;
+
+// Client-specific business services
+export const clientServices = pgTable("client_services", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: real("price").notNull(),
+  durationMinutes: integer("duration_minutes").notNull(),
+  category: text("category"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertClientServiceSchema = createInsertSchema(clientServices).pick({
+  clientId: true,
+  name: true,
+  description: true,
+  price: true,
+  durationMinutes: true,
+  category: true,
+  isActive: true,
+});
+
+export type InsertClientService = z.infer<typeof insertClientServiceSchema>;
+export type ClientService = typeof clientServices.$inferSelect;
+
+// Client appointments
+export const appointments = pgTable("appointments", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  serviceId: text("service_id").notNull(),
+  appointmentDate: timestamp("appointment_date").notNull(),
+  startTime: text("start_time").notNull(), // HH:MM format
+  endTime: text("end_time").notNull(),
+  status: text("status").notNull().default("SCHEDULED"), // SCHEDULED, CONFIRMED, COMPLETED, CANCELLED
+  notes: text("notes"),
+  totalPrice: real("total_price").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAppointmentSchema = createInsertSchema(appointments).pick({
+  clientId: true,
+  customerName: true,
+  customerEmail: true,
+  customerPhone: true,
+  serviceId: true,
+  appointmentDate: true,
+  startTime: true,
+  endTime: true,
+  status: true,
+  notes: true,
+  totalPrice: true,
+});
+
+export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
+export type Appointment = typeof appointments.$inferSelect;
+
+// Client operating hours
+export const operatingHours = pgTable("operating_hours", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  dayOfWeek: integer("day_of_week").notNull(), // 0=Sunday, 1=Monday, etc.
+  isOpen: boolean("is_open").default(true),
+  openTime: text("open_time"), // HH:MM format
+  closeTime: text("close_time"), // HH:MM format
+  breakStartTime: text("break_start_time"),
+  breakEndTime: text("break_end_time"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertOperatingHoursSchema = createInsertSchema(operatingHours).pick({
+  clientId: true,
+  dayOfWeek: true,
+  isOpen: true,
+  openTime: true,
+  closeTime: true,
+  breakStartTime: true,
+  breakEndTime: true,
+});
+
+export type InsertOperatingHours = z.infer<typeof insertOperatingHoursSchema>;
+export type OperatingHours = typeof operatingHours.$inferSelect;
+
+// Client leads tracking
+export const leads = pgTable("leads", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  source: text("source").notNull(), // website, phone, referral, social, etc.
+  status: text("status").notNull().default("NEW"), // NEW, CONTACTED, QUALIFIED, CONVERTED, LOST
+  notes: text("notes"),
+  interestedServices: text("interested_services").array().default([]),
+  estimatedValue: real("estimated_value"),
+  followUpDate: timestamp("follow_up_date"),
+  convertedToAppointment: boolean("converted_to_appointment").default(false),
+  appointmentId: text("appointment_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertLeadSchema = createInsertSchema(leads).pick({
+  clientId: true,
+  name: true,
+  email: true,
+  phone: true,
+  source: true,
+  status: true,
+  notes: true,
+  interestedServices: true,
+  estimatedValue: true,
+  followUpDate: true,
+  convertedToAppointment: true,
+  appointmentId: true,
+});
+
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type Lead = typeof leads.$inferSelect;
+
+// Client website settings
+export const clientWebsites = pgTable("client_websites", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull().unique(),
+  subdomain: text("subdomain").notNull().unique(), // e.g., "johns-salon"
+  customDomain: text("custom_domain"), // e.g., "johnssalon.com"
+  title: text("title").notNull(),
+  description: text("description"),
+  heroImage: text("hero_image"),
+  primaryColor: text("primary_color").default("#3B82F6"),
+  secondaryColor: text("secondary_color").default("#F3F4F6"),
+  contactInfo: text("contact_info"), // JSON string
+  socialLinks: text("social_links"), // JSON string
+  showPrices: boolean("show_prices").default(true),
+  allowOnlineBooking: boolean("allow_online_booking").default(true),
+  isPublished: boolean("is_published").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertClientWebsiteSchema = createInsertSchema(clientWebsites).pick({
+  clientId: true,
+  subdomain: true,
+  customDomain: true,
+  title: true,
+  description: true,
+  heroImage: true,
+  primaryColor: true,
+  secondaryColor: true,
+  contactInfo: true,
+  socialLinks: true,
+  showPrices: true,
+  allowOnlineBooking: true,
+  isPublished: true,
+});
+
+export type InsertClientWebsite = z.infer<typeof insertClientWebsiteSchema>;
+export type ClientWebsite = typeof clientWebsites.$inferSelect;

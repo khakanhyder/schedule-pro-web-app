@@ -5,6 +5,11 @@ import {
   clients, type Client, type InsertClient,
   services, type Service, type InsertService,
   reviews, type Review, type InsertReview,
+  clientServices, type ClientService, type InsertClientService,
+  appointments, type Appointment, type InsertAppointment,
+  operatingHours, type OperatingHours, type InsertOperatingHours,
+  leads, type Lead, type InsertLead,
+  clientWebsites, type ClientWebsite, type InsertClientWebsite,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -43,6 +48,36 @@ export interface IStorage {
   // Legacy reviews (keeping for demo)
   getReviews(): Promise<Review[]>;
   createReview(review: InsertReview): Promise<Review>;
+  
+  // Client-specific services
+  getClientServices(clientId: string): Promise<ClientService[]>;
+  createClientService(service: InsertClientService): Promise<ClientService>;
+  updateClientService(id: string, updates: Partial<InsertClientService>): Promise<ClientService>;
+  deleteClientService(id: string): Promise<void>;
+  
+  // Appointments
+  getAppointments(clientId: string): Promise<Appointment[]>;
+  getAppointment(id: string): Promise<Appointment | undefined>;
+  createAppointment(appointment: InsertAppointment): Promise<Appointment>;
+  updateAppointment(id: string, updates: Partial<InsertAppointment>): Promise<Appointment>;
+  deleteAppointment(id: string): Promise<void>;
+  
+  // Operating Hours
+  getOperatingHours(clientId: string): Promise<OperatingHours[]>;
+  setOperatingHours(clientId: string, hours: InsertOperatingHours[]): Promise<OperatingHours[]>;
+  
+  // Leads
+  getLeads(clientId: string): Promise<Lead[]>;
+  getLead(id: string): Promise<Lead | undefined>;
+  createLead(lead: InsertLead): Promise<Lead>;
+  updateLead(id: string, updates: Partial<InsertLead>): Promise<Lead>;
+  deleteLead(id: string): Promise<void>;
+  
+  // Client Websites
+  getClientWebsite(clientId: string): Promise<ClientWebsite | undefined>;
+  createClientWebsite(website: InsertClientWebsite): Promise<ClientWebsite>;
+  updateClientWebsite(clientId: string, updates: Partial<InsertClientWebsite>): Promise<ClientWebsite>;
+  getPublicWebsite(subdomain: string): Promise<ClientWebsite | undefined>;
 }
 
 // In-memory storage implementation
@@ -53,6 +88,11 @@ class MemStorage implements IStorage {
   private clients: Client[] = [];
   private services: Service[] = [];
   private reviews: Review[] = [];
+  private clientServices: ClientService[] = [];
+  private appointments: Appointment[] = [];
+  private operatingHours: OperatingHours[] = [];
+  private leads: Lead[] = [];
+  private clientWebsites: ClientWebsite[] = [];
 
   constructor() {
     this.initializeData();
@@ -67,6 +107,19 @@ class MemStorage implements IStorage {
     });
 
     // Create sample plans
+    // Create Free Demo plan first
+    await this.createPlan({
+      name: "Free Demo",
+      price: 0,
+      billing: "MONTHLY",
+      features: ["7-day trial", "1 User", "2GB Storage", "Basic Features"],
+      maxUsers: 1,
+      storageGB: 2,
+      isActive: true,
+      isFreeTrial: true,
+      trialDays: 7
+    });
+
     await this.createPlan({
       name: "Basic",
       price: 29.99,
@@ -74,7 +127,9 @@ class MemStorage implements IStorage {
       features: ["1 User", "10GB Storage", "Basic Support"],
       maxUsers: 1,
       storageGB: 10,
-      isActive: true
+      isActive: true,
+      isFreeTrial: false,
+      trialDays: 0
     });
 
     await this.createPlan({
@@ -84,7 +139,9 @@ class MemStorage implements IStorage {
       features: ["5 Users", "100GB Storage", "Priority Support", "Advanced Analytics"],
       maxUsers: 5,
       storageGB: 100,
-      isActive: true
+      isActive: true,
+      isFreeTrial: false,
+      trialDays: 0
     });
 
     await this.createPlan({
@@ -94,7 +151,22 @@ class MemStorage implements IStorage {
       features: ["Unlimited Users", "1TB Storage", "24/7 Support", "Custom Integrations"],
       maxUsers: 999,
       storageGB: 1000,
-      isActive: true
+      isActive: true,
+      isFreeTrial: false,
+      trialDays: 0
+    });
+
+    // Create demo client user accounts
+    await this.createUser({
+      email: "john@abcconsulting.com",
+      password: "demo123",
+      role: "CLIENT"
+    });
+    
+    await this.createUser({
+      email: "jane@techstartup.com",
+      password: "demo123",
+      role: "CLIENT"
     });
 
     // Create sample clients
@@ -103,7 +175,7 @@ class MemStorage implements IStorage {
       contactPerson: "John Smith",
       email: "john@abcconsulting.com",
       phone: "555-0101",
-      planId: "plan_1",
+      planId: "plan_2",
       status: "ACTIVE",
       userId: "user_2",
       businessAddress: "123 Main St, City, State",
@@ -115,7 +187,7 @@ class MemStorage implements IStorage {
       contactPerson: "Jane Doe", 
       email: "jane@techstartup.com",
       phone: "555-0102",
-      planId: "plan_2",
+      planId: "plan_3",
       status: "TRIAL",
       userId: "user_3",
       businessAddress: "456 Tech Ave, City, State",
@@ -183,6 +255,8 @@ class MemStorage implements IStorage {
       maxUsers: plan.maxUsers,
       storageGB: plan.storageGB,
       isActive: plan.isActive ?? true,
+      isFreeTrial: plan.isFreeTrial ?? false,
+      trialDays: plan.trialDays ?? 0,
       createdAt: new Date()
     };
     this.plans.push(newPlan);
@@ -260,6 +334,10 @@ class MemStorage implements IStorage {
 
   async getClient(id: string): Promise<Client | undefined> {
     return this.clients.find(c => c.id === id);
+  }
+
+  async getClientByEmail(email: string): Promise<Client | undefined> {
+    return this.clients.find(c => c.email === email);
   }
 
   async getClientByEmail(email: string): Promise<Client | undefined> {
@@ -349,6 +427,214 @@ class MemStorage implements IStorage {
     };
     this.reviews.push(newReview);
     return newReview;
+  }
+
+  // Client services methods
+  async getClientServices(clientId: string): Promise<ClientService[]> {
+    return this.clientServices.filter(s => s.clientId === clientId);
+  }
+
+  async createClientService(service: InsertClientService): Promise<ClientService> {
+    const newService: ClientService = {
+      id: `service_${this.clientServices.length + 1}`,
+      clientId: service.clientId,
+      name: service.name,
+      description: service.description || null,
+      price: service.price,
+      durationMinutes: service.durationMinutes,
+      category: service.category || null,
+      isActive: service.isActive ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.clientServices.push(newService);
+    return newService;
+  }
+
+  async updateClientService(id: string, updates: Partial<InsertClientService>): Promise<ClientService> {
+    const index = this.clientServices.findIndex(s => s.id === id);
+    if (index === -1) throw new Error("Client service not found");
+    
+    this.clientServices[index] = {
+      ...this.clientServices[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.clientServices[index];
+  }
+
+  async deleteClientService(id: string): Promise<void> {
+    const index = this.clientServices.findIndex(s => s.id === id);
+    if (index === -1) throw new Error("Client service not found");
+    this.clientServices.splice(index, 1);
+  }
+
+  // Appointments methods
+  async getAppointments(clientId: string): Promise<Appointment[]> {
+    return this.appointments.filter(a => a.clientId === clientId);
+  }
+
+  async getAppointment(id: string): Promise<Appointment | undefined> {
+    return this.appointments.find(a => a.id === id);
+  }
+
+  async createAppointment(appointment: InsertAppointment): Promise<Appointment> {
+    const newAppointment: Appointment = {
+      id: `appt_${this.appointments.length + 1}`,
+      clientId: appointment.clientId,
+      customerName: appointment.customerName,
+      customerEmail: appointment.customerEmail,
+      customerPhone: appointment.customerPhone || null,
+      serviceId: appointment.serviceId,
+      appointmentDate: appointment.appointmentDate,
+      startTime: appointment.startTime,
+      endTime: appointment.endTime,
+      status: appointment.status || "SCHEDULED",
+      notes: appointment.notes || null,
+      totalPrice: appointment.totalPrice,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.appointments.push(newAppointment);
+    return newAppointment;
+  }
+
+  async updateAppointment(id: string, updates: Partial<InsertAppointment>): Promise<Appointment> {
+    const index = this.appointments.findIndex(a => a.id === id);
+    if (index === -1) throw new Error("Appointment not found");
+    
+    this.appointments[index] = {
+      ...this.appointments[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.appointments[index];
+  }
+
+  async deleteAppointment(id: string): Promise<void> {
+    const index = this.appointments.findIndex(a => a.id === id);
+    if (index === -1) throw new Error("Appointment not found");
+    this.appointments.splice(index, 1);
+  }
+
+  // Operating hours methods
+  async getOperatingHours(clientId: string): Promise<OperatingHours[]> {
+    return this.operatingHours.filter(h => h.clientId === clientId);
+  }
+
+  async setOperatingHours(clientId: string, hours: InsertOperatingHours[]): Promise<OperatingHours[]> {
+    // Remove existing hours for this client
+    this.operatingHours = this.operatingHours.filter(h => h.clientId !== clientId);
+    
+    // Add new hours
+    const newHours: OperatingHours[] = hours.map((h, index) => ({
+      id: `hours_${clientId}_${h.dayOfWeek}`,
+      clientId: h.clientId,
+      dayOfWeek: h.dayOfWeek,
+      isOpen: h.isOpen ?? true,
+      openTime: h.openTime || null,
+      closeTime: h.closeTime || null,
+      breakStartTime: h.breakStartTime || null,
+      breakEndTime: h.breakEndTime || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }));
+    
+    this.operatingHours.push(...newHours);
+    return newHours;
+  }
+
+  // Leads methods
+  async getLeads(clientId: string): Promise<Lead[]> {
+    return this.leads.filter(l => l.clientId === clientId);
+  }
+
+  async getLead(id: string): Promise<Lead | undefined> {
+    return this.leads.find(l => l.id === id);
+  }
+
+  async createLead(lead: InsertLead): Promise<Lead> {
+    const newLead: Lead = {
+      id: `lead_${this.leads.length + 1}`,
+      clientId: lead.clientId,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone || null,
+      source: lead.source,
+      status: lead.status || "NEW",
+      notes: lead.notes || null,
+      interestedServices: lead.interestedServices || [],
+      estimatedValue: lead.estimatedValue || null,
+      followUpDate: lead.followUpDate || null,
+      convertedToAppointment: lead.convertedToAppointment ?? false,
+      appointmentId: lead.appointmentId || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.leads.push(newLead);
+    return newLead;
+  }
+
+  async updateLead(id: string, updates: Partial<InsertLead>): Promise<Lead> {
+    const index = this.leads.findIndex(l => l.id === id);
+    if (index === -1) throw new Error("Lead not found");
+    
+    this.leads[index] = {
+      ...this.leads[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.leads[index];
+  }
+
+  async deleteLead(id: string): Promise<void> {
+    const index = this.leads.findIndex(l => l.id === id);
+    if (index === -1) throw new Error("Lead not found");
+    this.leads.splice(index, 1);
+  }
+
+  // Client website methods
+  async getClientWebsite(clientId: string): Promise<ClientWebsite | undefined> {
+    return this.clientWebsites.find(w => w.clientId === clientId);
+  }
+
+  async createClientWebsite(website: InsertClientWebsite): Promise<ClientWebsite> {
+    const newWebsite: ClientWebsite = {
+      id: `website_${this.clientWebsites.length + 1}`,
+      clientId: website.clientId,
+      subdomain: website.subdomain,
+      customDomain: website.customDomain || null,
+      title: website.title,
+      description: website.description || null,
+      heroImage: website.heroImage || null,
+      primaryColor: website.primaryColor || "#3B82F6",
+      secondaryColor: website.secondaryColor || "#F3F4F6",
+      contactInfo: website.contactInfo || null,
+      socialLinks: website.socialLinks || null,
+      showPrices: website.showPrices ?? true,
+      allowOnlineBooking: website.allowOnlineBooking ?? true,
+      isPublished: website.isPublished ?? false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.clientWebsites.push(newWebsite);
+    return newWebsite;
+  }
+
+  async updateClientWebsite(clientId: string, updates: Partial<InsertClientWebsite>): Promise<ClientWebsite> {
+    const index = this.clientWebsites.findIndex(w => w.clientId === clientId);
+    if (index === -1) throw new Error("Client website not found");
+    
+    this.clientWebsites[index] = {
+      ...this.clientWebsites[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.clientWebsites[index];
+  }
+
+  async getPublicWebsite(subdomain: string): Promise<ClientWebsite | undefined> {
+    return this.clientWebsites.find(w => w.subdomain === subdomain && w.isPublished);
   }
 }
 

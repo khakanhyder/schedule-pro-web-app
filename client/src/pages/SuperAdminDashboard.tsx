@@ -1205,6 +1205,114 @@ export default function SuperAdminDashboard() {
             </Card>
               </div>
             )}
+
+            {activeView === "client-login" && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold">Client Portal Access</h2>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Client Login Portal</CardTitle>
+                    <CardDescription>
+                      Direct your existing clients to access their business dashboard
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Globe className="h-5 w-5 text-blue-600" />
+                        <span className="font-medium text-blue-900">Client Login URL</span>
+                      </div>
+                      <code className="text-sm bg-white px-2 py-1 rounded border">
+                        {window.location.origin}/client-login
+                      </code>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="ml-2"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/client-login`);
+                        }}
+                      >
+                        Copy URL
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Demo Client Accounts:</h4>
+                      <div className="space-y-3">
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <div className="font-medium">ABC Consulting</div>
+                          <div className="text-sm text-gray-600">
+                            Email: john@abcconsulting.com<br />
+                            Password: demo123
+                          </div>
+                          <Button 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => window.open('/client-login', '_blank')}
+                          >
+                            Test Login
+                          </Button>
+                        </div>
+                        
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <div className="font-medium">Tech Startup Inc</div>
+                          <div className="text-sm text-gray-600">
+                            Email: jane@techstartup.com<br />
+                            Password: demo123
+                          </div>
+                          <Button 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => window.open('/client-login', '_blank')}
+                          >
+                            Test Login
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>New Client Onboarding</CardTitle>
+                    <CardDescription>
+                      Direct new prospects to start their free trial
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <UserPlus className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-green-900">Onboarding URL</span>
+                      </div>
+                      <code className="text-sm bg-white px-2 py-1 rounded border">
+                        {window.location.origin}/onboarding
+                      </code>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="ml-2"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/onboarding`);
+                        }}
+                      >
+                        Copy URL
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="ml-2"
+                        onClick={() => window.open('/onboarding', '_blank')}
+                      >
+                        Test Onboarding
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         </main>
       </div>

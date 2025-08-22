@@ -4,6 +4,7 @@ import SuperAdminLogin from "@/pages/SuperAdminLogin";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import OnboardingFlow from "@/pages/OnboardingFlow";
 import ClientDashboard from "@/pages/ClientDashboard";
+import ClientLogin from "@/pages/ClientLogin";
 import NotFound from "@/pages/not-found";
 
 function App() {
@@ -26,8 +27,9 @@ function App() {
           {/* Onboarding Flow */}
           <Route path="/onboarding/:sessionId?" component={OnboardingFlow} />
           
-          {/* Client Dashboard */}
-          <Route path="/client/dashboard" component={ClientDashboard} />
+          {/* Client Login & Dashboard */}
+          <Route path="/client-login" component={ClientLogin} />
+          <Route path="/client-dashboard" component={ClientDashboard} />
           
           {/* Fallback */}
           <Route component={NotFound} />
