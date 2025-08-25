@@ -121,6 +121,19 @@ export default function ClientWebsite() {
     });
   };
 
+  const handleHeroBookingClick = () => {
+    if (services.length === 1) {
+      // If only one service, directly open booking modal
+      handleBooking(services[0]);
+    } else if (services.length > 1) {
+      // If multiple services, scroll to services section
+      document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // No services available
+      alert('No services are currently available for booking. Please contact us directly.');
+    }
+  };
+
   if (!client) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -142,7 +155,7 @@ export default function ClientWebsite() {
             <p className="text-xl md:text-2xl mb-8 opacity-90">
               Professional {client.industry} services
             </p>
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100" onClick={handleHeroBookingClick}>
               Book Appointment
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -177,7 +190,7 @@ export default function ClientWebsite() {
         </div>
 
         {/* Services Section */}
-        <div className="mb-12">
+        <div id="services-section" className="mb-12">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-4">Our Services</h2>
             <p className="text-gray-600">Choose from our professional services</p>
