@@ -607,11 +607,21 @@ export default function ClientDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex relative">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
       <aside className={`bg-white shadow-lg transition-all duration-300 ${
-        isSidebarOpen ? 'w-64' : 'w-16'
-      } flex flex-col`}>
+        isSidebarOpen ? 'w-64' : 'w-16 lg:w-16'
+      } flex flex-col fixed lg:relative h-full z-50 lg:z-auto ${
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
         <div className="p-4 border-b">
           <div className="flex items-center">
             <Button
@@ -661,7 +671,7 @@ export default function ClientDashboard() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-0 lg:ml-16">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="px-6 py-4">

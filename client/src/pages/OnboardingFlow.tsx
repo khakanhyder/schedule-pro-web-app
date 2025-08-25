@@ -255,7 +255,7 @@ export default function OnboardingFlow() {
               <p className="text-gray-600">Select the plan that best fits your business needs</p>
             </div>
             
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {plans.map((plan) => (
                 <Card 
                   key={plan.id} 
@@ -305,7 +305,7 @@ export default function OnboardingFlow() {
               <p className="text-gray-600">Tell us about your business</p>
             </div>
             
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <div>
                 <Label htmlFor="businessName">Business Name *</Label>
                 <Input
@@ -592,7 +592,8 @@ export default function OnboardingFlow() {
         {/* Progress Header */}
         <div className="mb-8">
           <div className="flex justify-center mb-4">
-            <div className="flex items-center space-x-4">
+            {/* Desktop Progress Steps */}
+            <div className="hidden md:flex items-center space-x-4">
               {STEPS.map((step, index) => {
                 const isActive = currentStep === step.number;
                 const isComplete = currentStep > step.number;
@@ -627,6 +628,21 @@ export default function OnboardingFlow() {
                 );
               })}
             </div>
+            
+            {/* Mobile Progress Indicator */}
+            <div className="md:hidden text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 text-white`}>
+                  {(() => {
+                    const Icon = STEPS[currentStep - 1].icon;
+                    return <Icon className="h-5 w-5" />;
+                  })()}
+                </div>
+              </div>
+              <div className="text-sm font-semibold text-blue-600">
+                {STEPS[currentStep - 1].title}
+              </div>
+            </div>
           </div>
           <Progress value={(currentStep / STEPS.length) * 100} className="max-w-2xl mx-auto" />
           <p className="text-center text-sm text-gray-600 mt-2">
@@ -635,8 +651,8 @@ export default function OnboardingFlow() {
         </div>
 
         {/* Step Content */}
-        <Card className="max-w-4xl mx-auto">
-          <CardContent className="p-8">
+        <Card className="max-w-4xl mx-auto mx-4 sm:mx-auto">
+          <CardContent className="p-4 md:p-8">
             {renderStepContent()}
             
             {/* Navigation Buttons */}

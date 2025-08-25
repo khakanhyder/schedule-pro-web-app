@@ -156,23 +156,23 @@ export default function ClientWebsite() {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">{client.businessName}</h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 sm:mb-4">{client.businessName}</h1>
+            <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 opacity-90 px-4">
               Professional {client.industry} services
             </p>
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100" onClick={handleHeroBookingClick}>
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 w-full sm:w-auto" onClick={handleHeroBookingClick}>
               Book Appointment
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Contact Info */}
-        <div className="grid gap-6 md:grid-cols-3 mb-12">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-8 sm:mb-12">
           <Card>
             <CardContent className="p-6 text-center">
               <Phone className="h-8 w-8 text-blue-600 mx-auto mb-3" />
@@ -208,7 +208,7 @@ export default function ClientWebsite() {
               <p className="text-gray-500">Services will be available soon.</p>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {services.filter(service => service.isActive).map((service) => (
                 <Card key={service.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
@@ -318,7 +318,7 @@ export default function ClientWebsite() {
 
       {/* Booking Modal */}
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-full mx-4 sm:mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Book Appointment</DialogTitle>
           </DialogHeader>
@@ -370,7 +370,7 @@ export default function ClientWebsite() {
                 placeholder="(555) 123-4567"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="appointmentDate">Date *</Label>
                 <Input
