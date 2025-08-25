@@ -922,7 +922,7 @@ export default function ClientDashboard() {
                                 <SelectItem key={time} value={time}>{time}</SelectItem>
                               ))
                             ) : (
-                              <SelectItem value="" disabled>No available slots - Configure availability first</SelectItem>
+                              <SelectItem value="no-slots-available" disabled>No available slots - Configure availability first</SelectItem>
                             )}
                           </SelectContent>
                         </Select>
