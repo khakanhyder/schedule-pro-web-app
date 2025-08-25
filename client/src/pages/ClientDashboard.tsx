@@ -200,7 +200,7 @@ export default function ClientDashboard() {
       const response = await fetch(`/api/client/${clientData?.id}/services`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, price: parseFloat(data.price), durationMinutes: parseInt(data.durationMinutes) })
+        body: JSON.stringify(data)
       });
       if (!response.ok) throw new Error('Failed to create service');
       return response.json();
@@ -499,7 +499,14 @@ export default function ClientDashboard() {
     if (editingService) {
       updateServiceMutation.mutate({ id: editingService.id, data: serviceForm });
     } else {
-      createServiceMutation.mutate(serviceForm);
+      const serviceData = {
+        ...serviceForm,
+        clientId: clientData?.id,
+        price: parseFloat(serviceForm.price),
+        durationMinutes: parseInt(serviceForm.durationMinutes),
+        isActive: true
+      };
+      createServiceMutation.mutate(serviceData);
     }
   };
   
@@ -528,7 +535,14 @@ export default function ClientDashboard() {
       toast({ title: 'Please fill in all slot fields', variant: 'destructive' });
       return;
     }
-    createSlotMutation.mutate(slotForm);
+    
+    const slotData = {
+      ...slotForm,
+      clientId: clientData?.id,
+      isActive: true
+    };
+    
+    createSlotMutation.mutate(slotData);
   };
   
   // Fetch available time slots when date changes
@@ -745,6 +759,7 @@ export default function ClientDashboard() {
                           <Label>Start Time</Label>
                           <Input
                             type="time"
+                            step="300"
                             value={slotForm.startTime}
                             onChange={(e) => setSlotForm(prev => ({ ...prev, startTime: e.target.value }))}
                           />
@@ -753,6 +768,7 @@ export default function ClientDashboard() {
                           <Label>End Time</Label>
                           <Input
                             type="time"
+                            step="300"
                             value={slotForm.endTime}
                             onChange={(e) => setSlotForm(prev => ({ ...prev, endTime: e.target.value }))}
                           />
@@ -761,8 +777,11 @@ export default function ClientDashboard() {
                           <Label>Duration (min)</Label>
                           <Input
                             type="number"
+                            step="5"
+                            min="5"
+                            max="480"
                             value={slotForm.slotDuration}
-                            onChange={(e) => setSlotForm(prev => ({ ...prev, slotDuration: parseInt(e.target.value) }))}
+                            onChange={(e) => setSlotForm(prev => ({ ...prev, slotDuration: parseInt(e.target.value) || 30 }))}
                             placeholder="30"
                           />
                         </div>
