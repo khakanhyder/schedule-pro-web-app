@@ -61,14 +61,18 @@ export default function ClientWebsite() {
   // Fetch available time slots when date changes
   useEffect(() => {
     if (bookingForm.appointmentDate && selectedService && clientId) {
-      fetch(`/api/public/available-slots/${clientId}?date=${bookingForm.appointmentDate}&serviceId=${selectedService.id}`)
+      fetch(`/api/public/client/${clientId}/available-slots?date=${bookingForm.appointmentDate}&serviceId=${selectedService.id}`)
         .then(res => res.json())
         .then(data => {
-          if (data.timeSlots) {
+          console.log('Available slots response:', data);
+          if (Array.isArray(data)) {
+            setAvailableTimeSlots(data);
+          } else if (data.timeSlots) {
             setAvailableTimeSlots(data.timeSlots);
           }
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Error fetching time slots:', error);
           setAvailableTimeSlots([]);
         });
     } else {
