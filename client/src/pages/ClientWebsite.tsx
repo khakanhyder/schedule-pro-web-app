@@ -315,7 +315,7 @@ export default function ClientWebsite() {
                         <SelectItem key={time} value={time}>{time}</SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="no-slots" disabled>
                         {bookingForm.appointmentDate ? 'No available slots for this date' : 'Please select a date first'}
                       </SelectItem>
                     )}
