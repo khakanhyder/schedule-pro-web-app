@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import express from "express";
 import { storage } from "./storage";
+import { sendEmail } from "./sendgrid";
 import { 
   insertUserSchema,
   insertPlanSchema,
@@ -976,6 +977,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public contact form submission
+  app.post("/api/public/client/:clientId/contact", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { name, email, phone, message } = req.body;
+      
+      // Create lead from contact form
+      const lead = await storage.createLead({
+        clientId,
+        name,
+        email,
+        phone: phone || "",
+        source: "website",
+        status: "NEW",
+        notes: message,
+        estimatedValue: 0,
+        convertedToAppointment: false
+      });
+
+      res.json({ 
+        message: "Contact form submitted successfully",
+        lead 
+      });
+    } catch (error) {
+      console.error("Error processing contact form:", error);
+      res.status(500).json({ error: "Failed to submit contact form" });
+    }
+  });
+
   // Public appointment booking
   app.post("/api/public/client/:clientId/book", async (req, res) => {
     try {
@@ -1032,6 +1062,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         appointmentId: appointment.id,
         interestedServices: [serviceId]
       });
+      
+      // Send confirmation email      
+      if (client && selectedService) {
+        const confirmationEmailSent = await sendEmail({
+          to: customerEmail,
+          from: 'appointments@scheduledpros.com',
+          subject: `Appointment Confirmation - ${client.businessName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #333; text-align: center;">Appointment Confirmation</h2>
+              
+              <p style="color: #666; font-size: 16px; line-height: 1.5;">
+                Hi ${customerName},
+              </p>
+              
+              <p style="color: #666; font-size: 16px; line-height: 1.5;">
+                Your appointment with <strong>${client.businessName}</strong> has been booked successfully!
+              </p>
+              
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #333; margin-top: 0;">Appointment Details:</h3>
+                <p><strong>Service:</strong> ${selectedService.name}</p>
+                <p><strong>Date:</strong> ${new Date(appointmentDate).toLocaleDateString()}</p>
+                <p><strong>Time:</strong> ${startTime} - ${endTime}</p>
+                <p><strong>Duration:</strong> ${selectedService.durationMinutes} minutes</p>
+                <p><strong>Price:</strong> $${selectedService.price}</p>
+                ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+              </div>
+              
+              <p style="color: #666; font-size: 16px; line-height: 1.5;">
+                <strong>Status:</strong> Your appointment is currently pending approval. You will receive another email once it's confirmed.
+              </p>
+              
+              <p style="color: #666; font-size: 16px; line-height: 1.5;">
+                If you need to make any changes or cancel your appointment, please contact us directly.
+              </p>
+              
+              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+              <p style="color: #999; font-size: 14px; text-align: center;">
+                Thank you for choosing ${client.businessName}!<br>
+                ${client.phone ? `Phone: ${client.phone}` : ''}<br>
+                Email: ${client.email}
+              </p>
+            </div>
+          `,
+          text: `
+Hi ${customerName},
+
+Your appointment with ${client.businessName} has been booked successfully!
+
+Appointment Details:
+- Service: ${selectedService.name}
+- Date: ${new Date(appointmentDate).toLocaleDateString()}
+- Time: ${startTime} - ${endTime}
+- Duration: ${selectedService.durationMinutes} minutes
+- Price: $${selectedService.price}
+${notes ? `- Notes: ${notes}` : ''}
+
+Status: Your appointment is currently pending approval. You will receive another email once it's confirmed.
+
+If you need to make any changes or cancel your appointment, please contact us directly.
+
+Thank you for choosing ${client.businessName}!
+${client.phone ? `Phone: ${client.phone}` : ''}
+Email: ${client.email}
+          `
+        });
+        
+        console.log(`Email confirmation sent: ${confirmationEmailSent ? 'Success' : 'Failed'}`);
+      }
 
       res.json({ 
         message: "Appointment booked successfully",

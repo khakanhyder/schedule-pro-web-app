@@ -47,6 +47,7 @@ export default function ClientWebsite() {
     customerName: '',
     customerEmail: '',
     customerPhone: '',
+    serviceId: '',
     appointmentDate: '',
     startTime: '',
     notes: ''
@@ -60,8 +61,8 @@ export default function ClientWebsite() {
 
   // Fetch available time slots when date changes
   useEffect(() => {
-    if (bookingForm.appointmentDate && selectedService && clientId) {
-      fetch(`/api/public/client/${clientId}/available-slots?date=${bookingForm.appointmentDate}&serviceId=${selectedService.id}`)
+    if (bookingForm.appointmentDate && bookingForm.serviceId && clientId) {
+      fetch(`/api/public/client/${clientId}/available-slots?date=${bookingForm.appointmentDate}&serviceId=${bookingForm.serviceId}`)
         .then(res => res.json())
         .then(data => {
           console.log('Available slots response:', data);
@@ -78,7 +79,7 @@ export default function ClientWebsite() {
     } else {
       setAvailableTimeSlots([]);
     }
-  }, [bookingForm.appointmentDate, selectedService, clientId]);
+  }, [bookingForm.appointmentDate, bookingForm.serviceId, clientId]);
 
   const { data: services = [] } = useQuery<ClientService[]>({
     queryKey: [`/api/public/client/${clientId}/services`]
@@ -100,6 +101,7 @@ export default function ClientWebsite() {
         customerName: '',
         customerEmail: '',
         customerPhone: '',
+        serviceId: '',
         appointmentDate: '',
         startTime: '',
         notes: ''
@@ -113,16 +115,17 @@ export default function ClientWebsite() {
 
   const handleBooking = (service: ClientService) => {
     setSelectedService(service);
+    setBookingForm(prev => ({ ...prev, serviceId: service.id }));
     setIsBookingModalOpen(true);
   };
 
   const handleBookingSubmit = () => {
     if (!selectedService) return;
     
-    bookingMutation.mutate({
-      serviceId: selectedService.id,
-      ...bookingForm
-    });
+    const selectedServiceForBooking = services.find(s => s.id === bookingForm.serviceId);
+    if (!selectedServiceForBooking) return;
+    
+    bookingMutation.mutate(bookingForm);
   };
 
   const handleHeroBookingClick = () => {
@@ -259,15 +262,86 @@ export default function ClientWebsite() {
             </div>
           </CardContent>
         </Card>
+        
+        {/* Contact Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Get In Touch</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={(e) => {
+              e.preventDefault();
+              // Handle contact form submission
+              const formData = new FormData(e.target as HTMLFormElement);
+              const contactData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                message: formData.get('message')
+              };
+              
+              // Submit contact form
+              fetch(`/api/public/client/${clientId}/contact`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(contactData)
+              }).then(() => {
+                alert('Thank you for your message! We will get back to you soon.');
+                (e.target as HTMLFormElement).reset();
+              }).catch(() => {
+                alert('Failed to send message. Please try again.');
+              });
+            }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Name *</Label>
+                  <Input name="name" id="name" placeholder="Your name" required />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input name="email" id="email" type="email" placeholder="your@email.com" required />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input name="phone" id="phone" placeholder="(555) 123-4567" />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="message">Message *</Label>
+                  <Textarea name="message" id="message" placeholder="How can we help you?" rows={4} required />
+                </div>
+              </div>
+              <Button type="submit" className="w-full">Send Message</Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Booking Modal */}
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Book {selectedService?.name}</DialogTitle>
+            <DialogTitle>Book Appointment</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label htmlFor="service">Service *</Label>
+              <Select value={bookingForm.serviceId} onValueChange={(value) => {
+                setBookingForm(prev => ({ ...prev, serviceId: value }));
+                const service = services.find(s => s.id === value);
+                setSelectedService(service || null);
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a service" />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} - ${service.price} ({service.durationMinutes}min)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label htmlFor="customerName">Your Name *</Label>
               <Input
@@ -337,22 +411,25 @@ export default function ClientWebsite() {
                 rows={3}
               />
             </div>
-            {selectedService && (
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">{selectedService.name}</span>
-                  <span className="font-bold">${selectedService.price}</span>
+            {bookingForm.serviceId && (() => {
+              const currentService = services.find(s => s.id === bookingForm.serviceId);
+              return currentService && (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">{currentService.name}</span>
+                    <span className="font-bold">${currentService.price}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">Duration: {currentService.durationMinutes} minutes</p>
                 </div>
-                <p className="text-sm text-gray-600 mt-1">Duration: {selectedService.durationMinutes} minutes</p>
-              </div>
-            )}
+              );
+            })()}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsBookingModalOpen(false)}>
                 Cancel
               </Button>
               <Button 
                 onClick={handleBookingSubmit}
-                disabled={!bookingForm.customerName || !bookingForm.customerEmail || !bookingForm.appointmentDate || !bookingForm.startTime}
+                disabled={!bookingForm.customerName || !bookingForm.customerEmail || !bookingForm.serviceId || !bookingForm.appointmentDate || !bookingForm.startTime}
               >
                 Book Appointment
               </Button>

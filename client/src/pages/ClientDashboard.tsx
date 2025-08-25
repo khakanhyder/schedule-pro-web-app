@@ -277,6 +277,31 @@ export default function ClientDashboard() {
     }
   });
   
+  const updateAppointmentStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const response = await fetch(`/api/client/${clientData?.id}/appointments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (!response.ok) throw new Error('Failed to update appointment status');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/appointments`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/dashboard`] });
+      toast({ title: 'Appointment status updated successfully' });
+    },
+    onError: () => {
+      toast({ title: 'Failed to update appointment status', variant: 'destructive' });
+    }
+  });
+  
+  const getServiceName = (serviceId: string) => {
+    const service = services.find(s => s.id === serviceId);
+    return service ? service.name : 'Unknown Service';
+  };
+  
   const updateAppointmentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
       const response = await fetch(`/api/client/${clientData?.id}/appointments/${id}`, {
@@ -952,13 +977,35 @@ export default function ClientDashboard() {
                           <p className="text-sm text-gray-600">
                             {new Date(appointment.appointmentDate).toLocaleDateString()} • {appointment.startTime} - {appointment.endTime}
                           </p>
+                          <p className="text-sm font-medium text-blue-600">
+                            {getServiceName(appointment.serviceId)} - ${appointment.totalPrice}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant={appointment.status === 'CONFIRMED' ? 'default' : 'secondary'}>
+                          <Badge variant={appointment.status === 'CONFIRMED' ? 'default' : appointment.status === 'PENDING' ? 'secondary' : 'destructive'}>
                             {appointment.status}
                           </Badge>
-                          <span className="font-medium">${appointment.totalPrice}</span>
                           <div className="flex gap-1 ml-2">
+                            {appointment.status === 'PENDING' && (
+                              <>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-green-600 border-green-300 hover:bg-green-50"
+                                  onClick={() => updateAppointmentStatusMutation.mutate({ id: appointment.id, status: 'CONFIRMED' })}
+                                >
+                                  Approve
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-red-600 border-red-300 hover:bg-red-50"
+                                  onClick={() => updateAppointmentStatusMutation.mutate({ id: appointment.id, status: 'REJECTED' })}
+                                >
+                                  Reject
+                                </Button>
+                              </>
+                            )}
                             <Button variant="outline" size="sm" onClick={() => openAppointmentModal(appointment)}>
                               <Edit className="h-4 w-4" />
                             </Button>
