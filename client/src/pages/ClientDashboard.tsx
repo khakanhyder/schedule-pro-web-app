@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +24,9 @@ import {
   Plus,
   Trash2,
   ExternalLink,
-  LogOut
+  LogOut,
+  Menu,
+  Home
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
@@ -93,7 +94,8 @@ export default function ClientDashboard() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [clientData, setClientData] = useState<Client | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeView, setActiveView] = useState('overview');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Modal states
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
@@ -593,43 +595,95 @@ export default function ClientDashboard() {
     conversionRate: 0
   };
 
+  const menuItems = [
+    { id: "overview", label: "Overview", icon: Home },
+    { id: "appointments", label: "Appointments", icon: Calendar },
+    { id: "services", label: "Services", icon: Settings },
+    { id: "leads", label: "Leads", icon: UserPlus },
+    { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "website", label: "Website", icon: Globe },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{clientData.businessName}</h1>
-              <p className="text-sm text-gray-600">Business Dashboard</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Badge variant="outline" className="capitalize">
-                {clientData.status}
-              </Badge>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <aside className={`bg-white shadow-lg transition-all duration-300 ${
+        isSidebarOpen ? 'w-64' : 'w-16'
+      } flex flex-col`}>
+        <div className="p-4 border-b">
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="mr-2"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            {isSidebarOpen && (
+              <h2 className="font-bold text-lg text-gray-900">{clientData.businessName}</h2>
+            )}
           </div>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="appointments">Appointments</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="leads">Leads</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="website">Website</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.id}>
+                  <Button
+                    variant={activeView === item.id ? "default" : "ghost"}
+                    className={`w-full justify-start ${!isSidebarOpen ? 'px-2' : ''}`}
+                    onClick={() => setActiveView(item.id)}
+                  >
+                    <Icon className={`w-5 h-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
+                    {isSidebarOpen && item.label}
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
+        <div className="p-4 border-t">
+          <Button
+            variant="outline"
+            className={`w-full justify-start ${!isSidebarOpen ? 'px-2' : ''}`}
+            onClick={handleLogout}
+          >
+            <LogOut className={`w-5 h-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
+            {isSidebarOpen && "Logout"}
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="px-6 py-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{clientData.businessName}</h1>
+                <p className="text-sm text-gray-600">Business Dashboard</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Badge variant="outline" className="capitalize">
+                  {clientData.status}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 p-6 overflow-auto">
+          <div className="max-w-7xl mx-auto">
+
+            {activeView === "overview" && (
+              <div className="space-y-6">
             {/* Metrics Cards */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               <Card>
@@ -741,10 +795,11 @@ export default function ClientDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+              </div>
+            )}
 
-          {/* Appointments Tab */}
-          <TabsContent value="appointments" className="space-y-6">
+            {activeView === "appointments" && (
+              <div className="space-y-6">
             {/* Appointment Slot Management Section */}
             <Card>
               <CardHeader>
@@ -1038,10 +1093,11 @@ export default function ClientDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+              </div>
+            )}
 
-          {/* Services Tab */}
-          <TabsContent value="services" className="space-y-6">
+            {activeView === "services" && (
+              <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Services</h2>
               <Dialog open={isServiceModalOpen} onOpenChange={setIsServiceModalOpen}>
@@ -1196,10 +1252,11 @@ export default function ClientDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+              </div>
+            )}
 
-          {/* Leads Tab */}
-          <TabsContent value="leads" className="space-y-6">
+            {activeView === "leads" && (
+              <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Leads</h2>
               <Dialog open={isLeadModalOpen} onOpenChange={setIsLeadModalOpen}>
@@ -1375,10 +1432,11 @@ export default function ClientDashboard() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+              </div>
+            )}
 
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
+            {activeView === "analytics" && (
+              <div className="space-y-6">
             <h2 className="text-2xl font-bold">Analytics</h2>
             
             <div className="grid gap-6 md:grid-cols-2">
@@ -1406,10 +1464,11 @@ export default function ClientDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+              </div>
+            )}
 
-          {/* Website Tab */}
-          <TabsContent value="website" className="space-y-6">
+            {activeView === "website" && (
+              <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Your Business Website</h2>
               <div className="flex gap-2">
@@ -1572,10 +1631,11 @@ export default function ClientDashboard() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+              </div>
+            )}
 
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-6">
+            {activeView === "settings" && (
+              <div className="space-y-6">
             <h2 className="text-2xl font-bold">Settings</h2>
             
             <Card>
@@ -1701,8 +1761,11 @@ export default function ClientDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+              </div>
+            )}
+
+          </div>
+        </main>
       </div>
     </div>
   );
