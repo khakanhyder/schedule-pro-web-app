@@ -697,7 +697,7 @@ class MemStorage implements IStorage {
     // Get existing appointments for this date
     const existingAppointments = this.appointments.filter(apt => 
       apt.clientId === clientId && 
-      apt.appointmentDate === date
+      new Date(apt.appointmentDate).toDateString() === new Date(date).toDateString()
     );
     
     const bookedTimes = existingAppointments.map(apt => apt.startTime);

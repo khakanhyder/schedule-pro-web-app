@@ -706,16 +706,18 @@ export default function ClientDashboard() {
 
           {/* Appointments Tab */}
           <TabsContent value="appointments" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Appointments</h2>
-              <div className="flex gap-2">
-                <Dialog open={isSlotModalOpen} onOpenChange={setIsSlotModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">
-                      <Clock className="h-4 w-4 mr-2" />
-                      Manage Availability
-                    </Button>
-                  </DialogTrigger>
+            {/* Appointment Slot Management Section */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Appointment Availability Management</CardTitle>
+                  <Dialog open={isSlotModalOpen} onOpenChange={setIsSlotModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Manage Availability
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="max-w-lg">
                     <DialogHeader>
                       <DialogTitle>Appointment Availability</DialogTitle>
@@ -789,7 +791,17 @@ export default function ClientDashboard() {
                     </div>
                   </DialogContent>
                 </Dialog>
-                <Dialog open={isAppointmentModalOpen} onOpenChange={setIsAppointmentModalOpen}>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">Configure your available appointment times by day of the week. Click "Manage Availability" to set up time slots.</p>
+              </CardContent>
+            </Card>
+
+            {/* Appointment Booking Section */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Booked Appointments</h2>
+              <Dialog open={isAppointmentModalOpen} onOpenChange={setIsAppointmentModalOpen}>
                   <DialogTrigger asChild>
                     <Button onClick={() => openAppointmentModal()}>
                       <Plus className="h-4 w-4 mr-2" />
@@ -960,7 +972,6 @@ export default function ClientDashboard() {
                 )}
               </CardContent>
             </Card>
-            </div>
           </TabsContent>
 
           {/* Services Tab */}

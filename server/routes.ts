@@ -789,11 +789,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/client/:clientId/appointment-slots", async (req, res) => {
     try {
       const { clientId } = req.params;
+      console.log("Creating appointment slot - clientId:", clientId);
+      console.log("Request body:", req.body);
+      
       const slotData = { ...insertAppointmentSlotSchema.parse(req.body), clientId };
+      console.log("Parsed slot data:", slotData);
+      
       const slot = await storage.createAppointmentSlot(slotData);
+      console.log("Created slot:", slot);
       res.json(slot);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create appointment slot" });
+      console.error("Error creating appointment slot:", error);
+      res.status(500).json({ error: "Failed to create appointment slot", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -992,6 +999,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Time slot is not available" });
       }
 
+      // Calculate end time based on service duration
+      const startMinutes = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
+      const endMinutes = startMinutes + selectedService.durationMinutes;
+      const endTime = `${Math.floor(endMinutes / 60).toString().padStart(2, '0')}:${(endMinutes % 60).toString().padStart(2, '0')}`;
+
       // Create appointment
       const appointment = await storage.createAppointment({
         clientId,
@@ -1001,6 +1013,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customerPhone: customerPhone || "",
         appointmentDate,
         startTime,
+        endTime,
         notes: notes || "",
         status: "PENDING",
         totalPrice: selectedService.price
