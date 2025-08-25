@@ -51,10 +51,30 @@ export default function ClientWebsite() {
     startTime: '',
     notes: ''
   });
+  
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
 
   const { data: client } = useQuery<Client>({
     queryKey: [`/api/public/client/${clientId}`]
   });
+
+  // Fetch available time slots when date changes
+  useEffect(() => {
+    if (bookingForm.appointmentDate && selectedService && clientId) {
+      fetch(`/api/public/available-slots/${clientId}?date=${bookingForm.appointmentDate}&serviceId=${selectedService.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.timeSlots) {
+            setAvailableTimeSlots(data.timeSlots);
+          }
+        })
+        .catch(() => {
+          setAvailableTimeSlots([]);
+        });
+    } else {
+      setAvailableTimeSlots([]);
+    }
+  }, [bookingForm.appointmentDate, selectedService, clientId]);
 
   const { data: services = [] } = useQuery<ClientService[]>({
     queryKey: [`/api/public/client/${clientId}/services`]
@@ -277,9 +297,15 @@ export default function ClientWebsite() {
                     <SelectValue placeholder="Select time" />
                   </SelectTrigger>
                   <SelectContent>
-                    {['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'].map((time) => (
-                      <SelectItem key={time} value={time}>{time}</SelectItem>
-                    ))}
+                    {availableTimeSlots.length > 0 ? (
+                      availableTimeSlots.map((time) => (
+                        <SelectItem key={time} value={time}>{time}</SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        {bookingForm.appointmentDate ? 'No available slots for this date' : 'Please select a date first'}
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

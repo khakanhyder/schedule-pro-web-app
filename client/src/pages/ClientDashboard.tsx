@@ -101,6 +101,8 @@ export default function ClientDashboard() {
   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const [isWebsiteModalOpen, setIsWebsiteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   
   // Edit states
   const [editingService, setEditingService] = useState<ClientService | null>(null);
@@ -146,6 +148,13 @@ export default function ClientDashboard() {
     contactEmail: '',
     contactPhone: ''
   });
+  
+  const [slotForm, setSlotForm] = useState({
+    dayOfWeek: 1,
+    startTime: '09:00',
+    endTime: '17:00',
+    slotDuration: 30
+  });
 
   useEffect(() => {
     // Load client data from localStorage (set during onboarding)
@@ -177,6 +186,11 @@ export default function ClientDashboard() {
 
   const { data: leads = [] } = useQuery<Lead[]>({
     queryKey: [`/api/client/${clientData?.id}/leads`],
+    enabled: !!clientData?.id
+  });
+  
+  const { data: appointmentSlots = [] } = useQuery<any[]>({
+    queryKey: [`/api/client/${clientData?.id}/appointment-slots`],
     enabled: !!clientData?.id
   });
 
@@ -385,6 +399,38 @@ export default function ClientDashboard() {
       toast({ title: 'Failed to update website', variant: 'destructive' });
     }
   });
+  
+  // Slot management mutations
+  const createSlotMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch(`/api/client/${clientData?.id}/appointment-slots`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to create slot');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/appointment-slots`] });
+      toast({ title: 'Time slot added successfully' });
+      setSlotForm({ dayOfWeek: 1, startTime: '09:00', endTime: '17:00', slotDuration: 30 });
+    }
+  });
+  
+  const deleteSlotMutation = useMutation({
+    mutationFn: async (slotId: string) => {
+      const response = await fetch(`/api/client/${clientData?.id}/appointment-slots/${slotId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete slot');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/appointment-slots`] });
+      toast({ title: 'Time slot deleted successfully' });
+    }
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('clientData');
@@ -476,6 +522,24 @@ export default function ClientDashboard() {
   const openWebsitePreview = () => {
     window.open(`/client-website/${clientData?.id}`, '_blank');
   };
+  
+  const handleCreateSlot = () => {
+    if (!slotForm.dayOfWeek && slotForm.dayOfWeek !== 0 || !slotForm.startTime || !slotForm.endTime || !slotForm.slotDuration) {
+      toast({ title: 'Please fill in all slot fields', variant: 'destructive' });
+      return;
+    }
+    createSlotMutation.mutate(slotForm);
+  };
+  
+  // Fetch available time slots when date changes
+  useEffect(() => {
+    if (appointmentForm.appointmentDate && clientData?.id) {
+      fetch(`/api/public/client/${clientData.id}/available-slots?date=${appointmentForm.appointmentDate}`)
+        .then(res => res.json())
+        .then(slots => setAvailableTimeSlots(slots))
+        .catch(err => console.error('Failed to fetch time slots:', err));
+    }
+  }, [appointmentForm.appointmentDate, clientData?.id]);
 
   if (!clientData) {
     return <div>Loading...</div>;
@@ -644,15 +708,96 @@ export default function ClientDashboard() {
           <TabsContent value="appointments" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Appointments</h2>
-              <Dialog open={isAppointmentModalOpen} onOpenChange={setIsAppointmentModalOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => openAppointmentModal()}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Appointment
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
+              <div className="flex gap-2">
+                <Dialog open={isSlotModalOpen} onOpenChange={setIsSlotModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <Clock className="h-4 w-4 mr-2" />
+                      Manage Availability
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Appointment Availability</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-4 gap-4">
+                        <div>
+                          <Label>Day</Label>
+                          <Select value={slotForm.dayOfWeek?.toString()} onValueChange={(value) => setSlotForm(prev => ({ ...prev, dayOfWeek: parseInt(value) }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select day" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="0">Sunday</SelectItem>
+                              <SelectItem value="1">Monday</SelectItem>
+                              <SelectItem value="2">Tuesday</SelectItem>
+                              <SelectItem value="3">Wednesday</SelectItem>
+                              <SelectItem value="4">Thursday</SelectItem>
+                              <SelectItem value="5">Friday</SelectItem>
+                              <SelectItem value="6">Saturday</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Start Time</Label>
+                          <Input
+                            type="time"
+                            value={slotForm.startTime}
+                            onChange={(e) => setSlotForm(prev => ({ ...prev, startTime: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label>End Time</Label>
+                          <Input
+                            type="time"
+                            value={slotForm.endTime}
+                            onChange={(e) => setSlotForm(prev => ({ ...prev, endTime: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label>Duration (min)</Label>
+                          <Input
+                            type="number"
+                            value={slotForm.slotDuration}
+                            onChange={(e) => setSlotForm(prev => ({ ...prev, slotDuration: parseInt(e.target.value) }))}
+                            placeholder="30"
+                          />
+                        </div>
+                      </div>
+                      <Button onClick={handleCreateSlot} className="w-full">
+                        Add Time Slot
+                      </Button>
+                      
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        <h4 className="font-medium">Current Availability:</h4>
+                        {appointmentSlots.length === 0 ? (
+                          <p className="text-sm text-gray-500">No availability slots configured</p>
+                        ) : (
+                          appointmentSlots.map((slot) => (
+                            <div key={slot.id} className="flex items-center justify-between p-2 border rounded">
+                              <span className="text-sm">
+                                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][slot.dayOfWeek]} {slot.startTime}-{slot.endTime} ({slot.slotDuration}min)
+                              </span>
+                              <Button size="sm" variant="outline" onClick={() => deleteSlotMutation.mutate(slot.id)}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Dialog open={isAppointmentModalOpen} onOpenChange={setIsAppointmentModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => openAppointmentModal()}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      New Appointment
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
                     <DialogTitle>{editingAppointment ? 'Edit Appointment' : 'New Appointment'}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
@@ -711,12 +856,20 @@ export default function ClientDashboard() {
                       </div>
                       <div>
                         <Label htmlFor="startTime">Time *</Label>
-                        <Input
-                          id="startTime"
-                          type="time"
-                          value={appointmentForm.startTime}
-                          onChange={(e) => setAppointmentForm(prev => ({ ...prev, startTime: e.target.value }))}
-                        />
+                        <Select value={appointmentForm.startTime} onValueChange={(value) => setAppointmentForm(prev => ({ ...prev, startTime: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select time" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableTimeSlots.length > 0 ? (
+                              availableTimeSlots.map((time) => (
+                                <SelectItem key={time} value={time}>{time}</SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="" disabled>No available slots - Configure availability first</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                     <div>
@@ -807,6 +960,7 @@ export default function ClientDashboard() {
                 )}
               </CardContent>
             </Card>
+            </div>
           </TabsContent>
 
           {/* Services Tab */}
