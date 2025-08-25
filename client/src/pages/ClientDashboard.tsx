@@ -26,7 +26,8 @@ import {
   ExternalLink,
   LogOut,
   Menu,
-  Home
+  Home,
+  Package
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
@@ -598,7 +599,7 @@ export default function ClientDashboard() {
   const menuItems = [
     { id: "overview", label: "Overview", icon: Home },
     { id: "appointments", label: "Appointments", icon: Calendar },
-    { id: "services", label: "Services", icon: Settings },
+    { id: "services", label: "Services", icon: Package },
     { id: "leads", label: "Leads", icon: UserPlus },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "website", label: "Website", icon: Globe },
