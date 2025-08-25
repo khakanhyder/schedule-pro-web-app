@@ -373,6 +373,11 @@ export default function OnboardingFlow() {
         );
 
       case 3:
+        const passwordsMatch = onboardingData.password && onboardingData.confirmPassword && 
+                              onboardingData.password === onboardingData.confirmPassword;
+        const hasPasswordMismatch = onboardingData.password && onboardingData.confirmPassword && 
+                                   onboardingData.password !== onboardingData.confirmPassword;
+        
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -399,7 +404,7 @@ export default function OnboardingFlow() {
                   type="password"
                   value={onboardingData.password || ''}
                   onChange={(e) => setOnboardingData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Enter a secure password"
+                  placeholder="Enter a secure password (min 6 characters)"
                   required
                 />
               </div>
@@ -412,7 +417,14 @@ export default function OnboardingFlow() {
                   onChange={(e) => setOnboardingData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                   placeholder="Confirm your password"
                   required
+                  className={hasPasswordMismatch ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {hasPasswordMismatch && (
+                  <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
+                )}
+                {passwordsMatch && (
+                  <p className="text-green-500 text-sm mt-1">Passwords match ✓</p>
+                )}
               </div>
             </div>
           </div>
@@ -560,6 +572,7 @@ export default function OnboardingFlow() {
       case 3:
         return onboardingData.adminEmail && 
                onboardingData.password && 
+               onboardingData.password.length >= 6 &&
                onboardingData.confirmPassword &&
                onboardingData.password === onboardingData.confirmPassword;
       case 4:
