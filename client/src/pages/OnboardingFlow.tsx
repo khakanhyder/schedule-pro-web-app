@@ -426,15 +426,6 @@ export default function OnboardingFlow() {
                   <p className="text-green-500 text-sm mt-1">Passwords match ✓</p>
                 )}
               </div>
-              
-              {/* Debug panel */}
-              <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
-                <p><strong>Debug Info:</strong></p>
-                <p>Email: {onboardingData.adminEmail ? '✓' : '✗'} ({onboardingData.adminEmail})</p>
-                <p>Password length: {onboardingData.password?.length || 0} (need ≥6)</p>
-                <p>Passwords match: {onboardingData.password === onboardingData.confirmPassword ? '✓' : '✗'}</p>
-                <p>Can proceed: {canProceed() ? '✓' : '✗'}</p>
-              </div>
             </div>
           </div>
         );
