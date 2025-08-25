@@ -340,10 +340,6 @@ class MemStorage implements IStorage {
     return this.clients.find(c => c.email === email);
   }
 
-  async getClientByEmail(email: string): Promise<Client | undefined> {
-    return this.clients.find(c => c.email === email);
-  }
-
   async createClient(client: InsertClient): Promise<Client> {
     const newClient: Client = {
       id: `client_${this.clients.length + 1}`,

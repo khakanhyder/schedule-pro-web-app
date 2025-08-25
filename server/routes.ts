@@ -872,6 +872,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // =============================================================================
+  // PUBLIC CLIENT WEBSITE ROUTES
+  // =============================================================================
+
+  // Get public client info
+  app.get("/api/public/client/:clientId", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const client = await storage.getClient(clientId);
+      
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      res.json(client);
+    } catch (error) {
+      console.error("Error fetching public client:", error);
+      res.status(500).json({ error: "Failed to fetch client" });
+    }
+  });
+
+  // Get public client services
+  app.get("/api/public/client/:clientId/services", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const services = await storage.getClientServices(clientId);
+      
+      // Only return active services for public view
+      const activeServices = services.filter(s => s.isActive);
+      res.json(activeServices);
+    } catch (error) {
+      console.error("Error fetching public services:", error);
+      res.status(500).json({ error: "Failed to fetch services" });
+    }
+  });
+
+  // Public appointment booking
+  app.post("/api/public/client/:clientId/book", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { serviceId, customerName, customerEmail, customerPhone, appointmentDate, startTime, notes } = req.body;
+      
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      const service = await storage.getClientServices(clientId);
+      const selectedService = service.find(s => s.id === serviceId);
+      if (!selectedService) {
+        return res.status(404).json({ error: "Service not found" });
+      }
+
+      // Create appointment
+      const appointment = await storage.createAppointment({
+        clientId,
+        serviceId,
+        customerName,
+        customerEmail,
+        customerPhone: customerPhone || "",
+        appointmentDate,
+        startTime,
+        notes: notes || "",
+        status: "PENDING",
+        totalPrice: selectedService.price,
+        durationMinutes: selectedService.durationMinutes
+      });
+      
+      // Also create a lead
+      await storage.createLead({
+        clientId,
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone || "",
+        source: "website",
+        status: "CONVERTED",
+        estimatedValue: selectedService.price,
+        convertedToAppointment: true,
+        appointmentId: appointment.id,
+        interestedServices: [serviceId]
+      });
+
+      res.json({ 
+        message: "Appointment booked successfully",
+        appointment 
+      });
+    } catch (error) {
+      console.error("Error booking appointment:", error);
+      res.status(500).json({ error: "Failed to book appointment" });
+    }
+  });
+
+  // =============================================================================
   // LEGACY ROUTES (keeping for demo)
   // =============================================================================
 
