@@ -324,3 +324,25 @@ export const insertClientWebsiteSchema = createInsertSchema(clientWebsites).pick
 
 export type InsertClientWebsite = z.infer<typeof insertClientWebsiteSchema>;
 export type ClientWebsite = typeof clientWebsites.$inferSelect;
+
+// Appointment Slots for availability management
+export const appointmentSlots = pgTable("appointment_slots", {
+  id: varchar("id").primaryKey().notNull(),
+  clientId: varchar("client_id").notNull(),
+  dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
+  startTime: varchar("start_time").notNull(), // "09:00"
+  endTime: varchar("end_time").notNull(), // "17:00"
+  slotDuration: integer("slot_duration").default(30), // minutes
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAppointmentSlotSchema = createInsertSchema(appointmentSlots).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAppointmentSlot = z.infer<typeof insertAppointmentSlotSchema>;
+export type AppointmentSlot = typeof appointmentSlots.$inferSelect;

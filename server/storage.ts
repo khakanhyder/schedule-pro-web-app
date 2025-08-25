@@ -10,6 +10,7 @@ import {
   operatingHours, type OperatingHours, type InsertOperatingHours,
   leads, type Lead, type InsertLead,
   clientWebsites, type ClientWebsite, type InsertClientWebsite,
+  appointmentSlots, type AppointmentSlot, type InsertAppointmentSlot,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -78,6 +79,13 @@ export interface IStorage {
   createClientWebsite(website: InsertClientWebsite): Promise<ClientWebsite>;
   updateClientWebsite(clientId: string, updates: Partial<InsertClientWebsite>): Promise<ClientWebsite>;
   getPublicWebsite(subdomain: string): Promise<ClientWebsite | undefined>;
+  
+  // Appointment Slots
+  getAppointmentSlots(clientId: string): Promise<AppointmentSlot[]>;
+  createAppointmentSlot(slot: InsertAppointmentSlot): Promise<AppointmentSlot>;
+  updateAppointmentSlot(id: string, updates: Partial<InsertAppointmentSlot>): Promise<AppointmentSlot>;
+  deleteAppointmentSlot(id: string): Promise<void>;
+  getAvailableSlots(clientId: string, date: string): Promise<string[]>;
 }
 
 // In-memory storage implementation
@@ -93,6 +101,7 @@ class MemStorage implements IStorage {
   private operatingHours: OperatingHours[] = [];
   private leads: Lead[] = [];
   private clientWebsites: ClientWebsite[] = [];
+  private appointmentSlots: AppointmentSlot[] = [];
 
   constructor() {
     this.initializeData();
@@ -631,6 +640,96 @@ class MemStorage implements IStorage {
 
   async getPublicWebsite(subdomain: string): Promise<ClientWebsite | undefined> {
     return this.clientWebsites.find(w => w.subdomain === subdomain && w.isPublished);
+  }
+
+  // Appointment slots methods
+  async getAppointmentSlots(clientId: string): Promise<AppointmentSlot[]> {
+    return this.appointmentSlots.filter(slot => slot.clientId === clientId);
+  }
+
+  async createAppointmentSlot(slot: InsertAppointmentSlot): Promise<AppointmentSlot> {
+    const newSlot: AppointmentSlot = {
+      id: `slot_${this.appointmentSlots.length + 1}`,
+      clientId: slot.clientId,
+      dayOfWeek: slot.dayOfWeek,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      slotDuration: slot.slotDuration || 30,
+      isActive: slot.isActive ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.appointmentSlots.push(newSlot);
+    return newSlot;
+  }
+
+  async updateAppointmentSlot(id: string, updates: Partial<InsertAppointmentSlot>): Promise<AppointmentSlot> {
+    const index = this.appointmentSlots.findIndex(slot => slot.id === id);
+    if (index === -1) throw new Error("Appointment slot not found");
+    
+    this.appointmentSlots[index] = {
+      ...this.appointmentSlots[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.appointmentSlots[index];
+  }
+
+  async deleteAppointmentSlot(id: string): Promise<void> {
+    const index = this.appointmentSlots.findIndex(slot => slot.id === id);
+    if (index === -1) throw new Error("Appointment slot not found");
+    this.appointmentSlots.splice(index, 1);
+  }
+
+  async getAvailableSlots(clientId: string, date: string): Promise<string[]> {
+    const targetDate = new Date(date);
+    const dayOfWeek = targetDate.getDay(); // 0-6 (Sunday-Saturday)
+    
+    // Get slot configurations for this day
+    const daySlots = this.appointmentSlots.filter(slot => 
+      slot.clientId === clientId && 
+      slot.dayOfWeek === dayOfWeek && 
+      slot.isActive
+    );
+    
+    if (daySlots.length === 0) return [];
+    
+    // Get existing appointments for this date
+    const existingAppointments = this.appointments.filter(apt => 
+      apt.clientId === clientId && 
+      apt.appointmentDate === date
+    );
+    
+    const bookedTimes = existingAppointments.map(apt => apt.startTime);
+    
+    // Generate available time slots
+    const availableSlots: string[] = [];
+    
+    for (const slotConfig of daySlots) {
+      const start = this.timeToMinutes(slotConfig.startTime);
+      const end = this.timeToMinutes(slotConfig.endTime);
+      const duration = slotConfig.slotDuration || 30;
+      
+      for (let time = start; time < end; time += duration) {
+        const timeString = this.minutesToTime(time);
+        if (!bookedTimes.includes(timeString)) {
+          availableSlots.push(timeString);
+        }
+      }
+    }
+    
+    return availableSlots.sort();
+  }
+
+  private timeToMinutes(timeString: string): number {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  private minutesToTime(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
   }
 }
 

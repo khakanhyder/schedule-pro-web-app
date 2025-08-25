@@ -14,7 +14,8 @@ import {
   insertAppointmentSchema,
   insertOperatingHoursSchema,
   insertLeadSchema,
-  insertClientWebsiteSchema
+  insertClientWebsiteSchema,
+  insertAppointmentSlotSchema
 } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 
@@ -774,6 +775,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Appointment Slots Management
+  app.get("/api/client/:clientId/appointment-slots", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const slots = await storage.getAppointmentSlots(clientId);
+      res.json(slots);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch appointment slots" });
+    }
+  });
+
+  app.post("/api/client/:clientId/appointment-slots", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const slotData = { ...insertAppointmentSlotSchema.parse(req.body), clientId };
+      const slot = await storage.createAppointmentSlot(slotData);
+      res.json(slot);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create appointment slot" });
+    }
+  });
+
+  app.put("/api/client/:clientId/appointment-slots/:slotId", async (req, res) => {
+    try {
+      const { slotId } = req.params;
+      const updates = req.body;
+      const slot = await storage.updateAppointmentSlot(slotId, updates);
+      res.json(slot);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update appointment slot" });
+    }
+  });
+
+  app.delete("/api/client/:clientId/appointment-slots/:slotId", async (req, res) => {
+    try {
+      const { slotId } = req.params;
+      await storage.deleteAppointmentSlot(slotId);
+      res.json({ message: "Appointment slot deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete appointment slot" });
+    }
+  });
+
   // Public Website Routes
   app.get("/api/public/website/:subdomain", async (req, res) => {
     try {
@@ -907,6 +951,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get available time slots for a specific date
+  app.get("/api/public/client/:clientId/available-slots", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { date } = req.query;
+      
+      if (!date) {
+        return res.status(400).json({ error: "Date parameter is required" });
+      }
+
+      const availableSlots = await storage.getAvailableSlots(clientId, date as string);
+      res.json(availableSlots);
+    } catch (error) {
+      console.error("Error fetching available slots:", error);
+      res.status(500).json({ error: "Failed to fetch available slots" });
+    }
+  });
+
   // Public appointment booking
   app.post("/api/public/client/:clientId/book", async (req, res) => {
     try {
@@ -924,6 +986,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Service not found" });
       }
 
+      // Check if the time slot is available
+      const availableSlots = await storage.getAvailableSlots(clientId, appointmentDate);
+      if (!availableSlots.includes(startTime)) {
+        return res.status(400).json({ error: "Time slot is not available" });
+      }
+
       // Create appointment
       const appointment = await storage.createAppointment({
         clientId,
@@ -935,8 +1003,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         startTime,
         notes: notes || "",
         status: "PENDING",
-        totalPrice: selectedService.price,
-        durationMinutes: selectedService.durationMinutes
+        totalPrice: selectedService.price
       });
       
       // Also create a lead
