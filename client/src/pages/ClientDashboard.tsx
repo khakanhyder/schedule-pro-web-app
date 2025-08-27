@@ -27,10 +27,17 @@ import {
   LogOut,
   Menu,
   Home,
-  Package
+  Package,
+  Bot,
+  MapPin,
+  CreditCard
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
+import TeamManagement from './TeamManagement';
+import AIFeatures from './AIFeatures';
+import GoogleBusinessSetup from './GoogleBusinessSetup';
+import PaymentManagement from './PaymentManagement';
 
 interface Client {
   id: string;
@@ -601,6 +608,10 @@ export default function ClientDashboard() {
     { id: "appointments", label: "Appointments", icon: Calendar },
     { id: "services", label: "Services", icon: Package },
     { id: "leads", label: "Leads", icon: UserPlus },
+    { id: "team", label: "Team", icon: Users },
+    { id: "ai", label: "AI Features", icon: Bot },
+    { id: "google", label: "Google Business", icon: MapPin },
+    { id: "payments", label: "Payments", icon: CreditCard },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "website", label: "Website", icon: Globe },
     { id: "settings", label: "Settings", icon: Settings },
@@ -1774,6 +1785,14 @@ export default function ClientDashboard() {
             </Card>
               </div>
             )}
+
+            {activeView === "team" && <TeamManagement />}
+
+            {activeView === "ai" && <AIFeatures />}
+
+            {activeView === "google" && <GoogleBusinessSetup />}
+
+            {activeView === "payments" && <PaymentManagement />}
 
           </div>
         </main>

@@ -346,3 +346,169 @@ export const insertAppointmentSlotSchema = createInsertSchema(appointmentSlots).
 
 export type InsertAppointmentSlot = z.infer<typeof insertAppointmentSlotSchema>;
 export type AppointmentSlot = typeof appointmentSlots.$inferSelect;
+
+// Team Members table
+export const teamMembers = pgTable("team_members", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  role: text("role").notNull().default("STAFF"), // ADMIN, STAFF, MANAGER
+  permissions: text("permissions").array().default([]), // Array of permission strings
+  isActive: boolean("is_active").default(true),
+  hourlyRate: real("hourly_rate"),
+  specializations: text("specializations").array().default([]),
+  workingHours: text("working_hours"), // JSON string with schedule
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).pick({
+  clientId: true,
+  name: true,
+  email: true,
+  phone: true,
+  role: true,
+  permissions: true,
+  isActive: true,
+  hourlyRate: true,
+  specializations: true,
+  workingHours: true,
+});
+
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type TeamMember = typeof teamMembers.$inferSelect;
+
+// Payments table
+export const payments = pgTable("payments", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  appointmentId: text("appointment_id"),
+  paymentMethod: text("payment_method").notNull(), // STRIPE, PAYPAL, VENMO, ZELLE, CASH
+  paymentProvider: text("payment_provider"), // stripe, paypal, etc.
+  paymentIntentId: text("payment_intent_id"), // External payment ID
+  amount: real("amount").notNull(),
+  currency: text("currency").default("USD"),
+  status: text("status").notNull().default("PENDING"), // PENDING, COMPLETED, FAILED, REFUNDED
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  description: text("description"),
+  metadata: text("metadata"), // JSON string for additional data
+  processingFee: real("processing_fee"),
+  netAmount: real("net_amount"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  paidAt: timestamp("paid_at"),
+});
+
+export const insertPaymentSchema = createInsertSchema(payments).pick({
+  clientId: true,
+  appointmentId: true,
+  paymentMethod: true,
+  paymentProvider: true,
+  paymentIntentId: true,
+  amount: true,
+  currency: true,
+  status: true,
+  customerName: true,
+  customerEmail: true,
+  description: true,
+  metadata: true,
+  processingFee: true,
+  netAmount: true,
+  paidAt: true,
+});
+
+export type InsertPayment = z.infer<typeof insertPaymentSchema>;
+export type Payment = typeof payments.$inferSelect;
+
+// AI Voice Agents table
+export const aiVoiceAgents = pgTable("ai_voice_agents", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull().unique(),
+  agentName: text("agent_name").notNull(),
+  voiceType: text("voice_type").default("PROFESSIONAL"), // PROFESSIONAL, FRIENDLY, CASUAL
+  language: text("language").default("en-US"),
+  isActive: boolean("is_active").default(false),
+  welcomeMessage: text("welcome_message"),
+  businessHours: text("business_hours"), // JSON string
+  availableServices: text("available_services").array().default([]),
+  bookingEnabled: boolean("booking_enabled").default(true),
+  transcriptionEnabled: boolean("transcription_enabled").default(true),
+  twilioPhoneNumber: text("twilio_phone_number"),
+  callVolume: integer("call_volume").default(0),
+  lastCallAt: timestamp("last_call_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAIVoiceAgentSchema = createInsertSchema(aiVoiceAgents).pick({
+  clientId: true,
+  agentName: true,
+  voiceType: true,
+  language: true,
+  isActive: true,
+  welcomeMessage: true,
+  businessHours: true,
+  availableServices: true,
+  bookingEnabled: true,
+  transcriptionEnabled: true,
+  twilioPhoneNumber: true,
+});
+
+export type InsertAIVoiceAgent = z.infer<typeof insertAIVoiceAgentSchema>;
+export type AIVoiceAgent = typeof aiVoiceAgents.$inferSelect;
+
+// Google Business Profiles table
+export const googleBusinessProfiles = pgTable("google_business_profiles", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull().unique(),
+  businessName: text("business_name").notNull(),
+  googlePlaceId: text("google_place_id"),
+  isVerified: boolean("is_verified").default(false),
+  averageRating: real("average_rating"),
+  totalReviews: integer("total_reviews").default(0),
+  businessHours: text("business_hours"), // JSON string
+  businessDescription: text("business_description"),
+  businessCategories: text("business_categories").array().default([]),
+  businessPhotos: text("business_photos").array().default([]),
+  website: text("website"),
+  phoneNumber: text("phone_number"),
+  address: text("address"),
+  postalCode: text("postal_code"),
+  city: text("city"),
+  state: text("state"),
+  country: text("country"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  lastSyncAt: timestamp("last_sync_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertGoogleBusinessProfileSchema = createInsertSchema(googleBusinessProfiles).pick({
+  clientId: true,
+  businessName: true,
+  googlePlaceId: true,
+  isVerified: true,
+  averageRating: true,
+  totalReviews: true,
+  businessHours: true,
+  businessDescription: true,
+  businessCategories: true,
+  businessPhotos: true,
+  website: true,
+  phoneNumber: true,
+  address: true,
+  postalCode: true,
+  city: true,
+  state: true,
+  country: true,
+  latitude: true,
+  longitude: true,
+  lastSyncAt: true,
+});
+
+export type InsertGoogleBusinessProfile = z.infer<typeof insertGoogleBusinessProfileSchema>;
+export type GoogleBusinessProfile = typeof googleBusinessProfiles.$inferSelect;
