@@ -106,7 +106,7 @@ export default function ClientLogin() {
               </Button>
             </form>
             
-            <div className="mt-6 text-center">
+            <div className="mt-6 text-center space-y-3">
               <p className="text-sm text-gray-600 mb-2">
                 Don't have an account yet?
               </p>
@@ -116,6 +116,19 @@ export default function ClientLogin() {
               >
                 Start Free Trial
               </Button>
+              
+              <div className="pt-3 border-t">
+                <p className="text-sm text-gray-600 mb-2">
+                  Team member?
+                </p>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setLocation('/team-login')}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  Team Member Login
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

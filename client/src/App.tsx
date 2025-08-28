@@ -5,6 +5,8 @@ import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import OnboardingFlow from "@/pages/OnboardingFlow";
 import ClientDashboard from "@/pages/ClientDashboard";
 import ClientLogin from "@/pages/ClientLogin";
+import TeamLogin from "@/pages/TeamLogin";
+import TeamDashboard from "@/pages/TeamDashboard";
 import ClientWebsite from "@/pages/ClientWebsite";
 import NotFound from "@/pages/not-found";
 
@@ -31,6 +33,10 @@ function App() {
           {/* Client Login & Dashboard */}
           <Route path="/client-login" component={ClientLogin} />
           <Route path="/client-dashboard" component={ClientDashboard} />
+          
+          {/* Team Member Login & Dashboard */}
+          <Route path="/team-login" component={TeamLogin} />
+          <Route path="/team-dashboard" component={TeamDashboard} />
           
           {/* Public Client Websites */}
           <Route path="/client-website/:clientId" component={ClientWebsite} />

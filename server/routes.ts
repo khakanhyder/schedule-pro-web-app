@@ -967,6 +967,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Team member authentication route
+  app.post("/api/auth/team-login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Find team member by email
+      const teamMembers = await storage.getTeamMembers(""); // Get all team members
+      const allTeamMembers = [];
+      
+      // Get team members from all clients
+      const clients = await storage.getClients();
+      for (const client of clients) {
+        const clientTeamMembers = await storage.getTeamMembers(client.id);
+        allTeamMembers.push(...clientTeamMembers);
+      }
+      
+      const teamMember = allTeamMembers.find(member => member.email === email && member.isActive);
+      if (!teamMember) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Verify password (simple comparison for demo)
+      if (teamMember.password !== password) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Get the client info for the team member
+      const client = await storage.getClient(teamMember.clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+      
+      res.json({
+        teamMember: {
+          id: teamMember.id,
+          name: teamMember.name,
+          email: teamMember.email,
+          role: teamMember.role,
+          permissions: teamMember.permissions,
+          clientId: teamMember.clientId
+        },
+        client
+      });
+    } catch (error) {
+      console.error("Team member login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
   // =============================================================================
   // PUBLIC CLIENT WEBSITE ROUTES
   // =============================================================================
