@@ -360,6 +360,7 @@ export const teamMembers = pgTable("team_members", {
   hourlyRate: real("hourly_rate"),
   specializations: text("specializations").array().default([]),
   workingHours: text("working_hours"), // JSON string with schedule
+  password: text("password").notNull(), // Hashed password for authentication
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -375,6 +376,7 @@ export const insertTeamMemberSchema = createInsertSchema(teamMembers).pick({
   hourlyRate: true,
   specializations: true,
   workingHours: true,
+  password: true,
 });
 
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;

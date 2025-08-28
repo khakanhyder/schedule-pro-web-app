@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Users, Shield, DollarSign } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Edit, Trash2, Users, Shield, DollarSign, Home, Calendar, Package, UserPlus, Bot, MapPin, BarChart3, Globe, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -64,16 +64,114 @@ const teamMemberSchema = z.object({
 
 type TeamMemberFormData = z.infer<typeof teamMemberSchema>;
 
-const availablePermissions = [
-  { id: "view_appointments", label: "View Appointments" },
-  { id: "manage_appointments", label: "Manage Appointments" },
-  { id: "view_clients", label: "View Clients" },
-  { id: "manage_clients", label: "Manage Clients" },
-  { id: "view_payments", label: "View Payments" },
-  { id: "manage_payments", label: "Process Payments" },
-  { id: "view_reports", label: "View Reports" },
-  { id: "manage_services", label: "Manage Services" },
-  { id: "manage_schedule", label: "Manage Schedule" },
+// Define all dashboard tabs with their available permissions
+const DASHBOARD_TABS = [
+  {
+    id: "overview",
+    name: "Overview Dashboard",
+    icon: Home,
+    permissions: [
+      { id: "overview.view", name: "View Dashboard", description: "Can view overview and metrics" },
+      { id: "overview.export", name: "Export Data", description: "Can export dashboard reports" }
+    ]
+  },
+  {
+    id: "appointments",
+    name: "Appointments",
+    icon: Calendar,
+    permissions: [
+      { id: "appointments.view", name: "View Appointments", description: "Can view appointment calendar and list" },
+      { id: "appointments.create", name: "Create Appointments", description: "Can book new appointments" },
+      { id: "appointments.edit", name: "Edit Appointments", description: "Can modify existing appointments" },
+      { id: "appointments.delete", name: "Cancel Appointments", description: "Can cancel/delete appointments" },
+      { id: "appointments.status", name: "Update Status", description: "Can change appointment status" }
+    ]
+  },
+  {
+    id: "services",
+    name: "Services & Pricing",
+    icon: Package,
+    permissions: [
+      { id: "services.view", name: "View Services", description: "Can view service catalog and pricing" },
+      { id: "services.create", name: "Create Services", description: "Can add new services" },
+      { id: "services.edit", name: "Edit Services", description: "Can modify service details and pricing" },
+      { id: "services.delete", name: "Delete Services", description: "Can remove services from catalog" }
+    ]
+  },
+  {
+    id: "leads",
+    name: "Lead Management",
+    icon: UserPlus,
+    permissions: [
+      { id: "leads.view", name: "View Leads", description: "Can view lead pipeline and details" },
+      { id: "leads.create", name: "Create Leads", description: "Can add new leads to the system" },
+      { id: "leads.edit", name: "Edit Leads", description: "Can update lead information and status" },
+      { id: "leads.delete", name: "Delete Leads", description: "Can remove leads from system" },
+      { id: "leads.convert", name: "Convert Leads", description: "Can convert leads to appointments" }
+    ]
+  },
+  {
+    id: "team",
+    name: "Team Management",
+    icon: Users,
+    permissions: [
+      { id: "team.view", name: "View Team", description: "Can view team member list and details" },
+      { id: "team.create", name: "Add Team Members", description: "Can invite and add new team members" },
+      { id: "team.edit", name: "Edit Team Members", description: "Can modify team member information" },
+      { id: "team.delete", name: "Remove Team Members", description: "Can remove team members" },
+      { id: "team.permissions", name: "Manage Permissions", description: "Can assign and modify permissions" }
+    ]
+  },
+  {
+    id: "ai",
+    name: "AI Features",
+    icon: Bot,
+    permissions: [
+      { id: "ai.view", name: "View AI Settings", description: "Can view AI configurations and insights" },
+      { id: "ai.configure", name: "Configure AI", description: "Can modify AI voice agent and features" },
+      { id: "ai.insights", name: "Access AI Insights", description: "Can view AI-generated business insights" }
+    ]
+  },
+  {
+    id: "google",
+    name: "Google Business",
+    icon: MapPin,
+    permissions: [
+      { id: "google.view", name: "View Google Profile", description: "Can view Google Business Profile status" },
+      { id: "google.manage", name: "Manage Google Profile", description: "Can update Google Business Profile" },
+      { id: "google.reviews", name: "Manage Reviews", description: "Can respond to and manage reviews" }
+    ]
+  },
+  {
+    id: "analytics",
+    name: "Analytics & Reports",
+    icon: BarChart3,
+    permissions: [
+      { id: "analytics.view", name: "View Analytics", description: "Can view business analytics and reports" },
+      { id: "analytics.export", name: "Export Reports", description: "Can export analytical reports" },
+      { id: "analytics.advanced", name: "Advanced Analytics", description: "Can access detailed analytics features" }
+    ]
+  },
+  {
+    id: "website",
+    name: "Website Management",
+    icon: Globe,
+    permissions: [
+      { id: "website.view", name: "View Website", description: "Can preview website and settings" },
+      { id: "website.edit", name: "Edit Website", description: "Can modify website content and design" },
+      { id: "website.publish", name: "Publish Website", description: "Can publish/unpublish website changes" }
+    ]
+  },
+  {
+    id: "settings",
+    name: "Business Settings",
+    icon: Settings,
+    permissions: [
+      { id: "settings.view", name: "View Settings", description: "Can view business configuration" },
+      { id: "settings.edit", name: "Edit Settings", description: "Can modify business settings" },
+      { id: "settings.hours", name: "Manage Hours", description: "Can update operating hours and availability" }
+    ]
+  }
 ];
 
 const availableSpecializations = [
@@ -109,7 +207,7 @@ export default function TeamManagement() {
   });
 
   const createMemberMutation = useMutation({
-    mutationFn: async (data: TeamMemberFormData) => {
+    mutationFn: async (data: Omit<TeamMemberFormData, 'confirmPassword'>) => {
       return apiRequest(`/api/client/${clientId}/team`, "POST", { ...data, clientId });
     },
     onSuccess: () => {
@@ -131,7 +229,7 @@ export default function TeamManagement() {
   });
 
   const updateMemberMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: TeamMemberFormData }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Omit<TeamMemberFormData, 'confirmPassword'> }) => {
       return apiRequest(`/api/client/${clientId}/team/${id}`, "PATCH", data);
     },
     onSuccess: () => {
@@ -205,6 +303,8 @@ export default function TeamManagement() {
       specializations: member.specializations || [],
       permissions: member.permissions || [],
       workingHours: member.workingHours || "",
+      password: "",
+      confirmPassword: "",
     });
     setDialogOpen(true);
   };
@@ -449,37 +549,55 @@ export default function TeamManagement() {
                 </div>
 
                 <div>
-                  <FormLabel className="text-base font-medium">Permissions</FormLabel>
-                  <FormDescription className="mb-3">
-                    Select what this team member can access and manage
+                  <FormLabel className="text-base font-medium">Dashboard Permissions</FormLabel>
+                  <FormDescription className="mb-4">
+                    Select which dashboard tabs and operations this team member can access
                   </FormDescription>
-                  <div className="space-y-2">
-                    {availablePermissions.map((permission) => (
-                      <FormField
-                        key={permission.id}
-                        control={form.control}
-                        name="permissions"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(permission.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    field.onChange([...field.value, permission.id]);
-                                  } else {
-                                    field.onChange(field.value?.filter((val) => val !== permission.id));
-                                  }
-                                }}
+                  <div className="space-y-6 max-h-96 overflow-y-auto">
+                    {DASHBOARD_TABS.map((tab) => {
+                      const IconComponent = tab.icon;
+                      return (
+                        <div key={tab.id} className="border rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <IconComponent className="h-5 w-5 text-blue-600" />
+                            <h4 className="font-medium text-gray-900">{tab.name}</h4>
+                          </div>
+                          <div className="grid grid-cols-1 gap-2">
+                            {tab.permissions.map((permission) => (
+                              <FormField
+                                key={permission.id}
+                                control={form.control}
+                                name="permissions"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(permission.id)}
+                                        onCheckedChange={(checked) => {
+                                          if (checked) {
+                                            field.onChange([...field.value, permission.id]);
+                                          } else {
+                                            field.onChange(field.value?.filter((val) => val !== permission.id));
+                                          }
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <div className="space-y-1">
+                                      <FormLabel className="text-sm font-medium">
+                                        {permission.name}
+                                      </FormLabel>
+                                      <p className="text-xs text-gray-500">
+                                        {permission.description}
+                                      </p>
+                                    </div>
+                                  </FormItem>
+                                )}
                               />
-                            </FormControl>
-                            <FormLabel className="text-sm font-normal">
-                              {permission.label}
-                            </FormLabel>
-                          </FormItem>
-                        )}
-                      />
-                    ))}
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
