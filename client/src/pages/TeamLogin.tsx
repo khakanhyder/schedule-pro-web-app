@@ -17,31 +17,50 @@ export default function TeamLogin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLoading) return; // Prevent multiple submissions
+    
     setIsLoading(true);
 
     try {
+      console.log("Attempting team login for:", email);
       const response = await apiRequest("/api/auth/team-login", "POST", {
         email,
         password,
       }) as any;
 
-      if (response.teamMember && response.client) {
+      console.log("Login response:", response);
+
+      if (response && response.teamMember && response.client) {
         // Store team member session data
-        localStorage.setItem("teamMemberSession", JSON.stringify({
+        const sessionData = {
           teamMember: response.teamMember,
           client: response.client,
           loginTime: new Date().toISOString()
-        }));
+        };
+        
+        localStorage.setItem("teamMemberSession", JSON.stringify(sessionData));
+        console.log("Session stored, redirecting to team dashboard");
 
         toast({
           title: "Login successful",
           description: `Welcome back, ${response.teamMember.name}!`,
         });
 
-        // Redirect to team dashboard
-        setLocation("/team-dashboard");
+        // Use setTimeout to ensure state updates complete before redirect
+        setTimeout(() => {
+          setLocation("/team-dashboard");
+        }, 100);
+      } else {
+        console.error("Invalid response structure:", response);
+        toast({
+          title: "Login failed",
+          description: "Invalid response from server.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: "Please check your email and password and try again.",
@@ -93,14 +112,23 @@ export default function TeamLogin() {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading}
+              disabled={isLoading || !email || !password}
             >
               <LogIn className="h-4 w-4 mr-2" />
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           
-          <div className="mt-6 text-center">
+          {/* Demo Credentials */}
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm font-medium text-blue-800 mb-2">Demo Team Member:</p>
+            <div className="text-sm text-blue-700 space-y-1">
+              <p>Email: khisal@test.com</p>
+              <p>Password: password123</p>
+            </div>
+          </div>
+          
+          <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
               Business owner?{" "}
               <button
