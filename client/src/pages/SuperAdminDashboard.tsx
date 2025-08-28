@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import PaymentManagement from "./PaymentManagement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -280,6 +281,7 @@ export default function SuperAdminDashboard() {
     { id: "overview", label: "Overview", icon: Home },
     { id: "clients", label: "Clients", icon: Users },
     { id: "plans", label: "Plans", icon: CreditCard },
+    { id: "payments", label: "Payments", icon: DollarSign },
     { id: "onboarding", label: "Onboarding", icon: UserPlus },
   ];
 
@@ -1216,6 +1218,8 @@ export default function SuperAdminDashboard() {
             </Card>
               </div>
             )}
+
+            {activeView === "payments" && <PaymentManagement />}
 
             {activeView === "client-login" && (
               <div className="space-y-6">

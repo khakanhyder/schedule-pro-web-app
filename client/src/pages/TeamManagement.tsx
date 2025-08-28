@@ -55,6 +55,11 @@ const teamMemberSchema = z.object({
   specializations: z.array(z.string()).default([]),
   permissions: z.array(z.string()).default([]),
   workingHours: z.string().optional(),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type TeamMemberFormData = z.infer<typeof teamMemberSchema>;
@@ -94,6 +99,8 @@ export default function TeamManagement() {
       specializations: [],
       permissions: [],
       workingHours: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
@@ -167,10 +174,23 @@ export default function TeamManagement() {
   });
 
   const handleSubmit = (data: TeamMemberFormData) => {
+    // Check if passwords match for new members
+    if (!editingMember && data.password !== data.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Remove confirmPassword field before submitting
+    const { confirmPassword, ...submitData } = data;
+    
     if (editingMember) {
-      updateMemberMutation.mutate({ id: editingMember.id, data });
+      updateMemberMutation.mutate({ id: editingMember.id, data: submitData });
     } else {
-      createMemberMutation.mutate(data);
+      createMemberMutation.mutate(submitData);
     }
   };
 
@@ -328,6 +348,37 @@ export default function TeamManagement() {
                             <SelectItem value="ADMIN">Admin</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="Enter password" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                          This password will be used for team member login
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="Confirm password" {...field} />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
