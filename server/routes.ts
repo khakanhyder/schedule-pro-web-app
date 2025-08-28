@@ -16,7 +16,8 @@ import {
   insertOperatingHoursSchema,
   insertLeadSchema,
   insertClientWebsiteSchema,
-  insertAppointmentSlotSchema
+  insertAppointmentSlotSchema,
+  insertTeamMemberSchema
 } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 
@@ -823,6 +824,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Appointment slot deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete appointment slot" });
+    }
+  });
+
+  // Team Members Management
+  app.get("/api/client/:clientId/team", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const teamMembers = await storage.getTeamMembers(clientId);
+      res.json(teamMembers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch team members" });
+    }
+  });
+
+  app.post("/api/client/:clientId/team", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const memberData = { ...insertTeamMemberSchema.parse(req.body), clientId };
+      const member = await storage.createTeamMember(memberData);
+      res.json(member);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create team member" });
+    }
+  });
+
+  app.patch("/api/client/:clientId/team/:memberId", async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      const updates = req.body;
+      const member = await storage.updateTeamMember(memberId, updates);
+      res.json(member);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update team member" });
+    }
+  });
+
+  app.delete("/api/client/:clientId/team/:memberId", async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      await storage.deleteTeamMember(memberId);
+      res.json({ message: "Team member deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete team member" });
     }
   });
 

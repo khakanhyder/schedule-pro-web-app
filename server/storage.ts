@@ -11,6 +11,7 @@ import {
   leads, type Lead, type InsertLead,
   clientWebsites, type ClientWebsite, type InsertClientWebsite,
   appointmentSlots, type AppointmentSlot, type InsertAppointmentSlot,
+  teamMembers, type TeamMember, type InsertTeamMember,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -86,6 +87,13 @@ export interface IStorage {
   updateAppointmentSlot(id: string, updates: Partial<InsertAppointmentSlot>): Promise<AppointmentSlot>;
   deleteAppointmentSlot(id: string): Promise<void>;
   getAvailableSlots(clientId: string, date: string): Promise<string[]>;
+  
+  // Team Members
+  getTeamMembers(clientId: string): Promise<TeamMember[]>;
+  getTeamMember(id: string): Promise<TeamMember | undefined>;
+  createTeamMember(member: InsertTeamMember): Promise<TeamMember>;
+  updateTeamMember(id: string, updates: Partial<InsertTeamMember>): Promise<TeamMember>;
+  deleteTeamMember(id: string): Promise<void>;
 }
 
 // In-memory storage implementation
@@ -102,6 +110,7 @@ class MemStorage implements IStorage {
   private leads: Lead[] = [];
   private clientWebsites: ClientWebsite[] = [];
   private appointmentSlots: AppointmentSlot[] = [];
+  private teamMembers: TeamMember[] = [];
 
   constructor() {
     this.initializeData();
@@ -730,6 +739,54 @@ class MemStorage implements IStorage {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  }
+
+  // Team Members
+  async getTeamMembers(clientId: string): Promise<TeamMember[]> {
+    return this.teamMembers.filter(member => member.clientId === clientId);
+  }
+
+  async getTeamMember(id: string): Promise<TeamMember | undefined> {
+    return this.teamMembers.find(member => member.id === id);
+  }
+
+  async createTeamMember(member: InsertTeamMember): Promise<TeamMember> {
+    const newMember: TeamMember = {
+      id: `team_${this.teamMembers.length + 1}`,
+      clientId: member.clientId,
+      name: member.name,
+      email: member.email,
+      phone: member.phone || null,
+      role: member.role || "STAFF",
+      permissions: member.permissions || [],
+      isActive: member.isActive ?? true,
+      hourlyRate: member.hourlyRate || null,
+      specializations: member.specializations || [],
+      workingHours: member.workingHours || null,
+      password: member.password,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.teamMembers.push(newMember);
+    return newMember;
+  }
+
+  async updateTeamMember(id: string, updates: Partial<InsertTeamMember>): Promise<TeamMember> {
+    const index = this.teamMembers.findIndex(member => member.id === id);
+    if (index === -1) throw new Error("Team member not found");
+    
+    this.teamMembers[index] = {
+      ...this.teamMembers[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.teamMembers[index];
+  }
+
+  async deleteTeamMember(id: string): Promise<void> {
+    const index = this.teamMembers.findIndex(member => member.id === id);
+    if (index === -1) throw new Error("Team member not found");
+    this.teamMembers.splice(index, 1);
   }
 }
 
