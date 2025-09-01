@@ -179,12 +179,35 @@ const availableSpecializations = [
   "Massage", "Makeup", "Eyebrow Threading", "Waxing", "Spa Treatments"
 ];
 
-export default function TeamManagement() {
+interface TeamManagementProps {
+  hasPermission?: (permission: string) => boolean;
+}
+
+export default function TeamManagement({ hasPermission }: TeamManagementProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Get current team member ID from localStorage to prevent self-deletion
+  const getCurrentTeamMemberId = () => {
+    try {
+      const teamContext = localStorage.getItem("teamMemberContext");
+      if (teamContext) {
+        const context = JSON.parse(teamContext);
+        return context.teamMemberId;
+      }
+    } catch (error) {
+      console.error("Error getting current team member ID:", error);
+    }
+    return null;
+  };
+
+  // Permission helper - defaults to full access if no permission function provided (business owner)
+  const canPerform = (permission: string) => {
+    return hasPermission ? hasPermission(permission) : true;
+  };
 
   const form = useForm<TeamMemberFormData>({
     resolver: zodResolver(teamMemberSchema),
@@ -293,6 +316,16 @@ export default function TeamManagement() {
   };
 
   const handleEdit = (member: TeamMember) => {
+    // Check if user has edit permission
+    if (!canPerform('team.edit')) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to edit team members.", 
+        variant: "destructive"
+      });
+      return;
+    }
+
     setEditingMember(member);
     form.reset({
       name: member.name,
@@ -310,6 +343,27 @@ export default function TeamManagement() {
   };
 
   const handleDelete = (id: string) => {
+    // Prevent team members from deleting their own accounts
+    const currentTeamMemberId = getCurrentTeamMemberId();
+    if (currentTeamMemberId === id) {
+      toast({
+        title: "Access Denied",
+        description: "You cannot delete your own account. Please contact your administrator.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if user has delete permission
+    if (!canPerform('team.delete')) {
+      toast({
+        title: "Access Denied", 
+        description: "You don't have permission to delete team members.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (confirm("Are you sure you want to remove this team member?")) {
       deleteMemberMutation.mutate(id);
     }
@@ -363,16 +417,18 @@ export default function TeamManagement() {
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
-              onClick={() => {
-                setEditingMember(null);
-                form.reset();
-              }}
-              className="w-full sm:w-auto"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Team Member
-            </Button>
+            {canPerform('team.create') && (
+              <Button 
+                onClick={() => {
+                  setEditingMember(null);
+                  form.reset();
+                }}
+                className="w-full sm:w-auto"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Team Member
+              </Button>
+            )}
           </DialogTrigger>
           
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -659,7 +715,7 @@ export default function TeamManagement() {
             <p className="text-gray-600 text-center mb-6">
               {searchTerm ? "Try adjusting your search criteria" : "Add your first team member to get started"}
             </p>
-            {!searchTerm && (
+            {!searchTerm && canPerform('team.create') && (
               <Button onClick={() => setDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Team Member
@@ -690,26 +746,32 @@ export default function TeamManagement() {
                     </div>
                   </div>
                   
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
+                  {(canPerform('team.edit') || (canPerform('team.delete') && getCurrentTeamMemberId() !== member.id)) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEdit(member)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => handleDelete(member.id)}
-                        className="text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Remove
-                      </DropdownMenuItem>
+                      {canPerform('team.edit') && (
+                        <DropdownMenuItem onClick={() => handleEdit(member)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                      )}
+                      {canPerform('team.delete') && getCurrentTeamMemberId() !== member.id && (
+                        <DropdownMenuItem 
+                          onClick={() => handleDelete(member.id)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Remove
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
-                  </DropdownMenu>
+                    </DropdownMenu>
+                  )}
                 </div>
               </CardHeader>
               

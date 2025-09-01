@@ -1926,8 +1926,8 @@ export default function ClientDashboard() {
             )}
 
             {activeView === "team" && (
-              hasPermission('team.view') ? (
-                <TeamManagement />
+              hasPermission('team.edit') ? (
+                <TeamManagement hasPermission={hasPermission} />
               ) : (
                 <div className="text-center py-8">
                   <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
