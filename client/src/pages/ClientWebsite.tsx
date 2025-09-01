@@ -225,24 +225,168 @@ export default function ClientWebsite() {
         }}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <h2 className={`font-bold mb-4 ${section.type === 'hero' ? 'text-3xl md:text-6xl' : 'text-2xl md:text-3xl'} ${getFontSizeClass(section.settings?.fontSize)}`}>
-            {section.title}
-          </h2>
-          <div className={`${getFontSizeClass(section.settings?.fontSize)} whitespace-pre-wrap ${section.type === 'hero' ? 'text-lg md:text-xl opacity-90' : ''}`}>
-            {section.content}
-          </div>
-          {section.type === 'hero' && (
-            <div className="mt-6">
-              <Button 
-                size="lg" 
-                className="bg-white hover:bg-gray-100" 
-                style={{ color: websiteData?.primaryColor || '#3B82F6' }}
-                onClick={handleHeroBookingClick}
-              >
-                Book Appointment
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+          {section.type === 'contact-info' ? (
+            <>
+              <h2 className="text-3xl font-bold mb-8 text-center">{section.title}</h2>
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Phone className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                    <h3 className="font-semibold mb-2">Call Us</h3>
+                    <p className="text-gray-600">{client.phone || 'Contact for phone'}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <Mail className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                    <h3 className="font-semibold mb-2">Email Us</h3>
+                    <p className="text-gray-600">{client.email}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <MapPin className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                    <h3 className="font-semibold mb-2">Visit Us</h3>
+                    <p className="text-gray-600">{client.businessAddress || 'Contact for address'}</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          ) : section.type === 'services' ? (
+            <div id="services-section">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold mb-4">{section.title}</h2>
+                <p className="text-gray-600">{section.content}</p>
+              </div>
+              
+              {services.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Services will be available soon.</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {services.filter(service => service.isActive).map((service) => (
+                    <Card key={service.id} className="hover:shadow-lg transition-shadow">
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <CardTitle className="text-lg">{service.name}</CardTitle>
+                          <Badge variant="secondary">{service.category}</Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-600 mb-4">{service.description}</p>
+                        <div className="flex justify-between items-center mb-4">
+                          <div>
+                            <span className="text-2xl font-bold text-blue-600">${service.price}</span>
+                          </div>
+                          <div className="flex items-center text-gray-500">
+                            <Clock className="h-4 w-4 mr-1" />
+                            <span className="text-sm">{service.durationMinutes}min</span>
+                          </div>
+                        </div>
+                        <Button 
+                          className="w-full" 
+                          onClick={() => handleBooking(service)}
+                        >
+                          Book Now
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
+          ) : section.type === 'contact-form' ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>{section.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4" onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target as HTMLFormElement);
+                  const contactData = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    message: formData.get('message')
+                  };
+                  
+                  fetch(`/api/public/client/${clientId}/contact`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(contactData)
+                  }).then(() => {
+                    alert('Thank you for your message! We will get back to you soon.');
+                    (e.target as HTMLFormElement).reset();
+                  }).catch(() => {
+                    alert('Failed to send message. Please try again.');
+                  });
+                }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Name *</Label>
+                      <Input name="name" id="name" placeholder="Your name" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">Email *</Label>
+                      <Input name="email" id="email" type="email" placeholder="your@email.com" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input name="phone" id="phone" placeholder="(555) 123-4567" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="message">Message *</Label>
+                      <Textarea name="message" id="message" placeholder="How can we help you?" rows={4} required />
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full">Send Message</Button>
+                </form>
+              </CardContent>
+            </Card>
+          ) : section.type === 'about' ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>{section.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                  {section.content}
+                </div>
+                <div className="mt-6 flex items-center justify-center">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} className="h-5 w-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <span className="ml-2 text-gray-600">5.0 rating</span>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            // Default section rendering
+            <>
+              <h2 className={`font-bold mb-4 ${section.type === 'hero' ? 'text-3xl md:text-6xl' : 'text-2xl md:text-3xl'} ${getFontSizeClass(section.settings?.fontSize)}`}>
+                {section.title}
+              </h2>
+              <div className={`${getFontSizeClass(section.settings?.fontSize)} whitespace-pre-wrap ${section.type === 'hero' ? 'text-lg md:text-xl opacity-90' : ''}`}>
+                {section.content}
+              </div>
+              {section.type === 'hero' && (
+                <div className="mt-6">
+                  <Button 
+                    size="lg" 
+                    className="bg-white hover:bg-gray-100" 
+                    style={{ color: websiteData?.primaryColor || '#3B82F6' }}
+                    onClick={handleHeroBookingClick}
+                  >
+                    Book Appointment
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -254,156 +398,154 @@ export default function ClientWebsite() {
       {/* Render website sections from builder */}
       {renderWebsiteSections()}
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Contact Info */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-8 sm:mb-12">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Phone className="h-8 w-8 text-blue-600 mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Call Us</h3>
-              <p className="text-gray-600">{client.phone || 'Contact for phone'}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Mail className="h-8 w-8 text-blue-600 mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Email Us</h3>
-              <p className="text-gray-600">{client.email}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6 text-center">
-              <MapPin className="h-8 w-8 text-blue-600 mx-auto mb-3" />
-              <h3 className="font-semibold mb-2">Visit Us</h3>
-              <p className="text-gray-600">{client.businessAddress || 'Contact for address'}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Services Section */}
-        <div id="services-section" className="mb-12">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4">Our Services</h2>
-            <p className="text-gray-600">Choose from our professional services</p>
-          </div>
-          
-          {services.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Services will be available soon.</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {services.filter(service => service.isActive).map((service) => (
-                <Card key={service.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{service.name}</CardTitle>
-                      <Badge variant="secondary">{service.category}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">{service.description}</p>
-                    <div className="flex justify-between items-center mb-4">
-                      <div>
-                        <span className="text-2xl font-bold text-blue-600">${service.price}</span>
-                      </div>
-                      <div className="flex items-center text-gray-500">
-                        <Clock className="h-4 w-4 mr-1" />
-                        <span className="text-sm">{service.durationMinutes}min</span>
-                      </div>
-                    </div>
-                    <Button 
-                      className="w-full" 
-                      onClick={() => handleBooking(service)}
-                    >
-                      Book Now
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Show additional sections only if website has no builder sections */}
-        {websiteSections.length === 0 && (
-          <>
-            {/* About Section */}
+      {/* Show legacy sections only when no website sections exist */}
+      {websiteSections.length === 0 && (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          {/* Contact Info */}
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-8 sm:mb-12">
             <Card>
-              <CardHeader>
-                <CardTitle>About {client.businessName}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 leading-relaxed">
-                  Welcome to {client.businessName}, your trusted partner for professional {client.industry.toLowerCase()} services. 
-                  Led by {client.contactPerson}, we are committed to providing exceptional service and ensuring your complete satisfaction.
-                  Book an appointment today and experience the difference our expertise makes.
-                </p>
-                <div className="mt-6 flex items-center justify-center">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="h-5 w-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <span className="ml-2 text-gray-600">5.0 rating</span>
-                </div>
+              <CardContent className="p-6 text-center">
+                <Phone className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                <h3 className="font-semibold mb-2">Call Us</h3>
+                <p className="text-gray-600">{client.phone || 'Contact for phone'}</p>
               </CardContent>
             </Card>
-          </>
-        )}
-        
-        {/* Contact Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Get In Touch</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-4" onSubmit={(e) => {
-              e.preventDefault();
-              // Handle contact form submission
-              const formData = new FormData(e.target as HTMLFormElement);
-              const contactData = {
-                name: formData.get('name'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                message: formData.get('message')
-              };
-              
-              // Submit contact form
-              fetch(`/api/public/client/${clientId}/contact`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(contactData)
-              }).then(() => {
-                alert('Thank you for your message! We will get back to you soon.');
-                (e.target as HTMLFormElement).reset();
-              }).catch(() => {
-                alert('Failed to send message. Please try again.');
-              });
-            }}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Name *</Label>
-                  <Input name="name" id="name" placeholder="Your name" required />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input name="email" id="email" type="email" placeholder="your@email.com" required />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input name="phone" id="phone" placeholder="(555) 123-4567" />
-                </div>
-                <div className="md:col-span-2">
-                  <Label htmlFor="message">Message *</Label>
-                  <Textarea name="message" id="message" placeholder="How can we help you?" rows={4} required />
-                </div>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Mail className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                <h3 className="font-semibold mb-2">Email Us</h3>
+                <p className="text-gray-600">{client.email}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <MapPin className="h-8 w-8 text-blue-600 mx-auto mb-3" />
+                <h3 className="font-semibold mb-2">Visit Us</h3>
+                <p className="text-gray-600">{client.businessAddress || 'Contact for address'}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Services Section */}
+          <div id="services-section" className="mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">Our Services</h2>
+              <p className="text-gray-600">Choose from our professional services</p>
+            </div>
+            
+            {services.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Services will be available soon.</p>
               </div>
-              <Button type="submit" className="w-full">Send Message</Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+            ) : (
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {services.filter(service => service.isActive).map((service) => (
+                  <Card key={service.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg">{service.name}</CardTitle>
+                        <Badge variant="secondary">{service.category}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">{service.description}</p>
+                      <div className="flex justify-between items-center mb-4">
+                        <div>
+                          <span className="text-2xl font-bold text-blue-600">${service.price}</span>
+                        </div>
+                        <div className="flex items-center text-gray-500">
+                          <Clock className="h-4 w-4 mr-1" />
+                          <span className="text-sm">{service.durationMinutes}min</span>
+                        </div>
+                      </div>
+                      <Button 
+                        className="w-full" 
+                        onClick={() => handleBooking(service)}
+                      >
+                        Book Now
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* About Section */}
+          <Card className="mb-12">
+            <CardHeader>
+              <CardTitle>About {client.businessName}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 leading-relaxed">
+                Welcome to {client.businessName}, your trusted partner for professional {client.industry.toLowerCase()} services. 
+                Led by {client.contactPerson}, we are committed to providing exceptional service and ensuring your complete satisfaction.
+                Book an appointment today and experience the difference our expertise makes.
+              </p>
+              <div className="mt-6 flex items-center justify-center">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="h-5 w-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <span className="ml-2 text-gray-600">5.0 rating</span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Contact Form */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Get In Touch</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form className="space-y-4" onSubmit={(e) => {
+                e.preventDefault();
+                // Handle contact form submission
+                const formData = new FormData(e.target as HTMLFormElement);
+                const contactData = {
+                  name: formData.get('name'),
+                  email: formData.get('email'),
+                  phone: formData.get('phone'),
+                  message: formData.get('message')
+                };
+                
+                // Submit contact form
+                fetch(`/api/public/client/${clientId}/contact`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(contactData)
+                }).then(() => {
+                  alert('Thank you for your message! We will get back to you soon.');
+                  (e.target as HTMLFormElement).reset();
+                }).catch(() => {
+                  alert('Failed to send message. Please try again.');
+                });
+              }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Name *</Label>
+                    <Input name="name" id="name" placeholder="Your name" required />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input name="email" id="email" type="email" placeholder="your@email.com" required />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input name="phone" id="phone" placeholder="(555) 123-4567" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="message">Message *</Label>
+                    <Textarea name="message" id="message" placeholder="How can we help you?" rows={4} required />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full">Send Message</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Booking Modal */}
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>

@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Eye, Plus, Trash2, ArrowLeft, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings } from "lucide-react";
+import { Save, Eye, Plus, Trash2, ArrowLeft, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star } from "lucide-react";
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface WebsiteSection {
   id: string;
-  type: 'hero' | 'about' | 'services' | 'contact' | 'testimonials' | 'gallery' | 'text' | 'image';
+  type: 'hero' | 'about' | 'services' | 'contact-info' | 'contact-form' | 'testimonials' | 'gallery' | 'text' | 'image';
   title: string;
   content: string;
   settings?: {
@@ -94,7 +94,7 @@ export default function AdvancedWebsiteBuilder() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
-  // Initialize with existing website data or client data
+  // Initialize with existing website data or create full default structure
   useEffect(() => {
     if (existingWebsite && existingWebsite.sections) {
       // Load existing website data
@@ -111,7 +111,7 @@ export default function AdvancedWebsiteBuilder() {
         console.error('Error parsing existing website sections:', e);
       }
     } else if (clientData?.client && !existingWebsite) {
-      // Initialize with client data for new websites
+      // Initialize with complete website structure including all sections
       setWebsiteData(prev => ({
         ...prev,
         title: `${clientData.client.businessName} - Professional Services`,
@@ -125,10 +125,31 @@ export default function AdvancedWebsiteBuilder() {
             settings: { backgroundColor: "#3B82F6", textColor: "#FFFFFF", alignment: "center", padding: "large" }
           },
           {
+            id: "contact-info",
+            type: "contact-info",
+            title: "Contact Information",
+            content: "Get in touch with us through multiple channels",
+            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "center", padding: "medium" }
+          },
+          {
+            id: "services",
+            type: "services",
+            title: "Our Services",
+            content: "Choose from our professional services",
+            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "center", padding: "medium" }
+          },
+          {
             id: "about",
             type: "about",
             title: `About ${clientData.client.businessName}`,
-            content: `Located at ${clientData.client.businessAddress}, we are dedicated to providing exceptional ${clientData.client.industry.toLowerCase()} services.`,
+            content: `Welcome to ${clientData.client.businessName}, your trusted partner for professional ${clientData.client.industry.toLowerCase()} services. Led by ${clientData.client.contactPerson}, we are committed to providing exceptional service and ensuring your complete satisfaction.`,
+            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "left", padding: "medium" }
+          },
+          {
+            id: "contact-form",
+            type: "contact-form",
+            title: "Get In Touch",
+            content: "Send us a message and we'll get back to you soon",
             settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "left", padding: "medium" }
           }
         ]
@@ -142,7 +163,8 @@ export default function AdvancedWebsiteBuilder() {
       hero: { title: "Hero Section", content: "Welcome to our amazing business!" },
       about: { title: "About Us", content: "Learn more about our story and mission." },
       services: { title: "Our Services", content: "Discover what we can do for you." },
-      contact: { title: "Contact Us", content: "Get in touch with us today!" },
+      'contact-info': { title: "Contact Information", content: "Get in touch with us through multiple channels." },
+      'contact-form': { title: "Contact Form", content: "Send us a message and we'll get back to you soon." },
       testimonials: { title: "What Our Clients Say", content: "Read testimonials from our satisfied customers." },
       gallery: { title: "Gallery", content: "View our portfolio and past work." },
       text: { title: "Text Section", content: "Add your custom text content here." },
@@ -363,9 +385,17 @@ export default function AdvancedWebsiteBuilder() {
               <Settings className="h-3 w-3 mr-1" />
               Services
             </Button>
-            <Button variant="outline" size="sm" onClick={() => addSection('contact')}>
-              <Type className="h-3 w-3 mr-1" />
-              Contact
+            <Button variant="outline" size="sm" onClick={() => addSection('contact-info')}>
+              <Phone className="h-3 w-3 mr-1" />
+              Contact Info
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => addSection('contact-form')}>
+              <Mail className="h-3 w-3 mr-1" />
+              Contact Form
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => addSection('testimonials')}>
+              <Star className="h-3 w-3 mr-1" />
+              Testimonials
             </Button>
           </div>
         </div>
@@ -524,12 +554,96 @@ export default function AdvancedWebsiteBuilder() {
                 }}
                 onClick={() => setSelectedSection(section.id)}
               >
-                <h2 className={`font-bold mb-4 ${section.type === 'hero' ? 'text-3xl' : 'text-2xl'} ${getFontSizeClass(section.settings?.fontSize)}`}>
-                  {section.title}
-                </h2>
-                <div className={`${getFontSizeClass(section.settings?.fontSize)} whitespace-pre-wrap`}>
-                  {section.content}
-                </div>
+                {/* Section-specific rendering */}
+                {section.type === 'contact-info' ? (
+                  <div>
+                    <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                      {section.title}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                      <div className="text-center p-4 bg-white bg-opacity-10 rounded">
+                        <Phone className="h-8 w-8 mx-auto mb-2" />
+                        <h3 className="font-semibold">Call Us</h3>
+                        <p>{clientData?.client?.phone || '555-0101'}</p>
+                      </div>
+                      <div className="text-center p-4 bg-white bg-opacity-10 rounded">
+                        <Mail className="h-8 w-8 mx-auto mb-2" />
+                        <h3 className="font-semibold">Email Us</h3>
+                        <p>{clientData?.client?.email || 'info@business.com'}</p>
+                      </div>
+                      <div className="text-center p-4 bg-white bg-opacity-10 rounded">
+                        <Layout className="h-8 w-8 mx-auto mb-2" />
+                        <h3 className="font-semibold">Visit Us</h3>
+                        <p>{clientData?.client?.businessAddress || 'Business Address'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : section.type === 'services' ? (
+                  <div>
+                    <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                      {section.title}
+                    </h2>
+                    <p className="mb-4">{section.content}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-white bg-opacity-10 rounded">
+                        <h3 className="font-semibold mb-2">Service 1</h3>
+                        <p className="text-sm">Professional service description</p>
+                        <p className="text-lg font-bold mt-2">$100</p>
+                      </div>
+                      <div className="p-4 bg-white bg-opacity-10 rounded">
+                        <h3 className="font-semibold mb-2">Service 2</h3>
+                        <p className="text-sm">Professional service description</p>
+                        <p className="text-lg font-bold mt-2">$150</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : section.type === 'contact-form' ? (
+                  <div>
+                    <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                      {section.title}
+                    </h2>
+                    <p className="mb-4">{section.content}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <input className="p-2 rounded border" placeholder="Your Name" />
+                      <input className="p-2 rounded border" placeholder="Your Email" />
+                      <input className="p-2 rounded border" placeholder="Phone Number" />
+                      <textarea className="p-2 rounded border md:col-span-2" placeholder="Your Message" rows={3}></textarea>
+                      <button className="p-2 bg-blue-600 text-white rounded md:col-span-2">Send Message</button>
+                    </div>
+                  </div>
+                ) : section.type === 'testimonials' ? (
+                  <div>
+                    <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                      {section.title}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-white bg-opacity-10 rounded">
+                        <div className="flex mb-2">
+                          {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
+                        </div>
+                        <p className="italic">"Great service and professional team!"</p>
+                        <p className="font-semibold mt-2">- Client Name</p>
+                      </div>
+                      <div className="p-4 bg-white bg-opacity-10 rounded">
+                        <div className="flex mb-2">
+                          {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
+                        </div>
+                        <p className="italic">"Highly recommend their services!"</p>
+                        <p className="font-semibold mt-2">- Another Client</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Default rendering for other section types
+                  <div>
+                    <h2 className={`font-bold mb-4 ${section.type === 'hero' ? 'text-3xl' : 'text-2xl'} ${getFontSizeClass(section.settings?.fontSize)}`}>
+                      {section.title}
+                    </h2>
+                    <div className={`${getFontSizeClass(section.settings?.fontSize)} whitespace-pre-wrap`}>
+                      {section.content}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             
