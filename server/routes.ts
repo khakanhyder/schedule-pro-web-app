@@ -26,6 +26,54 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
+// Permission checking middleware
+interface TeamMemberSession {
+  teamMemberId: string;
+  permissions: string[];
+  clientId: string;
+}
+
+const requirePermission = (requiredPermission: string) => {
+  return async (req: any, res: any, next: any) => {
+    try {
+      // Check if request has team member session data
+      const teamMemberSession = req.headers['x-team-member-session'];
+      
+      if (!teamMemberSession) {
+        // No team member session, assume business owner access
+        return next();
+      }
+
+      // Parse team member session
+      let sessionData: TeamMemberSession;
+      try {
+        sessionData = JSON.parse(teamMemberSession as string);
+      } catch {
+        return res.status(401).json({ error: "Invalid team member session" });
+      }
+
+      // Verify client ID matches
+      const { clientId } = req.params;
+      if (sessionData.clientId !== clientId) {
+        return res.status(403).json({ error: "Access denied: Client mismatch" });
+      }
+
+      // Check if team member has required permission
+      if (!sessionData.permissions.includes(requiredPermission)) {
+        return res.status(403).json({ 
+          error: `Access denied: Missing permission '${requiredPermission}'` 
+        });
+      }
+
+      // Permission granted
+      next();
+    } catch (error) {
+      console.error("Permission check error:", error);
+      res.status(500).json({ error: "Permission validation failed" });
+    }
+  };
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Enable JSON parsing
   app.use(express.json());
@@ -34,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Team-Member-Session");
     if (req.method === "OPTIONS") {
       res.sendStatus(200);
     } else {
@@ -664,7 +712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Client Services Management
-  app.get("/api/client/:clientId/services", async (req, res) => {
+  app.get("/api/client/:clientId/services", requirePermission('services.view'), async (req, res) => {
     try {
       const { clientId } = req.params;
       const services = await storage.getClientServices(clientId);
@@ -674,7 +722,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/client/:clientId/services", async (req, res) => {
+  app.post("/api/client/:clientId/services", requirePermission('services.create'), async (req, res) => {
     try {
       const { clientId } = req.params;
       const serviceData = { ...insertClientServiceSchema.parse(req.body), clientId };
@@ -685,7 +733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/client/:clientId/services/:serviceId", async (req, res) => {
+  app.put("/api/client/:clientId/services/:serviceId", requirePermission('services.edit'), async (req, res) => {
     try {
       const { serviceId } = req.params;
       const updates = req.body;
@@ -696,7 +744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/client/:clientId/services/:serviceId", async (req, res) => {
+  app.delete("/api/client/:clientId/services/:serviceId", requirePermission('services.edit'), async (req, res) => {
     try {
       const { serviceId } = req.params;
       await storage.deleteClientService(serviceId);
@@ -707,7 +755,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Appointments Management
-  app.get("/api/client/:clientId/appointments", async (req, res) => {
+  app.get("/api/client/:clientId/appointments", requirePermission('appointments.view'), async (req, res) => {
     try {
       const { clientId } = req.params;
       const appointments = await storage.getAppointments(clientId);
@@ -717,7 +765,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/client/:clientId/appointments", async (req, res) => {
+  app.post("/api/client/:clientId/appointments", requirePermission('appointments.create'), async (req, res) => {
     try {
       const { clientId } = req.params;
       const appointmentData = { ...insertAppointmentSchema.parse(req.body), clientId };
@@ -728,7 +776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/client/:clientId/appointments/:appointmentId", async (req, res) => {
+  app.put("/api/client/:clientId/appointments/:appointmentId", requirePermission('appointments.edit'), async (req, res) => {
     try {
       const { appointmentId } = req.params;
       const updates = req.body;
@@ -739,7 +787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/client/:clientId/appointments/:appointmentId", async (req, res) => {
+  app.delete("/api/client/:clientId/appointments/:appointmentId", requirePermission('appointments.edit'), async (req, res) => {
     try {
       const { appointmentId } = req.params;
       await storage.deleteAppointment(appointmentId);
@@ -772,7 +820,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Leads Management
-  app.get("/api/client/:clientId/leads", async (req, res) => {
+  app.get("/api/client/:clientId/leads", requirePermission('leads.view'), async (req, res) => {
     try {
       const { clientId } = req.params;
       const leads = await storage.getLeads(clientId);
@@ -782,7 +830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/client/:clientId/leads", async (req, res) => {
+  app.post("/api/client/:clientId/leads", requirePermission('leads.create'), async (req, res) => {
     try {
       const { clientId } = req.params;
       const leadData = { ...insertLeadSchema.parse(req.body), clientId };
@@ -793,7 +841,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/client/:clientId/leads/:leadId", async (req, res) => {
+  app.put("/api/client/:clientId/leads/:leadId", requirePermission('leads.edit'), async (req, res) => {
     try {
       const { leadId } = req.params;
       const updates = req.body;
@@ -804,7 +852,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/client/:clientId/leads/:leadId", async (req, res) => {
+  app.delete("/api/client/:clientId/leads/:leadId", requirePermission('leads.edit'), async (req, res) => {
     try {
       const { leadId } = req.params;
       await storage.deleteLead(leadId);
@@ -916,7 +964,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Team Members Management
-  app.get("/api/client/:clientId/team", async (req, res) => {
+  app.get("/api/client/:clientId/team", requirePermission('team.view'), async (req, res) => {
     try {
       const { clientId } = req.params;
       const teamMembers = await storage.getTeamMembers(clientId);

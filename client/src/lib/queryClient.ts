@@ -12,9 +12,27 @@ export async function apiRequest(
   method: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
+
+  // Add team member session header if available
+  const teamMemberContext = localStorage.getItem("teamMemberContext");
+  if (teamMemberContext) {
+    try {
+      const context = JSON.parse(teamMemberContext);
+      const sessionData = {
+        teamMemberId: context.teamMemberId,
+        permissions: context.permissions,
+        clientId: context.clientId || localStorage.getItem('currentClientId') || 'client_1'
+      };
+      headers['X-Team-Member-Session'] = JSON.stringify(sessionData);
+    } catch (error) {
+      console.error("Error parsing team member context for API request:", error);
+    }
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -29,7 +47,26 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const headers: Record<string, string> = {};
+
+    // Add team member session header if available
+    const teamMemberContext = localStorage.getItem("teamMemberContext");
+    if (teamMemberContext) {
+      try {
+        const context = JSON.parse(teamMemberContext);
+        const sessionData = {
+          teamMemberId: context.teamMemberId,
+          permissions: context.permissions,
+          clientId: context.clientId || localStorage.getItem('currentClientId') || 'client_1'
+        };
+        headers['X-Team-Member-Session'] = JSON.stringify(sessionData);
+      } catch (error) {
+        console.error("Error parsing team member context for API request:", error);
+      }
+    }
+
     const res = await fetch(queryKey[0] as string, {
+      headers,
       credentials: "include",
     });
 
