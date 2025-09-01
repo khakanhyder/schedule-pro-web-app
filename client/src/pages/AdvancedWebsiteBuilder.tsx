@@ -434,7 +434,7 @@ export default function AdvancedWebsiteBuilder() {
                   <Label>Background</Label>
                   <Input
                     type="color"
-                    value={selectedSectionData.settings?.backgroundColor || "#FFFFFF"}
+                    value={selectedSectionData.settings?.backgroundColor || (selectedSectionData.type === 'hero' ? websiteData.primaryColor : '#FFFFFF')}
                     onChange={(e) => updateSectionSettings(selectedSection!, { backgroundColor: e.target.value })}
                   />
                 </div>
@@ -442,7 +442,7 @@ export default function AdvancedWebsiteBuilder() {
                   <Label>Text Color</Label>
                   <Input
                     type="color"
-                    value={selectedSectionData.settings?.textColor || "#1F2937"}
+                    value={selectedSectionData.settings?.textColor || (selectedSectionData.type === 'hero' ? '#FFFFFF' : '#1F2937')}
                     onChange={(e) => updateSectionSettings(selectedSection!, { textColor: e.target.value })}
                   />
                 </div>
@@ -519,8 +519,8 @@ export default function AdvancedWebsiteBuilder() {
                   selectedSection === section.id ? 'border-blue-500' : ''
                 }`}
                 style={{
-                  backgroundColor: section.settings?.backgroundColor || '#FFFFFF',
-                  color: section.settings?.textColor || '#1F2937'
+                  backgroundColor: section.settings?.backgroundColor || (section.type === 'hero' ? websiteData.primaryColor : '#FFFFFF'),
+                  color: section.settings?.textColor || (section.type === 'hero' ? '#FFFFFF' : '#1F2937')
                 }}
                 onClick={() => setSelectedSection(section.id)}
               >
@@ -534,7 +534,13 @@ export default function AdvancedWebsiteBuilder() {
             ))}
             
             {/* Footer */}
-            <div className="bg-gray-100 p-8 text-center text-gray-600">
+            <div 
+              className="p-8 text-center"
+              style={{ 
+                backgroundColor: websiteData.secondaryColor || '#F3F4F6',
+                color: '#6B7280'
+              }}
+            >
               <p>&copy; 2024 {clientData?.client?.businessName}. All rights reserved.</p>
               <p className="text-sm mt-2">
                 {clientData?.client?.businessAddress} | {clientData?.client?.phone} | {clientData?.client?.email}

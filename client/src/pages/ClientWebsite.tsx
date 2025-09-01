@@ -220,7 +220,7 @@ export default function ClientWebsite() {
         key={section.id}
         className={`${getPaddingClass(section.settings?.padding)} ${getAlignmentClass(section.settings?.alignment)} min-h-[200px]`}
         style={{
-          backgroundColor: section.settings?.backgroundColor || (section.type === 'hero' ? '#3B82F6' : '#FFFFFF'),
+          backgroundColor: section.settings?.backgroundColor || (section.type === 'hero' ? websiteData?.primaryColor || '#3B82F6' : '#FFFFFF'),
           color: section.settings?.textColor || (section.type === 'hero' ? '#FFFFFF' : '#1F2937')
         }}
       >
@@ -233,7 +233,12 @@ export default function ClientWebsite() {
           </div>
           {section.type === 'hero' && (
             <div className="mt-6">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100" onClick={handleHeroBookingClick}>
+              <Button 
+                size="lg" 
+                className="bg-white hover:bg-gray-100" 
+                style={{ color: websiteData?.primaryColor || '#3B82F6' }}
+                onClick={handleHeroBookingClick}
+              >
                 Book Appointment
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
