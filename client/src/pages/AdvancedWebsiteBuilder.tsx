@@ -6,15 +6,50 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Eye, Plus, Trash2, ArrowLeft, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image } from "lucide-react";
+import { Save, Eye, Plus, Trash2, ArrowLeft, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer } from "lucide-react";
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+interface WebsiteElement {
+  id: string;
+  type: 'text' | 'button' | 'image' | 'spacer';
+  content?: string;
+  settings?: {
+    fontSize?: string;
+    fontWeight?: 'normal' | 'bold';
+    textColor?: string;
+    backgroundColor?: string;
+    padding?: string;
+    margin?: string;
+    borderRadius?: string;
+    alignment?: 'left' | 'center' | 'right';
+    width?: string;
+    height?: string;
+    link?: string;
+    imageUrl?: string;
+    alt?: string;
+  };
+}
+
+interface WebsiteColumn {
+  id: string;
+  width: 'auto' | '1/2' | '1/3' | '2/3' | '1/4' | '3/4' | 'custom';
+  customWidth?: string;
+  elements: WebsiteElement[];
+  settings?: {
+    backgroundColor?: string;
+    padding?: string;
+    margin?: string;
+    verticalAlign?: 'top' | 'center' | 'bottom';
+  };
+}
+
 interface WebsiteSection {
   id: string;
-  type: 'hero' | 'about' | 'services' | 'contact-info' | 'contact-form' | 'testimonials' | 'gallery' | 'text' | 'image';
-  title: string;
-  content: string;
+  type: 'hero' | 'about' | 'services' | 'contact-info' | 'contact-form' | 'testimonials' | 'gallery' | 'text' | 'image' | 'columns' | 'spacer';
+  title?: string;
+  content?: string;
+  columns?: WebsiteColumn[];
   settings?: {
     backgroundColor?: string;
     textColor?: string;
@@ -24,7 +59,8 @@ interface WebsiteSection {
     gradientDirection?: string;
     gradientColors?: string[];
     alignment?: 'left' | 'center' | 'right';
-    padding?: 'small' | 'medium' | 'large';
+    padding?: 'small' | 'medium' | 'large' | 'custom';
+    customPadding?: string;
     fontSize?: 'small' | 'medium' | 'large';
     width?: 'full' | 'container' | 'custom';
     customWidth?: string;
@@ -32,6 +68,18 @@ interface WebsiteSection {
     customHeight?: string;
     marginTop?: string;
     marginBottom?: string;
+    responsive?: {
+      mobile?: {
+        padding?: string;
+        fontSize?: string;
+        alignment?: string;
+      };
+      tablet?: {
+        padding?: string;
+        fontSize?: string;
+        alignment?: string;
+      };
+    };
   };
   data?: {
     phone?: string;
@@ -114,6 +162,9 @@ export default function AdvancedWebsiteBuilder() {
   });
 
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [selectedColumn, setSelectedColumn] = useState<string | null>(null);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState<'section' | 'column' | 'element'>('section');
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   // Initialize with existing website data or create full default structure
@@ -199,7 +250,9 @@ export default function AdvancedWebsiteBuilder() {
       testimonials: { title: "What Our Clients Say", content: "Read testimonials from our satisfied customers." },
       gallery: { title: "Gallery", content: "View our portfolio and past work." },
       text: { title: "Text Section", content: "Add your custom text content here." },
-      image: { title: "Image Section", content: "Add an image with caption." }
+      image: { title: "Image Section", content: "Add an image with caption." },
+      columns: { title: "Column Layout", content: "" },
+      spacer: { title: "Spacer", content: "" }
     };
 
     const template = sectionTemplates[type];
@@ -216,8 +269,34 @@ export default function AdvancedWebsiteBuilder() {
         padding: "medium",
         fontSize: "medium",
         width: "container",
-        height: "auto"
+        height: "auto",
+        responsive: {
+          mobile: { padding: "small", fontSize: "small", alignment: "center" },
+          tablet: { padding: "medium", fontSize: "medium", alignment: "left" }
+        }
       },
+      columns: type === 'columns' ? [
+        {
+          id: `column_${Date.now()}_1`,
+          width: '1/2',
+          elements: [{
+            id: `element_${Date.now()}_1`,
+            type: 'text',
+            content: 'Column 1 content',
+            settings: { fontSize: '16px', textColor: '#1F2937' }
+          }]
+        },
+        {
+          id: `column_${Date.now()}_2`,
+          width: '1/2',
+          elements: [{
+            id: `element_${Date.now()}_2`,
+            type: 'text',
+            content: 'Column 2 content',
+            settings: { fontSize: '16px', textColor: '#1F2937' }
+          }]
+        }
+      ] : undefined,
       data: type === 'contact-info' ? {
         phone: clientData?.client?.phone || "555-0101",
         email: clientData?.client?.email || "info@business.com", 
@@ -233,6 +312,68 @@ export default function AdvancedWebsiteBuilder() {
       sections: [...prev.sections, newSection]
     }));
     setSelectedSection(newSection.id);
+    setEditMode('section');
+  };
+
+  const addColumn = (sectionId: string) => {
+    const newColumn: WebsiteColumn = {
+      id: `column_${Date.now()}`,
+      width: 'auto',
+      elements: [{
+        id: `element_${Date.now()}`,
+        type: 'text',
+        content: 'New column content',
+        settings: { fontSize: '16px', textColor: '#1F2937' }
+      }]
+    };
+
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === sectionId 
+          ? { ...section, columns: [...(section.columns || []), newColumn] }
+          : section
+      )
+    }));
+  };
+
+  const addElement = (columnId: string, type: WebsiteElement['type']) => {
+    const elementTemplates = {
+      text: { content: 'Your text content here' },
+      button: { content: 'Button Text' },
+      image: { content: '' },
+      spacer: { content: '' }
+    };
+
+    const template = elementTemplates[type];
+    const newElement: WebsiteElement = {
+      id: `element_${Date.now()}`,
+      type,
+      content: template.content,
+      settings: {
+        fontSize: type === 'text' ? '16px' : undefined,
+        textColor: '#1F2937',
+        backgroundColor: type === 'button' ? '#3B82F6' : undefined,
+        padding: type === 'button' ? '12px 24px' : undefined,
+        borderRadius: type === 'button' ? '6px' : undefined,
+        height: type === 'spacer' ? '40px' : undefined
+      }
+    };
+
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section => ({
+        ...section,
+        columns: section.columns?.map(column =>
+          column.id === columnId 
+            ? { ...column, elements: [...column.elements, newElement] }
+            : column
+        )
+      }))
+    }));
+    
+    setSelectedElement(newElement.id);
+    setEditMode('element');
   };
 
   const updateSection = (id: string, field: keyof WebsiteSection, value: any) => {
@@ -261,6 +402,49 @@ export default function AdvancedWebsiteBuilder() {
       sections: prev.sections.map(section =>
         section.id === id 
           ? { ...section, data: { ...section.data, ...data } }
+          : section
+      )
+    }));
+  };
+
+  const updateColumn = (sectionId: string, columnId: string, updates: Partial<WebsiteColumn>) => {
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === sectionId 
+          ? {
+              ...section,
+              columns: section.columns?.map(column =>
+                column.id === columnId 
+                  ? { ...column, ...updates }
+                  : column
+              )
+            }
+          : section
+      )
+    }));
+  };
+
+  const updateElement = (sectionId: string, columnId: string, elementId: string, updates: Partial<WebsiteElement>) => {
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === sectionId 
+          ? {
+              ...section,
+              columns: section.columns?.map(column =>
+                column.id === columnId
+                  ? {
+                      ...column,
+                      elements: column.elements.map(element =>
+                        element.id === elementId
+                          ? { ...element, ...updates }
+                          : element
+                      )
+                    }
+                  : column
+              )
+            }
           : section
       )
     }));
@@ -449,6 +633,79 @@ export default function AdvancedWebsiteBuilder() {
     return classes.filter(Boolean).join(' ');
   };
 
+  const getColumnWidthClass = (width: WebsiteColumn['width']) => {
+    switch (width) {
+      case '1/2': return 'w-1/2';
+      case '1/3': return 'w-1/3';
+      case '2/3': return 'w-2/3';
+      case '1/4': return 'w-1/4';
+      case '3/4': return 'w-3/4';
+      case 'auto': return 'flex-1';
+      default: return 'flex-1';
+    }
+  };
+
+  const renderElement = (element: WebsiteElement) => {
+    const style: React.CSSProperties = {
+      fontSize: element.settings?.fontSize,
+      color: element.settings?.textColor,
+      backgroundColor: element.settings?.backgroundColor,
+      padding: element.settings?.padding,
+      margin: element.settings?.margin,
+      borderRadius: element.settings?.borderRadius,
+      textAlign: element.settings?.alignment as any,
+      width: element.settings?.width,
+      height: element.settings?.height,
+      fontWeight: element.settings?.fontWeight
+    };
+
+    switch (element.type) {
+      case 'text':
+        return (
+          <div style={style} className="whitespace-pre-wrap">
+            {element.content || 'Text element'}
+          </div>
+        );
+      case 'button':
+        return (
+          <button 
+            style={style} 
+            className="inline-block cursor-pointer transition-opacity hover:opacity-80"
+          >
+            {element.content || 'Button'}
+          </button>
+        );
+      case 'image':
+        return element.settings?.imageUrl ? (
+          <img 
+            src={element.settings.imageUrl} 
+            alt={element.settings?.alt || ''}
+            style={style}
+            className="max-w-full h-auto"
+          />
+        ) : (
+          <div style={style} className="bg-gray-200 rounded flex items-center justify-center min-h-[100px]">
+            <div className="text-center text-gray-500">
+              <Image className="h-8 w-8 mx-auto mb-2" />
+              <p className="text-sm">Image</p>
+            </div>
+          </div>
+        );
+      case 'spacer':
+        return (
+          <div 
+            style={{ 
+              ...style, 
+              backgroundColor: style.backgroundColor || 'transparent'
+            }} 
+            className="w-full"
+          />
+        );
+      default:
+        return <div style={style}>Unknown element</div>;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar - Section List & Editor */}
@@ -513,12 +770,20 @@ export default function AdvancedWebsiteBuilder() {
           <Label className="text-sm font-medium">Add New Section</Label>
           <div className="grid grid-cols-2 gap-2 mt-2">
             <Button variant="outline" size="sm" onClick={() => addSection('hero')}>
-              <Layout className="h-3 w-3 mr-1" />
+              <Type className="h-3 w-3 mr-1" />
               Hero
             </Button>
             <Button variant="outline" size="sm" onClick={() => addSection('about')}>
-              <Type className="h-3 w-3 mr-1" />
+              <Layout className="h-3 w-3 mr-1" />
               About
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => addSection('columns')}>
+              <Columns className="h-3 w-3 mr-1" />
+              Columns
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => addSection('text')}>
+              <Type className="h-3 w-3 mr-1" />
+              Text
             </Button>
             <Button variant="outline" size="sm" onClick={() => addSection('services')}>
               <Settings className="h-3 w-3 mr-1" />
@@ -526,15 +791,15 @@ export default function AdvancedWebsiteBuilder() {
             </Button>
             <Button variant="outline" size="sm" onClick={() => addSection('contact-info')}>
               <Phone className="h-3 w-3 mr-1" />
-              Contact Info
+              Contact
             </Button>
-            <Button variant="outline" size="sm" onClick={() => addSection('contact-form')}>
-              <Mail className="h-3 w-3 mr-1" />
-              Contact Form
+            <Button variant="outline" size="sm" onClick={() => addSection('image')}>
+              <Image className="h-3 w-3 mr-1" />
+              Image
             </Button>
-            <Button variant="outline" size="sm" onClick={() => addSection('testimonials')}>
-              <Star className="h-3 w-3 mr-1" />
-              Testimonials
+            <Button variant="outline" size="sm" onClick={() => addSection('spacer')}>
+              <Square className="h-3 w-3 mr-1" />
+              Spacer
             </Button>
           </div>
         </div>
@@ -1017,15 +1282,133 @@ export default function AdvancedWebsiteBuilder() {
                       </div>
                     </div>
                   </div>
+                ) : section.type === 'columns' ? (
+                  <div>
+                    {section.title && (
+                      <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                        {section.title}
+                      </h2>
+                    )}
+                    <div className={`grid gap-4 ${viewMode === 'mobile' ? 'grid-cols-1' : `grid-cols-${section.columns?.length || 2}`}`}>
+                      {section.columns?.map((column, columnIndex) => (
+                        <div
+                          key={column.id}
+                          className={`${getColumnWidthClass(column.width)} cursor-pointer border border-dashed border-transparent hover:border-gray-300 p-2 rounded transition-colors ${
+                            selectedColumn === column.id ? 'border-green-400 bg-green-50' : ''
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedColumn(column.id);
+                            setSelectedSection(section.id);
+                            setEditMode('column');
+                          }}
+                          style={{ 
+                            backgroundColor: column.settings?.backgroundColor,
+                            padding: column.settings?.padding 
+                          }}
+                        >
+                          {column.elements.map((element, elementIndex) => (
+                            <div
+                              key={element.id}
+                              className={`cursor-pointer border border-dashed border-transparent hover:border-blue-300 p-1 rounded transition-colors ${
+                                selectedElement === element.id ? 'border-blue-400 bg-blue-50' : ''
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedElement(element.id);
+                                setSelectedColumn(column.id);
+                                setSelectedSection(section.id);
+                                setEditMode('element');
+                              }}
+                            >
+                              {renderElement(element)}
+                            </div>
+                          ))}
+                          
+                          {/* Add Element Button */}
+                          <div className="mt-2 flex gap-1 flex-wrap">
+                            <Button size="sm" variant="outline" onClick={(e) => {
+                              e.stopPropagation();
+                              addElement(column.id, 'text');
+                            }}>
+                              <Type className="h-3 w-3 mr-1" />
+                              Text
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={(e) => {
+                              e.stopPropagation();
+                              addElement(column.id, 'button');
+                            }}>
+                              <MousePointer className="h-3 w-3 mr-1" />
+                              Button
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={(e) => {
+                              e.stopPropagation();
+                              addElement(column.id, 'image');
+                            }}>
+                              <Image className="h-3 w-3 mr-1" />
+                              Image
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={(e) => {
+                              e.stopPropagation();
+                              addElement(column.id, 'spacer');
+                            }}>
+                              <Square className="h-3 w-3 mr-1" />
+                              Space
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Add Column Button */}
+                    <div className="mt-4">
+                      <Button variant="outline" onClick={() => addColumn(section.id)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Column
+                      </Button>
+                    </div>
+                  </div>
+                ) : section.type === 'spacer' ? (
+                  <div 
+                    className="w-full bg-gray-100" 
+                    style={{ 
+                      height: section.settings?.customHeight || '40px',
+                      backgroundColor: section.settings?.backgroundColor || 'transparent'
+                    }}
+                  />
+                ) : section.type === 'image' ? (
+                  <div className="text-center">
+                    {section.title && (
+                      <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                        {section.title}
+                      </h2>
+                    )}
+                    <div className="bg-gray-200 rounded-lg p-8 text-gray-500">
+                      <Image className="h-16 w-16 mx-auto mb-2" />
+                      <p>Image placeholder</p>
+                      <p className="text-sm">Add image URL in settings</p>
+                    </div>
+                  </div>
                 ) : (
                   // Default rendering for other section types
                   <div>
-                    <h2 className={`font-bold mb-4 ${section.type === 'hero' ? 'text-3xl' : 'text-2xl'} ${getFontSizeClass(section.settings?.fontSize)}`}>
-                      {section.title}
-                    </h2>
-                    <div className={`${getFontSizeClass(section.settings?.fontSize)} whitespace-pre-wrap`}>
-                      {section.content}
-                    </div>
+                    {section.title && (
+                      <h2 className={`font-bold mb-4 ${section.type === 'hero' ? 'text-3xl' : 'text-2xl'} ${getFontSizeClass(section.settings?.fontSize)}`}>
+                        {section.title}
+                      </h2>
+                    )}
+                    {section.content && (
+                      <div className={`${getFontSizeClass(section.settings?.fontSize)} whitespace-pre-wrap`}>
+                        {section.content}
+                      </div>
+                    )}
+                    {section.type === 'hero' && section.data?.buttonText && (
+                      <div className="mt-6">
+                        <button className="px-6 py-3 bg-white bg-opacity-20 rounded-lg font-semibold hover:bg-opacity-30 transition-colors">
+                          {section.data.buttonText}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
