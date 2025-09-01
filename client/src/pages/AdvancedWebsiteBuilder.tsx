@@ -376,6 +376,75 @@ export default function AdvancedWebsiteBuilder() {
     setEditMode('element');
   };
 
+  const deleteElement = (sectionId: string, columnId: string, elementId: string) => {
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === sectionId 
+          ? {
+              ...section,
+              columns: section.columns?.map(column =>
+                column.id === columnId
+                  ? {
+                      ...column,
+                      elements: column.elements.filter(element => element.id !== elementId)
+                    }
+                  : column
+              )
+            }
+          : section
+      )
+    }));
+    
+    if (selectedElement === elementId) {
+      setSelectedElement(null);
+      setEditMode('column');
+    }
+  };
+
+  const deleteColumn = (sectionId: string, columnId: string) => {
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === sectionId 
+          ? {
+              ...section,
+              columns: section.columns?.filter(column => column.id !== columnId)
+            }
+          : section
+      )
+    }));
+    
+    if (selectedColumn === columnId) {
+      setSelectedColumn(null);
+      setSelectedElement(null);
+      setEditMode('section');
+    }
+  };
+
+  const addColumnRow = (sectionId: string) => {
+    // Add a full-width column that creates a new "row"
+    const newColumn: WebsiteColumn = {
+      id: `column_${Date.now()}`,
+      width: 'auto',
+      elements: [{
+        id: `element_${Date.now()}`,
+        type: 'text',
+        content: 'New row content',
+        settings: { fontSize: '16px', textColor: '#1F2937' }
+      }]
+    };
+
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === sectionId 
+          ? { ...section, columns: [...(section.columns || []), newColumn] }
+          : section
+      )
+    }));
+  };
+
   const updateSection = (id: string, field: keyof WebsiteSection, value: any) => {
     setWebsiteData(prev => ({
       ...prev,
@@ -565,9 +634,9 @@ export default function AdvancedWebsiteBuilder() {
 
   const getPaddingClass = (padding?: string) => {
     switch (padding) {
-      case 'small': return 'p-4';
-      case 'large': return 'p-12';
-      default: return 'p-8';
+      case 'small': return 'p-2 sm:p-4';
+      case 'large': return 'p-6 sm:p-8 lg:p-12';
+      default: return 'p-4 sm:p-6 lg:p-8';
     }
   };
 
@@ -1407,21 +1476,21 @@ export default function AdvancedWebsiteBuilder() {
                     <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
                       {section.title}
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
                       <div className="text-center p-4 bg-white bg-opacity-10 rounded">
-                        <Phone className="h-8 w-8 mx-auto mb-2" />
-                        <h3 className="font-semibold">Call Us</h3>
-                        <p>{section.data?.phone || clientData?.client?.phone || '555-0101'}</p>
+                        <Phone className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2" />
+                        <h3 className="font-semibold text-sm sm:text-base">Call Us</h3>
+                        <p className="text-xs sm:text-sm break-all">{section.data?.phone || clientData?.client?.phone || '555-0101'}</p>
                       </div>
                       <div className="text-center p-4 bg-white bg-opacity-10 rounded">
-                        <Mail className="h-8 w-8 mx-auto mb-2" />
-                        <h3 className="font-semibold">Email Us</h3>
-                        <p>{section.data?.email || clientData?.client?.email || 'info@business.com'}</p>
+                        <Mail className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2" />
+                        <h3 className="font-semibold text-sm sm:text-base">Email Us</h3>
+                        <p className="text-xs sm:text-sm break-all">{section.data?.email || clientData?.client?.email || 'info@business.com'}</p>
                       </div>
-                      <div className="text-center p-4 bg-white bg-opacity-10 rounded">
-                        <Layout className="h-8 w-8 mx-auto mb-2" />
-                        <h3 className="font-semibold">Visit Us</h3>
-                        <p>{section.data?.address || clientData?.client?.businessAddress || 'Business Address'}</p>
+                      <div className="text-center p-4 bg-white bg-opacity-10 rounded sm:col-span-2 xl:col-span-1">
+                        <Layout className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2" />
+                        <h3 className="font-semibold text-sm sm:text-base">Visit Us</h3>
+                        <p className="text-xs sm:text-sm break-words">{section.data?.address || clientData?.client?.businessAddress || 'Business Address'}</p>
                       </div>
                     </div>
                   </div>
@@ -1443,11 +1512,11 @@ export default function AdvancedWebsiteBuilder() {
                     </h2>
                     <p className="mb-4">{section.content}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <input className="p-2 rounded border" placeholder="Your Name" />
-                      <input className="p-2 rounded border" placeholder="Your Email" />
-                      <input className="p-2 rounded border" placeholder="Phone Number" />
-                      <textarea className="p-2 rounded border sm:col-span-2" placeholder="Your Message" rows={3}></textarea>
-                      <button className="p-2 bg-blue-600 text-white rounded sm:col-span-2">Send Message</button>
+                      <input className="p-3 rounded border text-sm" placeholder="Your Name" />
+                      <input className="p-3 rounded border text-sm" placeholder="Your Email" />
+                      <input className="p-3 rounded border text-sm sm:col-span-2" placeholder="Phone Number" />
+                      <textarea className="p-3 rounded border sm:col-span-2 text-sm" placeholder="Your Message" rows={4}></textarea>
+                      <button className="p-3 bg-blue-600 text-white rounded sm:col-span-2 text-sm font-medium hover:bg-blue-700 transition-colors">Send Message</button>
                     </div>
                   </div>
                 ) : section.type === 'testimonials' ? (
@@ -1483,8 +1552,8 @@ export default function AdvancedWebsiteBuilder() {
                       {section.columns?.map((column, columnIndex) => (
                         <div
                           key={column.id}
-                          className={`${getColumnWidthClass(column.width)} cursor-pointer border border-dashed border-transparent hover:border-gray-300 p-2 rounded transition-colors ${
-                            selectedColumn === column.id ? 'border-green-400 bg-green-50' : ''
+                          className={`min-h-[120px] cursor-pointer border-2 border-dashed border-gray-200 hover:border-gray-400 p-4 rounded-lg transition-all duration-200 ${
+                            selectedColumn === column.id ? 'border-blue-500 bg-blue-50 shadow-sm' : 'hover:bg-gray-50'
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1497,51 +1566,89 @@ export default function AdvancedWebsiteBuilder() {
                             padding: column.settings?.padding 
                           }}
                         >
-                          {column.elements.map((element, elementIndex) => (
-                            <div
-                              key={element.id}
-                              className={`cursor-pointer border border-dashed border-transparent hover:border-blue-300 p-1 rounded transition-colors ${
-                                selectedElement === element.id ? 'border-blue-400 bg-blue-50' : ''
-                              }`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedElement(element.id);
-                                setSelectedColumn(column.id);
-                                setSelectedSection(section.id);
-                                setEditMode('element');
-                              }}
-                            >
-                              {renderElement(element)}
+                          {/* Column Header */}
+                          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
+                            <span className="text-xs font-medium text-gray-600">
+                              Column {columnIndex + 1} ({column.width})
+                            </span>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteColumn(section.id, column.id);
+                                }}
+                                className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-100"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
                             </div>
-                          ))}
+                          </div>
+
+                          {/* Elements in Column */}
+                          <div className="space-y-2 mb-4">
+                            {column.elements.map((element, elementIndex) => (
+                              <div
+                                key={element.id}
+                                className={`group relative cursor-pointer border border-dashed border-transparent hover:border-blue-300 p-2 rounded transition-colors ${
+                                  selectedElement === element.id ? 'border-blue-500 bg-blue-50' : ''
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedElement(element.id);
+                                  setSelectedColumn(column.id);
+                                  setSelectedSection(section.id);
+                                  setEditMode('element');
+                                }}
+                              >
+                                {renderElement(element)}
+                                
+                                {/* Element Controls */}
+                                <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteElement(section.id, column.id, element.id);
+                                    }}
+                                    className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-100"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                           
-                          {/* Add Element Button */}
-                          <div className="mt-2 grid grid-cols-2 gap-1">
+                          {/* Add Element Buttons */}
+                          <div className="grid grid-cols-2 gap-1">
                             <Button size="sm" variant="outline" onClick={(e) => {
                               e.stopPropagation();
                               addElement(column.id, 'text');
-                            }}>
+                            }} className="text-xs">
                               <Type className="h-3 w-3 mr-1" />
                               Text
                             </Button>
                             <Button size="sm" variant="outline" onClick={(e) => {
                               e.stopPropagation();
                               addElement(column.id, 'button');
-                            }}>
+                            }} className="text-xs">
                               <MousePointer className="h-3 w-3 mr-1" />
                               Button
                             </Button>
                             <Button size="sm" variant="outline" onClick={(e) => {
                               e.stopPropagation();
                               addElement(column.id, 'image');
-                            }}>
+                            }} className="text-xs">
                               <Image className="h-3 w-3 mr-1" />
                               Image
                             </Button>
                             <Button size="sm" variant="outline" onClick={(e) => {
                               e.stopPropagation();
                               addElement(column.id, 'spacer');
-                            }}>
+                            }} className="text-xs">
                               <Square className="h-3 w-3 mr-1" />
                               Space
                             </Button>
@@ -1550,12 +1657,21 @@ export default function AdvancedWebsiteBuilder() {
                       ))}
                     </div>
                     
-                    {/* Add Column Button */}
-                    <div className="mt-4">
-                      <Button variant="outline" onClick={() => addColumn(section.id)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Column
-                      </Button>
+                    {/* Add Column Controls */}
+                    <div className="mt-6 p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600 mb-3">Add more columns to this section</p>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                          <Button variant="outline" size="sm" onClick={() => addColumn(section.id)}>
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add Column
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => addColumnRow(section.id)}>
+                            <Layout className="h-4 w-4 mr-1" />
+                            Add Row
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ) : section.type === 'spacer' ? (
