@@ -412,12 +412,17 @@ export default function TeamManagement({ hasPermission }: TeamManagementProps) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
-          <p className="text-gray-600">Manage your team members, roles, and permissions</p>
+          <p className="text-gray-600">
+            {canPerform('team.edit') || canPerform('team.create') || canPerform('team.delete') 
+              ? "Manage your team members, roles, and permissions" 
+              : "View team members and their information"
+            }
+          </p>
         </div>
         
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            {canPerform('team.create') && (
+        {canPerform('team.create') && (
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
               <Button 
                 onClick={() => {
                   setEditingMember(null);
@@ -428,10 +433,9 @@ export default function TeamManagement({ hasPermission }: TeamManagementProps) {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Team Member
               </Button>
-            )}
-          </DialogTrigger>
+            </DialogTrigger>
           
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingMember ? "Edit Team Member" : "Add Team Member"}
@@ -691,8 +695,9 @@ export default function TeamManagement({ hasPermission }: TeamManagementProps) {
                 </div>
               </form>
             </Form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Search */}
