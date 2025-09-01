@@ -450,6 +450,21 @@ export default function AdvancedWebsiteBuilder() {
     }));
   };
 
+  // Helper functions to get selected items
+  const getSelectedSection = () => {
+    return websiteData.sections.find(section => section.id === selectedSection);
+  };
+
+  const getSelectedColumn = () => {
+    const section = getSelectedSection();
+    return section?.columns?.find(column => column.id === selectedColumn);
+  };
+
+  const getSelectedElement = () => {
+    const column = getSelectedColumn();
+    return column?.elements.find(element => element.id === selectedElement);
+  };
+
   const deleteSection = (id: string) => {
     setWebsiteData(prev => ({
       ...prev,
@@ -634,15 +649,25 @@ export default function AdvancedWebsiteBuilder() {
   };
 
   const getColumnWidthClass = (width: WebsiteColumn['width']) => {
+    // Mobile-first responsive classes
     switch (width) {
-      case '1/2': return 'w-1/2';
-      case '1/3': return 'w-1/3';
-      case '2/3': return 'w-2/3';
-      case '1/4': return 'w-1/4';
-      case '3/4': return 'w-3/4';
-      case 'auto': return 'flex-1';
-      default: return 'flex-1';
+      case '1/2': return 'w-full md:w-1/2';
+      case '1/3': return 'w-full md:w-1/3';
+      case '2/3': return 'w-full md:w-2/3';
+      case '1/4': return 'w-full sm:w-1/2 lg:w-1/4';
+      case '3/4': return 'w-full md:w-3/4';
+      case 'auto': return 'w-full md:flex-1';
+      default: return 'w-full md:flex-1';
     }
+  };
+
+  const getResponsiveGridClass = (columnCount: number) => {
+    // Responsive grid classes based on column count
+    if (columnCount === 1) return 'grid-cols-1';
+    if (columnCount === 2) return 'grid-cols-1 md:grid-cols-2';
+    if (columnCount === 3) return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+    if (columnCount >= 4) return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+    return 'grid-cols-1 md:grid-cols-2';
   };
 
   const renderElement = (element: WebsiteElement) => {
@@ -804,6 +829,167 @@ export default function AdvancedWebsiteBuilder() {
           </div>
         </div>
 
+        {/* Dynamic Editor Controls */}
+        {selectedSection && (
+          <div className="border-b border-gray-200 max-h-64 overflow-y-auto">
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Button 
+                  variant={editMode === 'section' ? 'default' : 'outline'} 
+                  size="sm" 
+                  onClick={() => setEditMode('section')}
+                  className="text-xs flex-1"
+                >
+                  Section
+                </Button>
+                {selectedColumn && (
+                  <Button 
+                    variant={editMode === 'column' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => setEditMode('column')}
+                    className="text-xs flex-1"
+                  >
+                    Column
+                  </Button>
+                )}
+                {selectedElement && (
+                  <Button 
+                    variant={editMode === 'element' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => setEditMode('element')}
+                    className="text-xs flex-1"
+                  >
+                    Element
+                  </Button>
+                )}
+              </div>
+
+              {/* Section Controls */}
+              {editMode === 'section' && (
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="sectionTitle">Title</Label>
+                    <Input
+                      id="sectionTitle"
+                      value={getSelectedSection()?.title || ''}
+                      onChange={(e) => updateSection(selectedSection, { title: e.target.value })}
+                      placeholder="Section title"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label>Background</Label>
+                    <Input
+                      type="color"
+                      value={getSelectedSection()?.settings?.backgroundColor || '#FFFFFF'}
+                      onChange={(e) => updateSection(selectedSection, {
+                        settings: {
+                          ...getSelectedSection()?.settings,
+                          backgroundColor: e.target.value
+                        }
+                      })}
+                      className="h-8"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Column Controls */}
+              {editMode === 'column' && selectedColumn && (
+                <div className="space-y-3">
+                  <div>
+                    <Label>Width</Label>
+                    <Select
+                      value={getSelectedColumn()?.width || 'auto'}
+                      onValueChange={(value) => updateColumn(selectedSection, selectedColumn, { width: value as WebsiteColumn['width'] })}
+                    >
+                      <SelectTrigger className="text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto</SelectItem>
+                        <SelectItem value="1/2">Half Width</SelectItem>
+                        <SelectItem value="1/3">One Third</SelectItem>
+                        <SelectItem value="2/3">Two Thirds</SelectItem>
+                        <SelectItem value="1/4">Quarter</SelectItem>
+                        <SelectItem value="3/4">Three Quarters</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* Element Controls */}
+              {editMode === 'element' && selectedElement && (
+                <div className="space-y-3">
+                  <div>
+                    <Label>Content</Label>
+                    <Textarea
+                      value={getSelectedElement()?.content || ''}
+                      onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, { content: e.target.value })}
+                      placeholder="Element content"
+                      rows={2}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label>Font Size</Label>
+                      <Input
+                        value={getSelectedElement()?.settings?.fontSize || '16px'}
+                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                          settings: { ...getSelectedElement()?.settings, fontSize: e.target.value }
+                        })}
+                        placeholder="16px"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label>Color</Label>
+                      <Input
+                        type="color"
+                        value={getSelectedElement()?.settings?.textColor || '#1F2937'}
+                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                          settings: { ...getSelectedElement()?.settings, textColor: e.target.value }
+                        })}
+                        className="h-8"
+                      />
+                    </div>
+                  </div>
+
+                  {getSelectedElement()?.type === 'button' && (
+                    <div>
+                      <Label>Button Color</Label>
+                      <Input
+                        type="color"
+                        value={getSelectedElement()?.settings?.backgroundColor || '#3B82F6'}
+                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                          settings: { ...getSelectedElement()?.settings, backgroundColor: e.target.value }
+                        })}
+                        className="h-8"
+                      />
+                    </div>
+                  )}
+
+                  {getSelectedElement()?.type === 'image' && (
+                    <div>
+                      <Label>Image URL</Label>
+                      <Input
+                        value={getSelectedElement()?.settings?.imageUrl || ''}
+                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                          settings: { ...getSelectedElement()?.settings, imageUrl: e.target.value }
+                        })}
+                        placeholder="https://example.com/image.jpg"
+                        className="text-sm"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Sections List */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
@@ -819,15 +1005,18 @@ export default function AdvancedWebsiteBuilder() {
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, index)}
-                  onClick={() => setSelectedSection(section.id)}
+                  onClick={() => {
+                    setSelectedSection(section.id);
+                    setEditMode('section');
+                    setSelectedColumn(null);
+                    setSelectedElement(null);
+                  }}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2">
                       <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
-                      <div className="flex-1">
-                        <h4 className="text-sm font-medium">{section.title}</h4>
-                        <p className="text-xs text-gray-500 capitalize">{section.type}</p>
-                      </div>
+                      <span className="text-sm font-medium truncate">{section.title || section.type}</span>
+                      <span className="text-xs text-gray-500 capitalize ml-auto">{section.type}</span>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -835,6 +1024,7 @@ export default function AdvancedWebsiteBuilder() {
                           e.stopPropagation();
                           deleteSection(section.id);
                         }}
+                        className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -1217,7 +1407,7 @@ export default function AdvancedWebsiteBuilder() {
                     <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
                       {section.title}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                       <div className="text-center p-4 bg-white bg-opacity-10 rounded">
                         <Phone className="h-8 w-8 mx-auto mb-2" />
                         <h3 className="font-semibold">Call Us</h3>
@@ -1252,12 +1442,12 @@ export default function AdvancedWebsiteBuilder() {
                       {section.title}
                     </h2>
                     <p className="mb-4">{section.content}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <input className="p-2 rounded border" placeholder="Your Name" />
                       <input className="p-2 rounded border" placeholder="Your Email" />
                       <input className="p-2 rounded border" placeholder="Phone Number" />
-                      <textarea className="p-2 rounded border md:col-span-2" placeholder="Your Message" rows={3}></textarea>
-                      <button className="p-2 bg-blue-600 text-white rounded md:col-span-2">Send Message</button>
+                      <textarea className="p-2 rounded border sm:col-span-2" placeholder="Your Message" rows={3}></textarea>
+                      <button className="p-2 bg-blue-600 text-white rounded sm:col-span-2">Send Message</button>
                     </div>
                   </div>
                 ) : section.type === 'testimonials' ? (
@@ -1265,7 +1455,7 @@ export default function AdvancedWebsiteBuilder() {
                     <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
                       {section.title}
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="p-4 bg-white bg-opacity-10 rounded">
                         <div className="flex mb-2">
                           {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
@@ -1289,7 +1479,7 @@ export default function AdvancedWebsiteBuilder() {
                         {section.title}
                       </h2>
                     )}
-                    <div className={`grid gap-4 ${viewMode === 'mobile' ? 'grid-cols-1' : `grid-cols-${section.columns?.length || 2}`}`}>
+                    <div className={`grid gap-4 ${getResponsiveGridClass(section.columns?.length || 2)}`}>
                       {section.columns?.map((column, columnIndex) => (
                         <div
                           key={column.id}
@@ -1326,7 +1516,7 @@ export default function AdvancedWebsiteBuilder() {
                           ))}
                           
                           {/* Add Element Button */}
-                          <div className="mt-2 flex gap-1 flex-wrap">
+                          <div className="mt-2 grid grid-cols-2 gap-1">
                             <Button size="sm" variant="outline" onClick={(e) => {
                               e.stopPropagation();
                               addElement(column.id, 'text');
