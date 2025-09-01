@@ -232,21 +232,35 @@ class MemStorage implements IStorage {
       industry: "Technology"
     });
 
-    // Add sample services
-    await this.createService({
-      name: "Hair Cut",
-      description: "Professional hair cutting service",
-      price: "$50",
+    // Add sample client services for client_1
+    await this.createClientService({
+      clientId: "client_1",
+      name: "Business Consultation",
+      description: "Comprehensive business strategy and consultation services",
+      price: 150,
       durationMinutes: 60,
-      category: "Hair"
+      category: "Consulting",
+      isActive: true
     });
 
-    await this.createService({
-      name: "Color Treatment",
-      description: "Hair coloring and treatment",
-      price: "$120",
+    await this.createClientService({
+      clientId: "client_1",
+      name: "Financial Planning",
+      description: "Expert financial planning and investment advice",
+      price: 200,
+      durationMinutes: 90,
+      category: "Consulting",
+      isActive: true
+    });
+
+    await this.createClientService({
+      clientId: "client_1",
+      name: "Market Analysis",
+      description: "In-depth market research and competitive analysis",
+      price: 300,
       durationMinutes: 120,
-      category: "Hair"
+      category: "Research",
+      isActive: true
     });
 
     // Add sample team member for testing team login

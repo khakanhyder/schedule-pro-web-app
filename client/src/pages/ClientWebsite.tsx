@@ -255,8 +255,12 @@ export default function ClientWebsite() {
           ) : section.type === 'services' ? (
             <div id="services-section">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold mb-4">{section.title}</h2>
-                <p className="text-gray-600">{section.content}</p>
+                <h2 className={`text-3xl font-bold mb-4 ${getFontSizeClass(section.settings?.fontSize)}`} style={{ color: section.settings?.textColor || '#1F2937' }}>
+                  {section.title}
+                </h2>
+                <p className="text-gray-600" style={{ color: section.settings?.textColor || '#6B7280' }}>
+                  {section.content}
+                </p>
               </div>
               
               {services.length === 0 ? (
@@ -277,7 +281,9 @@ export default function ClientWebsite() {
                         <p className="text-gray-600 mb-4">{service.description}</p>
                         <div className="flex justify-between items-center mb-4">
                           <div>
-                            <span className="text-2xl font-bold text-blue-600">${service.price}</span>
+                            <span className="text-2xl font-bold" style={{ color: websiteData?.primaryColor || '#3B82F6' }}>
+                              ${service.price}
+                            </span>
                           </div>
                           <div className="flex items-center text-gray-500">
                             <Clock className="h-4 w-4 mr-1" />
@@ -286,6 +292,7 @@ export default function ClientWebsite() {
                         </div>
                         <Button 
                           className="w-full" 
+                          style={{ backgroundColor: websiteData?.primaryColor || '#3B82F6' }}
                           onClick={() => handleBooking(service)}
                         >
                           Book Now

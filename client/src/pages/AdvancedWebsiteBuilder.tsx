@@ -584,17 +584,9 @@ export default function AdvancedWebsiteBuilder() {
                       {section.title}
                     </h2>
                     <p className="mb-4">{section.content}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 bg-white bg-opacity-10 rounded">
-                        <h3 className="font-semibold mb-2">Service 1</h3>
-                        <p className="text-sm">Professional service description</p>
-                        <p className="text-lg font-bold mt-2">$100</p>
-                      </div>
-                      <div className="p-4 bg-white bg-opacity-10 rounded">
-                        <h3 className="font-semibold mb-2">Service 2</h3>
-                        <p className="text-sm">Professional service description</p>
-                        <p className="text-lg font-bold mt-2">$150</p>
-                      </div>
+                    <div className="text-center py-8 bg-white bg-opacity-10 rounded">
+                      <p className="text-sm opacity-75">Services from your admin panel will display here</p>
+                      <p className="text-xs opacity-50 mt-2">Add services in your dashboard to see them on the live website</p>
                     </div>
                   </div>
                 ) : section.type === 'contact-form' ? (
