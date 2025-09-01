@@ -270,7 +270,7 @@ class MemStorage implements IStorage {
       email: "khisal@test.com",
       role: "MANAGER",
       password: "password123",
-      permissions: ["overview.view", "appointments.view", "appointments.create", "appointments.edit", "services.view", "team.view"],
+      permissions: ["overview.view", "appointments.view", "appointments.create", "appointments.edit", "services.view", "team.view", "leads.view", "leads.create", "leads.edit"],
       isActive: true
     });
 
