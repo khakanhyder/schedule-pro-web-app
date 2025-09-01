@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Eye, Plus, Trash2, ArrowLeft, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star } from "lucide-react";
+import { Save, Eye, Plus, Trash2, ArrowLeft, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image } from "lucide-react";
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -19,9 +19,19 @@ interface WebsiteSection {
     backgroundColor?: string;
     textColor?: string;
     backgroundImage?: string;
+    backgroundType?: 'color' | 'gradient' | 'image';
+    gradientType?: 'linear' | 'radial';
+    gradientDirection?: string;
+    gradientColors?: string[];
     alignment?: 'left' | 'center' | 'right';
     padding?: 'small' | 'medium' | 'large';
     fontSize?: 'small' | 'medium' | 'large';
+    width?: 'full' | 'container' | 'custom';
+    customWidth?: string;
+    height?: 'auto' | 'screen' | 'custom';
+    customHeight?: string;
+    marginTop?: string;
+    marginBottom?: string;
   };
   data?: {
     phone?: string;
@@ -201,9 +211,12 @@ export default function AdvancedWebsiteBuilder() {
       settings: {
         backgroundColor: "#FFFFFF",
         textColor: "#1F2937",
+        backgroundType: "color",
         alignment: "left",
         padding: "medium",
-        fontSize: "medium"
+        fontSize: "medium",
+        width: "container",
+        height: "auto"
       },
       data: type === 'contact-info' ? {
         phone: clientData?.client?.phone || "555-0101",
@@ -260,6 +273,31 @@ export default function AdvancedWebsiteBuilder() {
     }));
     if (selectedSection === id) {
       setSelectedSection(null);
+    }
+  };
+
+  const moveSection = (fromIndex: number, toIndex: number) => {
+    setWebsiteData(prev => {
+      const newSections = [...prev.sections];
+      const [movedSection] = newSections.splice(fromIndex, 1);
+      newSections.splice(toIndex, 0, movedSection);
+      return { ...prev, sections: newSections };
+    });
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+    if (dragIndex !== dropIndex) {
+      moveSection(dragIndex, dropIndex);
     }
   };
 
@@ -345,9 +383,70 @@ export default function AdvancedWebsiteBuilder() {
   const getFontSizeClass = (fontSize?: string) => {
     switch (fontSize) {
       case 'small': return 'text-sm';
-      case 'large': return 'text-xl';
+      case 'large': return 'text-lg';
       default: return 'text-base';
     }
+  };
+
+  const getWidthClass = (width?: string) => {
+    switch (width) {
+      case 'full': return 'w-full';
+      case 'container': return 'max-w-6xl mx-auto';
+      case 'custom': return '';
+      default: return 'max-w-6xl mx-auto';
+    }
+  };
+
+  const getHeightClass = (height?: string) => {
+    switch (height) {
+      case 'screen': return 'min-h-screen';
+      case 'custom': return '';
+      default: return '';
+    }
+  };
+
+  const getBackgroundStyle = (settings?: WebsiteSection['settings']) => {
+    if (!settings) return {};
+    
+    const style: React.CSSProperties = {};
+    
+    if (settings.backgroundType === 'gradient') {
+      const colors = settings.gradientColors || ['#3B82F6', '#1E40AF'];
+      if (settings.gradientType === 'radial') {
+        style.background = `radial-gradient(circle, ${colors[0]} 0%, ${colors[1]} 100%)`;
+      } else {
+        const direction = settings.gradientDirection || 'to right';
+        style.background = `linear-gradient(${direction}, ${colors[0]} 0%, ${colors[1]} 100%)`;
+      }
+    } else if (settings.backgroundType === 'image' && settings.backgroundImage) {
+      style.backgroundImage = `url(${settings.backgroundImage})`;
+      style.backgroundSize = 'cover';
+      style.backgroundPosition = 'center';
+      style.backgroundRepeat = 'no-repeat';
+    } else {
+      style.backgroundColor = settings.backgroundColor || '#FFFFFF';
+    }
+    
+    if (settings.width === 'custom' && settings.customWidth) {
+      style.width = settings.customWidth;
+    }
+    
+    if (settings.height === 'custom' && settings.customHeight) {
+      style.height = settings.customHeight;
+    }
+    
+    style.color = settings.textColor || '#1F2937';
+    
+    return style;
+  };
+
+  const getSectionContainerClass = (settings?: WebsiteSection['settings']) => {
+    const classes = [];
+    classes.push(getWidthClass(settings?.width));
+    classes.push(getHeightClass(settings?.height));
+    classes.push(getPaddingClass(settings?.padding));
+    classes.push(getAlignmentClass(settings?.alignment));
+    return classes.filter(Boolean).join(' ');
   };
 
   return (
@@ -445,16 +544,21 @@ export default function AdvancedWebsiteBuilder() {
           <div className="p-4">
             <h3 className="text-sm font-medium text-gray-900 mb-3">Website Sections</h3>
             <div className="space-y-2">
-              {websiteData.sections.map((section) => (
+              {websiteData.sections.map((section, index) => (
                 <Card 
                   key={section.id} 
                   className={`cursor-pointer transition-colors ${
                     selectedSection === section.id ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'
                   }`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, index)}
                   onClick={() => setSelectedSection(section.id)}
                 >
                   <CardContent className="p-3">
-                    <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
                       <div className="flex-1">
                         <h4 className="text-sm font-medium">{section.title}</h4>
                         <p className="text-xs text-gray-500 capitalize">{section.type}</p>
@@ -571,61 +675,217 @@ export default function AdvancedWebsiteBuilder() {
                 </div>
               )}
 
-              {/* Styling Options */}
-              <div className="space-y-3 p-3 bg-gray-50 rounded">
-                <h4 className="font-medium text-sm">Styling</h4>
+              {/* Advanced Styling Options */}
+              <div className="space-y-4 p-3 bg-gray-50 rounded">
+                <h4 className="font-medium text-sm">Advanced Styling</h4>
                 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label>Background</Label>
-                    <Input
-                      type="color"
-                      value={selectedSectionData.settings?.backgroundColor || (selectedSectionData.type === 'hero' ? websiteData.primaryColor : '#FFFFFF')}
-                      onChange={(e) => updateSectionSettings(selectedSection!, { backgroundColor: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>Text Color</Label>
-                    <Input
-                      type="color"
-                      value={selectedSectionData.settings?.textColor || (selectedSectionData.type === 'hero' ? '#FFFFFF' : '#1F2937')}
-                      onChange={(e) => updateSectionSettings(selectedSection!, { textColor: e.target.value })}
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label>Text Alignment</Label>
-                  <Select 
-                    value={selectedSectionData.settings?.alignment || 'left'} 
-                    onValueChange={(value) => updateSectionSettings(selectedSection!, { alignment: value as any })}
+                {/* Background Options */}
+                <div className="space-y-3">
+                  <Label>Background Type</Label>
+                  <Select
+                    value={selectedSectionData.settings?.backgroundType || 'color'}
+                    onValueChange={(value) => updateSectionSettings(selectedSection!, { backgroundType: value as any })}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="left">Left</SelectItem>
-                      <SelectItem value="center">Center</SelectItem>
-                      <SelectItem value="right">Right</SelectItem>
+                      <SelectItem value="color">Solid Color</SelectItem>
+                      <SelectItem value="gradient">Gradient</SelectItem>
+                      <SelectItem value="image">Background Image</SelectItem>
                     </SelectContent>
                   </Select>
+
+                  {selectedSectionData.settings?.backgroundType === 'color' && (
+                    <div>
+                      <Label>Background Color</Label>
+                      <Input
+                        type="color"
+                        value={selectedSectionData.settings?.backgroundColor || '#FFFFFF'}
+                        onChange={(e) => updateSectionSettings(selectedSection!, { backgroundColor: e.target.value })}
+                      />
+                    </div>
+                  )}
+
+                  {selectedSectionData.settings?.backgroundType === 'gradient' && (
+                    <div className="space-y-2">
+                      <div>
+                        <Label>Gradient Type</Label>
+                        <Select
+                          value={selectedSectionData.settings?.gradientType || 'linear'}
+                          onValueChange={(value) => updateSectionSettings(selectedSection!, { gradientType: value as any })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="linear">Linear</SelectItem>
+                            <SelectItem value="radial">Radial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {selectedSectionData.settings?.gradientType === 'linear' && (
+                        <div>
+                          <Label>Direction</Label>
+                          <Select
+                            value={selectedSectionData.settings?.gradientDirection || 'to right'}
+                            onValueChange={(value) => updateSectionSettings(selectedSection!, { gradientDirection: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="to right">Left to Right</SelectItem>
+                              <SelectItem value="to left">Right to Left</SelectItem>
+                              <SelectItem value="to bottom">Top to Bottom</SelectItem>
+                              <SelectItem value="to top">Bottom to Top</SelectItem>
+                              <SelectItem value="to bottom right">Top-Left to Bottom-Right</SelectItem>
+                              <SelectItem value="to bottom left">Top-Right to Bottom-Left</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label>Start Color</Label>
+                          <Input
+                            type="color"
+                            value={selectedSectionData.settings?.gradientColors?.[0] || '#3B82F6'}
+                            onChange={(e) => {
+                              const colors = selectedSectionData.settings?.gradientColors || ['#3B82F6', '#1E40AF'];
+                              colors[0] = e.target.value;
+                              updateSectionSettings(selectedSection!, { gradientColors: colors });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <Label>End Color</Label>
+                          <Input
+                            type="color"
+                            value={selectedSectionData.settings?.gradientColors?.[1] || '#1E40AF'}
+                            onChange={(e) => {
+                              const colors = selectedSectionData.settings?.gradientColors || ['#3B82F6', '#1E40AF'];
+                              colors[1] = e.target.value;
+                              updateSectionSettings(selectedSection!, { gradientColors: colors });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedSectionData.settings?.backgroundType === 'image' && (
+                    <div>
+                      <Label>Background Image URL</Label>
+                      <Input
+                        value={selectedSectionData.settings?.backgroundImage || ''}
+                        onChange={(e) => updateSectionSettings(selectedSection!, { backgroundImage: e.target.value })}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <Label>Padding</Label>
-                  <Select 
-                    value={selectedSectionData.settings?.padding || 'medium'} 
-                    onValueChange={(value) => updateSectionSettings(selectedSection!, { padding: value as any })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="small">Small</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="large">Large</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Text Color</Label>
+                  <Input
+                    type="color"
+                    value={selectedSectionData.settings?.textColor || '#1F2937'}
+                    onChange={(e) => updateSectionSettings(selectedSection!, { textColor: e.target.value })}
+                  />
+                </div>
+                
+                {/* Layout Options */}
+                <div className="space-y-3">
+                  <h5 className="font-medium text-xs text-gray-600">LAYOUT</h5>
+                  
+                  <div>
+                    <Label>Width</Label>
+                    <Select
+                      value={selectedSectionData.settings?.width || 'container'}
+                      onValueChange={(value) => updateSectionSettings(selectedSection!, { width: value as any })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="full">Full Width</SelectItem>
+                        <SelectItem value="container">Container (1200px max)</SelectItem>
+                        <SelectItem value="custom">Custom Width</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {selectedSectionData.settings?.width === 'custom' && (
+                      <Input
+                        className="mt-2"
+                        value={selectedSectionData.settings?.customWidth || ''}
+                        onChange={(e) => updateSectionSettings(selectedSection!, { customWidth: e.target.value })}
+                        placeholder="e.g., 800px, 80%, 50rem"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Height</Label>
+                    <Select
+                      value={selectedSectionData.settings?.height || 'auto'}
+                      onValueChange={(value) => updateSectionSettings(selectedSection!, { height: value as any })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto Height</SelectItem>
+                        <SelectItem value="screen">Full Screen</SelectItem>
+                        <SelectItem value="custom">Custom Height</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {selectedSectionData.settings?.height === 'custom' && (
+                      <Input
+                        className="mt-2"
+                        value={selectedSectionData.settings?.customHeight || ''}
+                        onChange={(e) => updateSectionSettings(selectedSection!, { customHeight: e.target.value })}
+                        placeholder="e.g., 400px, 50vh, 20rem"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Text Alignment</Label>
+                    <Select 
+                      value={selectedSectionData.settings?.alignment || 'left'} 
+                      onValueChange={(value) => updateSectionSettings(selectedSection!, { alignment: value as any })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="left">Left</SelectItem>
+                        <SelectItem value="center">Center</SelectItem>
+                        <SelectItem value="right">Right</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Padding</Label>
+                    <Select 
+                      value={selectedSectionData.settings?.padding || 'medium'} 
+                      onValueChange={(value) => updateSectionSettings(selectedSection!, { padding: value as any })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="small">Small (1rem)</SelectItem>
+                        <SelectItem value="medium">Medium (2rem)</SelectItem>
+                        <SelectItem value="large">Large (4rem)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </div>
@@ -680,13 +940,10 @@ export default function AdvancedWebsiteBuilder() {
             {websiteData.sections.map((section) => (
               <div
                 key={section.id}
-                className={`${getPaddingClass(section.settings?.padding)} ${getAlignmentClass(section.settings?.alignment)} cursor-pointer border-2 border-transparent hover:border-blue-300 transition-colors ${
+                className={`${getSectionContainerClass(section.settings)} cursor-pointer border-2 border-transparent hover:border-blue-300 transition-colors ${
                   selectedSection === section.id ? 'border-blue-500' : ''
                 }`}
-                style={{
-                  backgroundColor: section.settings?.backgroundColor || (section.type === 'hero' ? websiteData.primaryColor : '#FFFFFF'),
-                  color: section.settings?.textColor || (section.type === 'hero' ? '#FFFFFF' : '#1F2937')
-                }}
+                style={getBackgroundStyle(section.settings)}
                 onClick={() => setSelectedSection(section.id)}
               >
                 {/* Section-specific rendering */}
