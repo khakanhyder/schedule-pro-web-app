@@ -108,7 +108,27 @@ class MemStorage implements IStorage {
   private appointments: Appointment[] = [];
   private operatingHours: OperatingHours[] = [];
   private leads: Lead[] = [];
-  private clientWebsites: ClientWebsite[] = [];
+  private clientWebsites: ClientWebsite[] = [
+    {
+      id: "website_1",
+      clientId: "client_1",
+      subdomain: "abc-consulting",
+      customDomain: null,
+      title: "ABC Consulting - Professional Services",
+      description: "ABC Consulting - Consulting services",
+      heroImage: null,
+      primaryColor: "#3B82F6",
+      secondaryColor: "#F3F4F6",
+      contactInfo: '{"phone": "555-0101", "email": "john@abcconsulting.com"}',
+      socialLinks: '{}',
+      sections: '[{"id":"hero","type":"hero","title":"Welcome to ABC Consulting","content":"Professional consulting services for all your needs.","settings":{"backgroundColor":"#3B82F6","textColor":"#FFFFFF","alignment":"center","padding":"large"}},{"id":"about","type":"about","title":"About ABC Consulting","content":"Located at 123 Main St, City, State, we are dedicated to providing exceptional consulting services.","settings":{"backgroundColor":"#FFFFFF","textColor":"#1F2937","alignment":"left","padding":"medium"}}]',
+      showPrices: true,
+      allowOnlineBooking: true,
+      isPublished: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
   private appointmentSlots: AppointmentSlot[] = [];
   private teamMembers: TeamMember[] = [];
 
@@ -636,6 +656,7 @@ class MemStorage implements IStorage {
       secondaryColor: website.secondaryColor || "#F3F4F6",
       contactInfo: website.contactInfo || null,
       socialLinks: website.socialLinks || null,
+      sections: website.sections || null,
       showPrices: website.showPrices ?? true,
       allowOnlineBooking: website.allowOnlineBooking ?? true,
       isPublished: website.isPublished ?? false,

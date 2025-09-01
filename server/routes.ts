@@ -828,10 +828,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/client/:clientId/website", async (req, res) => {
     try {
       const { clientId } = req.params;
+      console.log('POST website request body:', req.body);
       const websiteData = { ...insertClientWebsiteSchema.parse(req.body), clientId };
       const website = await storage.createClientWebsite(websiteData);
       res.json(website);
     } catch (error) {
+      console.error('POST website error:', error);
       res.status(500).json({ error: "Failed to create website" });
     }
   });
@@ -840,10 +842,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { clientId } = req.params;
       const updates = req.body;
+      console.log('PUT website request body:', updates);
       const website = await storage.updateClientWebsite(clientId, updates);
       res.json(website);
     } catch (error) {
+      console.error('PUT website error:', error);
       res.status(500).json({ error: "Failed to update website" });
+    }
+  });
+
+  // Public website data endpoint
+  app.get("/api/public/client/:clientId/website", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const website = await storage.getClientWebsite(clientId);
+      if (!website) {
+        return res.status(404).json({ error: "Website not found" });
+      }
+      res.json(website);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch website" });
     }
   });
 

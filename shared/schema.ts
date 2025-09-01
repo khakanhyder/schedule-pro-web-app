@@ -299,6 +299,7 @@ export const clientWebsites = pgTable("client_websites", {
   secondaryColor: text("secondary_color").default("#F3F4F6"),
   contactInfo: text("contact_info"), // JSON string
   socialLinks: text("social_links"), // JSON string
+  sections: text("sections"), // JSON string for website sections
   showPrices: boolean("show_prices").default(true),
   allowOnlineBooking: boolean("allow_online_booking").default(true),
   isPublished: boolean("is_published").default(false),
@@ -317,6 +318,7 @@ export const insertClientWebsiteSchema = createInsertSchema(clientWebsites).pick
   secondaryColor: true,
   contactInfo: true,
   socialLinks: true,
+  sections: true,
   showPrices: true,
   allowOnlineBooking: true,
   isPublished: true,

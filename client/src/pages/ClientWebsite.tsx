@@ -59,6 +59,11 @@ export default function ClientWebsite() {
     queryKey: [`/api/public/client/${clientId}`]
   });
 
+  const { data: websiteData } = useQuery({
+    queryKey: [`/api/public/client/${clientId}/website`],
+    enabled: !!clientId
+  });
+
   // Fetch available time slots when date changes
   useEffect(() => {
     if (bookingForm.appointmentDate && bookingForm.serviceId && clientId) {
@@ -152,23 +157,97 @@ export default function ClientWebsite() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-          <div className="text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 sm:mb-4">{client.businessName}</h1>
-            <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 opacity-90 px-4">
-              Professional {client.industry} services
-            </p>
-            <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 w-full sm:w-auto" onClick={handleHeroBookingClick}>
-              Book Appointment
-              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
+  // Helper functions for rendering sections
+  const getPaddingClass = (padding?: string) => {
+    switch (padding) {
+      case 'small': return 'p-4';
+      case 'large': return 'p-12';
+      default: return 'p-8';
+    }
+  };
+
+  const getAlignmentClass = (alignment?: string) => {
+    switch (alignment) {
+      case 'center': return 'text-center';
+      case 'right': return 'text-right';
+      default: return 'text-left';
+    }
+  };
+
+  const getFontSizeClass = (fontSize?: string) => {
+    switch (fontSize) {
+      case 'small': return 'text-sm';
+      case 'large': return 'text-xl';
+      default: return 'text-base';
+    }
+  };
+
+  // Parse website sections
+  let websiteSections = [];
+  if (websiteData?.sections) {
+    try {
+      websiteSections = JSON.parse(websiteData.sections);
+    } catch (e) {
+      console.error('Error parsing website sections:', e);
+      websiteSections = [];
+    }
+  }
+
+  // Render website sections from builder or default
+  const renderWebsiteSections = () => {
+    if (websiteSections.length === 0) {
+      // Default hero section if no sections exist
+      return (
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+            <div className="text-center">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 sm:mb-4">{client.businessName}</h1>
+              <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 opacity-90 px-4">
+                Professional {client.industry} services
+              </p>
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 w-full sm:w-auto" onClick={handleHeroBookingClick}>
+                Book Appointment
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+              </Button>
+            </div>
           </div>
         </div>
+      );
+    }
+
+    return websiteSections.map((section: any) => (
+      <div
+        key={section.id}
+        className={`${getPaddingClass(section.settings?.padding)} ${getAlignmentClass(section.settings?.alignment)} min-h-[200px]`}
+        style={{
+          backgroundColor: section.settings?.backgroundColor || (section.type === 'hero' ? '#3B82F6' : '#FFFFFF'),
+          color: section.settings?.textColor || (section.type === 'hero' ? '#FFFFFF' : '#1F2937')
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <h2 className={`font-bold mb-4 ${section.type === 'hero' ? 'text-3xl md:text-6xl' : 'text-2xl md:text-3xl'} ${getFontSizeClass(section.settings?.fontSize)}`}>
+            {section.title}
+          </h2>
+          <div className={`${getFontSizeClass(section.settings?.fontSize)} whitespace-pre-wrap ${section.type === 'hero' ? 'text-lg md:text-xl opacity-90' : ''}`}>
+            {section.content}
+          </div>
+          {section.type === 'hero' && (
+            <div className="mt-6">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100" onClick={handleHeroBookingClick}>
+                Book Appointment
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
+    ));
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Render website sections from builder */}
+      {renderWebsiteSections()}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Contact Info */}
@@ -241,27 +320,32 @@ export default function ClientWebsite() {
           )}
         </div>
 
-        {/* About Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>About {client.businessName}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 leading-relaxed">
-              Welcome to {client.businessName}, your trusted partner for professional {client.industry.toLowerCase()} services. 
-              Led by {client.contactPerson}, we are committed to providing exceptional service and ensuring your complete satisfaction.
-              Book an appointment today and experience the difference our expertise makes.
-            </p>
-            <div className="mt-6 flex items-center justify-center">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star key={star} className="h-5 w-5 text-yellow-400 fill-current" />
-                ))}
-              </div>
-              <span className="ml-2 text-gray-600">5.0 rating</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Show additional sections only if website has no builder sections */}
+        {websiteSections.length === 0 && (
+          <>
+            {/* About Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>About {client.businessName}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 leading-relaxed">
+                  Welcome to {client.businessName}, your trusted partner for professional {client.industry.toLowerCase()} services. 
+                  Led by {client.contactPerson}, we are committed to providing exceptional service and ensuring your complete satisfaction.
+                  Book an appointment today and experience the difference our expertise makes.
+                </p>
+                <div className="mt-6 flex items-center justify-center">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} className="h-5 w-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <span className="ml-2 text-gray-600">5.0 rating</span>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
         
         {/* Contact Form */}
         <Card>

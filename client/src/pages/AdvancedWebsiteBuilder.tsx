@@ -62,6 +62,12 @@ export default function AdvancedWebsiteBuilder() {
     enabled: !!clientId
   });
 
+  // Get existing website data
+  const { data: existingWebsite } = useQuery<any>({
+    queryKey: [`/api/client/${clientId}/website`],
+    enabled: !!clientId
+  });
+
   const [websiteData, setWebsiteData] = useState<WebsiteData>({
     title: "My Business Website",
     description: "Professional website for my business",
@@ -88,23 +94,47 @@ export default function AdvancedWebsiteBuilder() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
-  // Initialize with client data when available
+  // Initialize with existing website data or client data
   useEffect(() => {
-    if (clientData?.client) {
+    if (existingWebsite && existingWebsite.sections) {
+      // Load existing website data
+      try {
+        const sections = JSON.parse(existingWebsite.sections);
+        setWebsiteData({
+          title: existingWebsite.title,
+          description: existingWebsite.description || "",
+          primaryColor: existingWebsite.primaryColor || "#3B82F6",
+          secondaryColor: existingWebsite.secondaryColor || "#F3F4F6",
+          sections: sections
+        });
+      } catch (e) {
+        console.error('Error parsing existing website sections:', e);
+      }
+    } else if (clientData?.client && !existingWebsite) {
+      // Initialize with client data for new websites
       setWebsiteData(prev => ({
         ...prev,
         title: `${clientData.client.businessName} - Professional Services`,
         description: `${clientData.client.businessName} - ${clientData.client.industry} services`,
-        sections: prev.sections.map(section => 
-          section.type === 'hero' 
-            ? { ...section, title: `Welcome to ${clientData.client.businessName}`, content: `Professional ${clientData.client.industry.toLowerCase()} services for all your needs.` }
-            : section.type === 'about'
-            ? { ...section, title: `About ${clientData.client.businessName}`, content: `Located at ${clientData.client.businessAddress}, we are dedicated to providing exceptional ${clientData.client.industry.toLowerCase()} services.` }
-            : section
-        )
+        sections: [
+          {
+            id: "hero",
+            type: "hero",
+            title: `Welcome to ${clientData.client.businessName}`,
+            content: `Professional ${clientData.client.industry.toLowerCase()} services for all your needs.`,
+            settings: { backgroundColor: "#3B82F6", textColor: "#FFFFFF", alignment: "center", padding: "large" }
+          },
+          {
+            id: "about",
+            type: "about",
+            title: `About ${clientData.client.businessName}`,
+            content: `Located at ${clientData.client.businessAddress}, we are dedicated to providing exceptional ${clientData.client.industry.toLowerCase()} services.`,
+            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "left", padding: "medium" }
+          }
+        ]
       }));
     }
-  }, [clientData]);
+  }, [clientData, existingWebsite]);
 
   // Section management functions
   const addSection = (type: WebsiteSection['type']) => {
@@ -174,8 +204,9 @@ export default function AdvancedWebsiteBuilder() {
   // Save website mutation
   const saveWebsiteMutation = useMutation({
     mutationFn: async (data: WebsiteData) => {
+      const method = existingWebsite ? 'PUT' : 'POST';
       const response = await fetch(`/api/client/${clientId}/website`, {
-        method: 'POST',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: data.title,
@@ -185,6 +216,7 @@ export default function AdvancedWebsiteBuilder() {
           heroImage: '',
           contactInfo: JSON.stringify({ phone: clientData?.client?.phone || '', email: clientData?.client?.email || '' }),
           socialLinks: JSON.stringify({}),
+          sections: JSON.stringify(data.sections), // Save sections as JSON
           showPrices: true,
           allowOnlineBooking: true,
           isPublished: true,
@@ -195,6 +227,7 @@ export default function AdvancedWebsiteBuilder() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/website`] });
       toast({
         title: "Website Saved",
         description: "Your website has been successfully saved and published.",
