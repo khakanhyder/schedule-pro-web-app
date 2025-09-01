@@ -48,3 +48,19 @@ Scheduled is a comprehensive business management platform designed for service-b
 - **Resend API:** For reliable email delivery, specifically for review request emails and appointment confirmations.
 - **Google Business Profile API (implied):** For the Google Business setup assistant and SEO optimization.
 - **Third-party scheduling platforms (for data import):** Vagaro, Booksy, GlossGenius, Square Appointments, Fresha, MindBody, Acuity Scheduling, Schedulicity, Jobber, ServiceTitan, Housecall Pro, FieldEdge, Gingr, Pet Sitter Plus, PawLoyalty, Kennel Connection, HoneyBook, Pixieset, Studio Ninja, Calendly, Setmore, SimplyBook.me, Appointy.
+
+## Recent Changes
+
+### Security & Permissions Implementation (September 1, 2025)
+- **CRITICAL SECURITY FIX**: Implemented comprehensive server-side permission validation system
+- Added `requirePermission()` middleware that validates team member permissions before API execution
+- Fixed critical vulnerability where team members could perform unauthorized actions despite UI restrictions
+- All CRUD operations now validate permissions at the API level before processing
+- Team member authentication now includes clientId validation and session management
+- Permission enforcement implemented across services, appointments, leads, and team management endpoints
+
+### Feature Documentation (September 1, 2025)
+- Created comprehensive `FEATURES_DOCUMENTATION.md` documenting all fully developed platform features
+- Organized documentation by user roles: Super Admin, Business Client Admin, Team Members, Public Users
+- Documented complete security framework, technical infrastructure, and deployment readiness
+- Listed 100+ fully functional features across the entire platform ecosystem
