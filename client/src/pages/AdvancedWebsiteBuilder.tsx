@@ -28,6 +28,7 @@ interface WebsiteElement {
     link?: string;
     imageUrl?: string;
     alt?: string;
+    buttonLink?: string;
   };
 }
 
@@ -1045,7 +1046,7 @@ export default function AdvancedWebsiteBuilder() {
                     <Input
                       id="sectionTitle"
                       value={getSelectedSection()?.title || ''}
-                      onChange={(e) => updateSection(selectedSection, { title: e.target.value })}
+                      onChange={(e) => updateSection(selectedSection!, { title: e.target.value })}
                       placeholder="Section title"
                       className="text-sm"
                     />
@@ -1055,7 +1056,7 @@ export default function AdvancedWebsiteBuilder() {
                     <Input
                       type="color"
                       value={getSelectedSection()?.settings?.backgroundColor || '#FFFFFF'}
-                      onChange={(e) => updateSection(selectedSection, {
+                      onChange={(e) => updateSection(selectedSection!, {
                         settings: {
                           ...getSelectedSection()?.settings,
                           backgroundColor: e.target.value
@@ -1074,7 +1075,7 @@ export default function AdvancedWebsiteBuilder() {
                     <Label>Width</Label>
                     <Select
                       value={getSelectedColumn()?.width || 'auto'}
-                      onValueChange={(value) => updateColumn(selectedSection, selectedColumn, { width: value as WebsiteColumn['width'] })}
+                      onValueChange={(value) => updateColumn(selectedSection!, selectedColumn, { width: value as WebsiteColumn['width'] })}
                     >
                       <SelectTrigger className="text-sm">
                         <SelectValue />

@@ -1267,76 +1267,69 @@ export default function ClientDashboard() {
                     <div>
                       <Label htmlFor="leadPhone">Phone</Label>
                       <Input
-                        id="serviceName"
-                        value={serviceForm.name}
-                        onChange={(e) => setServiceForm(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Hair Cut, Manicure, etc."
+                        id="leadPhone"
+                        value={leadForm.phone}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="(555) 123-4567"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="serviceDescription">Description</Label>
-                      <Textarea
-                        id="serviceDescription"
-                        value={serviceForm.description}
-                        onChange={(e) => setServiceForm(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Service description..."
-                        rows={3}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="servicePrice">Price ($) *</Label>
-                        <Input
-                          id="servicePrice"
-                          type="number"
-                          value={serviceForm.price}
-                          onChange={(e) => setServiceForm(prev => ({ ...prev, price: e.target.value }))}
-                          placeholder="50.00"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="serviceDuration">Duration (min) *</Label>
-                        <Input
-                          id="serviceDuration"
-                          type="number"
-                          value={serviceForm.durationMinutes}
-                          onChange={(e) => setServiceForm(prev => ({ ...prev, durationMinutes: e.target.value }))}
-                          placeholder="60"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="serviceCategory">Category</Label>
-                      <Select value={serviceForm.category} onValueChange={(value) => setServiceForm(prev => ({ ...prev, category: value }))}>
+                      <Label htmlFor="leadSource">Source</Label>
+                      <Select value={leadForm.source} onValueChange={(value) => setLeadForm(prev => ({ ...prev, source: value }))}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
+                          <SelectValue placeholder="Select source" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Hair">Hair</SelectItem>
-                          <SelectItem value="Nails">Nails</SelectItem>
-                          <SelectItem value="Skin">Skin</SelectItem>
-                          <SelectItem value="Massage">Massage</SelectItem>
-                          <SelectItem value="Consulting">Consulting</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
+                          <SelectItem value="website">Website</SelectItem>
+                          <SelectItem value="referral">Referral</SelectItem>
+                          <SelectItem value="social-media">Social Media</SelectItem>
+                          <SelectItem value="google">Google</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="serviceActive"
-                        checked={serviceForm.isActive}
-                        onChange={(e) => setServiceForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                    <div>
+                      <Label htmlFor="leadStatus">Status</Label>
+                      <Select value={leadForm.status} onValueChange={(value) => setLeadForm(prev => ({ ...prev, status: value }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="contacted">Contacted</SelectItem>
+                          <SelectItem value="qualified">Qualified</SelectItem>
+                          <SelectItem value="converted">Converted</SelectItem>
+                          <SelectItem value="lost">Lost</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="leadNotes">Notes</Label>
+                      <Textarea
+                        id="leadNotes"
+                        value={leadForm.notes}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, notes: e.target.value }))}
+                        placeholder="Lead notes and details..."
+                        rows={3}
                       />
-                      <Label htmlFor="serviceActive">Service is active</Label>
+                    </div>
+                    <div>
+                      <Label htmlFor="leadValue">Estimated Value ($)</Label>
+                      <Input
+                        id="leadValue"
+                        type="number"
+                        value={leadForm.estimatedValue}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, estimatedValue: e.target.value }))}
+                        placeholder="500.00"
+                      />
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setIsServiceModalOpen(false)}>Cancel</Button>
+                      <Button variant="outline" onClick={() => setIsLeadModalOpen(false)}>Cancel</Button>
                       <Button 
-                        onClick={handleServiceSubmit}
-                        disabled={!serviceForm.name || !serviceForm.price || !serviceForm.durationMinutes}
+                        onClick={handleLeadSubmit}
+                        disabled={!leadForm.name || !leadForm.email}
                       >
-                        {editingService ? 'Update' : 'Create'} Service
+                        {editingLead ? 'Update' : 'Create'} Lead
                       </Button>
                     </div>
                   </div>
