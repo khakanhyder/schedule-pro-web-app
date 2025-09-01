@@ -30,7 +30,9 @@ import {
   Package,
   Bot,
   MapPin,
-  CreditCard
+  CreditCard,
+  Shield,
+  AlertTriangle
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
@@ -96,6 +98,12 @@ interface DashboardMetrics {
   conversionRate: number;
 }
 
+interface TeamMemberContext {
+  teamMemberId: string;
+  permissions: string[];
+  activeSection?: string;
+}
+
 export default function ClientDashboard() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -103,6 +111,16 @@ export default function ClientDashboard() {
   const [clientData, setClientData] = useState<Client | null>(null);
   const [activeView, setActiveView] = useState('overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [teamContext, setTeamContext] = useState<TeamMemberContext | null>(null);
+
+  // Check if team member has permission for a specific action
+  const hasPermission = (permission: string) => {
+    if (!teamContext?.permissions) return true; // Full access for business owners
+    return teamContext.permissions.includes(permission);
+  };
+
+  // Check if user is a team member (not the business owner)
+  const isTeamMember = () => !!teamContext;
   
   // Modal states
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
@@ -166,6 +184,23 @@ export default function ClientDashboard() {
   });
 
   useEffect(() => {
+    // Check for team member context first
+    const teamContextData = localStorage.getItem("teamMemberContext");
+    if (teamContextData) {
+      try {
+        const context = JSON.parse(teamContextData);
+        setTeamContext(context);
+        
+        // Set active view to the team member's assigned section
+        if (context.activeSection) {
+          setActiveView(context.activeSection);
+        }
+        console.log("Team member context loaded:", context);
+      } catch (error) {
+        console.error("Error parsing team context:", error);
+      }
+    }
+
     // Load client data from localStorage (set during onboarding)
     const storedClient = localStorage.getItem('clientData');
     const storedUser = localStorage.getItem('clientUser');
@@ -602,7 +637,7 @@ export default function ClientDashboard() {
     conversionRate: 0
   };
 
-  const menuItems = [
+  const allMenuItems = [
     { id: "overview", label: "Overview", icon: Home },
     { id: "appointments", label: "Appointments", icon: Calendar },
     { id: "services", label: "Services", icon: Package },
@@ -614,6 +649,40 @@ export default function ClientDashboard() {
     { id: "website", label: "Website", icon: Globe },
     { id: "settings", label: "Settings", icon: Settings },
   ];
+
+  // Filter menu items based on team member permissions
+  const getFilteredMenuItems = () => {
+    if (!isTeamMember()) return allMenuItems; // Full access for business owners
+    
+    return allMenuItems.filter(item => {
+      switch (item.id) {
+        case 'overview':
+          return hasPermission('overview.view');
+        case 'appointments':
+          return hasPermission('appointments.view') || hasPermission('appointments.create') || hasPermission('appointments.edit');
+        case 'services':
+          return hasPermission('services.view') || hasPermission('services.edit');
+        case 'leads':
+          return hasPermission('leads.view') || hasPermission('leads.create') || hasPermission('leads.edit');
+        case 'team':
+          return hasPermission('team.view');
+        case 'ai':
+          return hasPermission('ai_features.view') || hasPermission('ai_features.edit');
+        case 'google':
+          return hasPermission('google_business.view') || hasPermission('google_business.edit');
+        case 'analytics':
+          return hasPermission('analytics.view');
+        case 'website':
+          return hasPermission('website.view') || hasPermission('website.edit');
+        case 'settings':
+          return hasPermission('settings.view') || hasPermission('settings.edit');
+        default:
+          return false;
+      }
+    });
+  };
+
+  const menuItems = getFilteredMenuItems();
 
   return (
     <div className="min-h-screen bg-gray-50 flex relative">
@@ -659,12 +728,30 @@ export default function ClientDashboard() {
                     onClick={() => setActiveView(item.id)}
                   >
                     <Icon className={`w-5 h-5 ${isSidebarOpen ? 'mr-3' : ''}`} />
-                    {isSidebarOpen && item.label}
+                    {isSidebarOpen && (
+                      <span className="flex-1 text-left">{item.label}</span>
+                    )}
+                    {isTeamMember() && isSidebarOpen && (
+                      <Shield className="w-3 h-3 text-blue-500 ml-1" title="Limited Access" />
+                    )}
                   </Button>
                 </li>
               );
             })}
           </ul>
+          
+          {/* Team Member Access Notice */}
+          {isTeamMember() && isSidebarOpen && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center text-blue-800">
+                <Shield className="w-4 h-4 mr-2" />
+                <span className="text-xs font-medium">Limited Access Mode</span>
+              </div>
+              <p className="text-xs text-blue-600 mt-1">
+                Access restricted to assigned permissions
+              </p>
+            </div>
+          )}
         </nav>
 
         <div className="p-4 border-t">
@@ -687,7 +774,12 @@ export default function ClientDashboard() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{clientData.businessName}</h1>
-                <p className="text-sm text-gray-600">Business Dashboard</p>
+                <p className="text-sm text-gray-600">
+                  {isTeamMember() ? 'Team Member Dashboard' : 'Business Dashboard'}
+                  {teamContext && (
+                    <span className="ml-2 text-blue-600">• Limited Access</span>
+                  )}
+                </p>
               </div>
               <div className="flex items-center gap-4">
                 <Badge variant="outline" className="capitalize">
@@ -1793,7 +1885,19 @@ export default function ClientDashboard() {
               </div>
             )}
 
-            {activeView === "team" && <TeamManagement />}
+            {activeView === "team" && (
+              hasPermission('team.view') ? (
+                <TeamManagement />
+              ) : (
+                <div className="text-center py-8">
+                  <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <Shield className="w-6 h-6 text-red-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Access Denied</h3>
+                  <p className="text-gray-600">You don't have permission to view team management.</p>
+                </div>
+              )
+            )}
 
             {activeView === "ai" && <AIFeatures />}
 

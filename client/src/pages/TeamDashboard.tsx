@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -73,6 +72,21 @@ export default function TeamDashboard() {
   const [session, setSession] = useState<TeamSession | null>(null);
   const { toast } = useToast();
 
+  // Check if team member has permission for a specific action
+  const hasPermission = (permission: string) => {
+    if (!session?.teamMember?.permissions) return false;
+    return session.teamMember.permissions.includes(permission);
+  };
+
+  // Check if team member can access a specific section
+  const canAccessSection = (section: string) => {
+    const viewPermission = `${section}.view`;
+    const editPermission = `${section}.edit`;
+    const createPermission = `${section}.create`;
+    
+    return hasPermission(viewPermission) || hasPermission(editPermission) || hasPermission(createPermission);
+  };
+
   useEffect(() => {
     const sessionData = localStorage.getItem("teamMemberSession");
     if (!sessionData) {
@@ -98,19 +112,8 @@ export default function TeamDashboard() {
     setLocation("/team-login");
   };
 
-  const hasPermission = (permission: string, operation?: string) => {
-    if (!session?.teamMember.permissions) return false;
-    
-    if (operation) {
-      return session.teamMember.permissions.includes(`${permission}.${operation}`);
-    }
-    
-    // Check if user has any permission for this section
-    return session.teamMember.permissions.some(p => p.startsWith(`${permission}.`));
-  };
-
   const getAccessibleSections = () => {
-    return Object.keys(permissionLabels).filter(permission => hasPermission(permission));
+    return Object.keys(permissionLabels).filter(section => canAccessSection(section));
   };
 
   const navigateToSection = (section: string) => {
