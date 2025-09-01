@@ -62,8 +62,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
   };
 
   const { data: services = [], isLoading } = useQuery<Service[]>({
-    queryKey: [`/api/client/${clientId}/services`],
-    queryFn: () => apiRequest("GET", `/api/client/${clientId}/services`).then(res => res.json())
+    queryKey: [`/api/client/${clientId}/services`]
   });
 
   const form = useForm<FormData>({
@@ -79,7 +78,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
 
   const createMutation = useMutation({
     mutationFn: (data: FormData) => 
-      apiRequest("POST", `/api/client/${clientId}/services`, data).then(res => res.json()),
+      apiRequest(`/api/client/${clientId}/services`, "POST", data).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/services`] });
       setIsAddDialogOpen(false);
@@ -100,7 +99,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: FormData }) =>
-      apiRequest("PUT", `/api/client/${clientId}/services/${id}`, data).then(res => res.json()),
+      apiRequest(`/api/client/${clientId}/services/${id}`, "PUT", data).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/services`] });
       setEditingService(null);
@@ -121,7 +120,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      apiRequest("DELETE", `/api/client/${clientId}/services/${id}`),
+      apiRequest(`/api/client/${clientId}/services/${id}`, "DELETE"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/services`] });
       toast({
