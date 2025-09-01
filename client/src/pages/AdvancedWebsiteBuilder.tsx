@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Eye, Plus, Trash2, ArrowLeft, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer } from "lucide-react";
+import { Save, Eye, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer } from "lucide-react";
 import LeadForm from "@/components/LeadForm";
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -829,23 +829,35 @@ export default function AdvancedWebsiteBuilder() {
   };
 
   const renderElement = (element: WebsiteElement) => {
+    const isMobile = window.innerWidth < 768;
+    
     const style: React.CSSProperties = {
-      fontSize: element.settings?.fontSize,
+      fontSize: isMobile ? (element.settings?.mobileFontSize || element.settings?.fontSize) : element.settings?.fontSize,
       color: element.settings?.textColor,
       backgroundColor: element.settings?.backgroundColor,
       padding: element.settings?.padding,
       margin: element.settings?.margin,
       borderRadius: element.settings?.borderRadius,
-      textAlign: element.settings?.alignment as any,
-      width: element.settings?.width,
-      height: element.settings?.height,
-      fontWeight: element.settings?.fontWeight
+      textAlign: isMobile ? (element.settings?.mobileTextAlign || element.settings?.textAlign) as any : element.settings?.textAlign as any,
+      width: isMobile ? (element.settings?.mobileWidth || element.settings?.width) : element.settings?.width,
+      height: isMobile && element.settings?.mobileHeight ? element.settings.mobileHeight : element.settings?.height,
+      fontWeight: element.settings?.fontWeight,
+      display: isMobile ? (element.settings?.mobileDisplay || element.settings?.display) : element.settings?.display,
+      border: element.settings?.borderWidth ? `${element.settings.borderWidth} solid ${element.settings.borderColor || '#E5E7EB'}` : undefined,
+      boxSizing: 'border-box'
     };
+
+    // Hide element on mobile if mobileDisplay is 'none'
+    if (isMobile && element.settings?.mobileDisplay === 'none') {
+      return null;
+    }
+
+    const className = `transition-all duration-200 ${style.display === 'flex' ? 'flex' : ''} ${style.display === 'grid' ? 'grid' : ''}`;
 
     switch (element.type) {
       case 'text':
         return (
-          <div style={style} className="whitespace-pre-wrap">
+          <div style={style} className={`whitespace-pre-wrap ${className}`}>
             {element.content || 'Text element'}
           </div>
         );
@@ -856,12 +868,21 @@ export default function AdvancedWebsiteBuilder() {
               ...style,
               backgroundColor: style.backgroundColor || '#3B82F6',
               color: style.color || '#FFFFFF',
-              padding: style.padding || '12px 24px',
+              padding: style.padding || (isMobile ? '10px 20px' : '12px 24px'),
               borderRadius: style.borderRadius || '6px',
-              border: 'none',
-              cursor: 'pointer'
+              border: style.border || 'none',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
             }} 
-            className="inline-block font-medium transition-opacity hover:opacity-90"
+            className={`inline-block font-medium ${className}`}
+            onMouseEnter={(e) => {
+              if (element.settings?.hoverColor) {
+                e.currentTarget.style.backgroundColor = element.settings.hoverColor;
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = style.backgroundColor || '#3B82F6';
+            }}
             onClick={(e) => {
               if (element.settings?.buttonLink) {
                 e.preventDefault();
@@ -880,15 +901,19 @@ export default function AdvancedWebsiteBuilder() {
         return element.settings?.imageUrl ? (
           <img 
             src={element.settings.imageUrl} 
-            alt={element.settings?.alt || ''}
-            style={style}
-            className="max-w-full h-auto"
+            alt={element.settings?.altText || element.content || ''}
+            style={{
+              ...style,
+              objectFit: element.settings?.objectFit as any || 'cover'
+            }}
+            className={`max-w-full h-auto ${className}`}
           />
         ) : (
-          <div style={style} className="bg-gray-200 rounded flex items-center justify-center min-h-[100px]">
+          <div style={style} className={`bg-gray-200 rounded flex items-center justify-center min-h-[100px] ${className}`}>
             <div className="text-center text-gray-500">
               <Image className="h-8 w-8 mx-auto mb-2" />
               <p className="text-sm">Image</p>
+              <p className="text-xs">Add URL in settings</p>
             </div>
           </div>
         );
@@ -897,15 +922,59 @@ export default function AdvancedWebsiteBuilder() {
           <div 
             style={{ 
               ...style, 
-              backgroundColor: style.backgroundColor || 'transparent'
+              backgroundColor: style.backgroundColor || 'transparent',
+              minHeight: isMobile && element.settings?.mobileHeight ? element.settings.mobileHeight : (style.height || '40px')
             }} 
-            className="w-full"
+            className={`w-full ${className}`}
           />
         );
       default:
-        return <div style={style}>Unknown element</div>;
+        return <div style={style} className={className}>Unknown element</div>;
     }
   };
+
+  // Add element rearrangement functions
+  const moveElementUp = (sectionId: string, columnId: string, elementId: string) => {
+    setWebsiteData(prev => {
+      const newData = { ...prev };
+      const section = newData.sections.find(s => s.id === sectionId);
+      if (!section) return prev;
+      
+      const column = section.columns?.find(c => c.id === columnId);
+      if (!column) return prev;
+      
+      const elementIndex = column.elements.findIndex(e => e.id === elementId);
+      if (elementIndex <= 0) return prev;
+      
+      const elements = [...column.elements];
+      [elements[elementIndex - 1], elements[elementIndex]] = [elements[elementIndex], elements[elementIndex - 1]];
+      column.elements = elements;
+      
+      return newData;
+    });
+  };
+
+  const moveElementDown = (sectionId: string, columnId: string, elementId: string) => {
+    setWebsiteData(prev => {
+      const newData = { ...prev };
+      const section = newData.sections.find(s => s.id === sectionId);
+      if (!section) return prev;
+      
+      const column = section.columns?.find(c => c.id === columnId);
+      if (!column) return prev;
+      
+      const elementIndex = column.elements.findIndex(e => e.id === elementId);
+      if (elementIndex >= column.elements.length - 1) return prev;
+      
+      const elements = [...column.elements];
+      [elements[elementIndex], elements[elementIndex + 1]] = [elements[elementIndex + 1], elements[elementIndex]];
+      column.elements = elements;
+      
+      return newData;
+    });
+  };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -1096,7 +1165,8 @@ export default function AdvancedWebsiteBuilder() {
 
               {/* Element Controls */}
               {editMode === 'element' && selectedElement && (
-                <div className="space-y-3">
+                <div className="space-y-4">
+                  {/* Content */}
                   <div>
                     <Label>Content</Label>
                     <Textarea
@@ -1107,70 +1177,400 @@ export default function AdvancedWebsiteBuilder() {
                       className="text-sm"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label>Font Size</Label>
-                      <Input
-                        value={getSelectedElement()?.settings?.fontSize || '16px'}
-                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
-                          settings: { ...getSelectedElement()?.settings, fontSize: e.target.value }
-                        })}
-                        placeholder="16px"
-                        className="text-sm"
-                      />
+
+                  {/* Typography & Colors */}
+                  <div className="space-y-3 p-3 bg-gray-50 rounded">
+                    <h4 className="text-sm font-medium">Typography & Colors</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Font Size</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.fontSize || '16px'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, fontSize: e.target.value }
+                          })}
+                          placeholder="16px"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Font Weight</Label>
+                        <Select
+                          value={getSelectedElement()?.settings?.fontWeight || 'normal'}
+                          onValueChange={(value) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, fontWeight: value }
+                          })}
+                        >
+                          <SelectTrigger className="text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="bold">Bold</SelectItem>
+                            <SelectItem value="semibold">Semi Bold</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="light">Light</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div>
-                      <Label>Color</Label>
-                      <Input
-                        type="color"
-                        value={getSelectedElement()?.settings?.textColor || '#1F2937'}
-                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
-                          settings: { ...getSelectedElement()?.settings, textColor: e.target.value }
-                        })}
-                        className="h-8"
-                      />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Text Color</Label>
+                        <Input
+                          type="color"
+                          value={getSelectedElement()?.settings?.textColor || '#1F2937'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, textColor: e.target.value }
+                          })}
+                          className="h-8"
+                        />
+                      </div>
+                      <div>
+                        <Label>Text Align</Label>
+                        <Select
+                          value={getSelectedElement()?.settings?.textAlign || 'left'}
+                          onValueChange={(value) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, textAlign: value }
+                          })}
+                        >
+                          <SelectTrigger className="text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                            <SelectItem value="justify">Justify</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
 
-                  {getSelectedElement()?.type === 'button' && (
-                    <div>
-                      <Label>Button Color</Label>
-                      <Input
-                        type="color"
-                        value={getSelectedElement()?.settings?.backgroundColor || '#3B82F6'}
-                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
-                          settings: { ...getSelectedElement()?.settings, backgroundColor: e.target.value }
-                        })}
-                        className="h-8"
-                      />
+                  {/* Layout & Positioning */}
+                  <div className="space-y-3 p-3 bg-gray-50 rounded">
+                    <h4 className="text-sm font-medium">Layout & Positioning</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Width</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.width || 'auto'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, width: e.target.value }
+                          })}
+                          placeholder="auto, 100px, 100%"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Height</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.height || 'auto'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, height: e.target.value }
+                          })}
+                          placeholder="auto, 100px"
+                          className="text-sm"
+                        />
+                      </div>
                     </div>
-                  )}
-
-                  {getSelectedElement()?.type === 'button' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Margin</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.margin || '0'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, margin: e.target.value }
+                          })}
+                          placeholder="10px, 10px 20px"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Padding</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.padding || '0'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, padding: e.target.value }
+                          })}
+                          placeholder="10px, 10px 20px"
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <Label>Button Link</Label>
-                      <Input
-                        value={getSelectedElement()?.settings?.buttonLink || ''}
-                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
-                          settings: { ...getSelectedElement()?.settings, buttonLink: e.target.value }
+                      <Label>Display</Label>
+                      <Select
+                        value={getSelectedElement()?.settings?.display || 'block'}
+                        onValueChange={(value) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                          settings: { ...getSelectedElement()?.settings, display: value }
                         })}
-                        placeholder="/contact or https://example.com"
-                        className="text-sm"
-                      />
+                      >
+                        <SelectTrigger className="text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="block">Block</SelectItem>
+                          <SelectItem value="inline-block">Inline Block</SelectItem>
+                          <SelectItem value="inline">Inline</SelectItem>
+                          <SelectItem value="flex">Flex</SelectItem>
+                          <SelectItem value="grid">Grid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Background & Border */}
+                  <div className="space-y-3 p-3 bg-gray-50 rounded">
+                    <h4 className="text-sm font-medium">Background & Border</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Background Color</Label>
+                        <Input
+                          type="color"
+                          value={getSelectedElement()?.settings?.backgroundColor || (getSelectedElement()?.type === 'button' ? '#3B82F6' : 'transparent')}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, backgroundColor: e.target.value }
+                          })}
+                          className="h-8"
+                        />
+                      </div>
+                      <div>
+                        <Label>Border Radius</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.borderRadius || (getSelectedElement()?.type === 'button' ? '6px' : '0')}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, borderRadius: e.target.value }
+                          })}
+                          placeholder="0, 6px, 50%"
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Border Width</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.borderWidth || '0'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, borderWidth: e.target.value }
+                          })}
+                          placeholder="0, 1px, 2px"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Border Color</Label>
+                        <Input
+                          type="color"
+                          value={getSelectedElement()?.settings?.borderColor || '#E5E7EB'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, borderColor: e.target.value }
+                          })}
+                          className="h-8"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Element Arrangement */}
+                  <div className="space-y-3 p-3 bg-yellow-50 rounded">
+                    <h4 className="text-sm font-medium">Element Position</h4>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => moveElementUp(selectedSection!, selectedColumn!, selectedElement)}
+                        disabled={!selectedSection || !selectedColumn || !selectedElement}
+                        className="flex-1"
+                      >
+                        <ArrowUp className="h-3 w-3 mr-1" />
+                        Move Up
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => moveElementDown(selectedSection!, selectedColumn!, selectedElement)}
+                        disabled={!selectedSection || !selectedColumn || !selectedElement}
+                        className="flex-1"
+                      >
+                        <ArrowDown className="h-3 w-3 mr-1" />
+                        Move Down
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Mobile Responsiveness */}
+                  <div className="space-y-3 p-3 bg-gray-50 rounded">
+                    <h4 className="text-sm font-medium">Mobile Responsive</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Mobile Font Size</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.mobileFontSize || getSelectedElement()?.settings?.fontSize || '14px'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, mobileFontSize: e.target.value }
+                          })}
+                          placeholder="14px"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Mobile Text Align</Label>
+                        <Select
+                          value={getSelectedElement()?.settings?.mobileTextAlign || getSelectedElement()?.settings?.textAlign || 'left'}
+                          onValueChange={(value) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, mobileTextAlign: value }
+                          })}
+                        >
+                          <SelectTrigger className="text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Mobile Width</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.mobileWidth || getSelectedElement()?.settings?.width || 'auto'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, mobileWidth: e.target.value }
+                          })}
+                          placeholder="100%, auto"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Mobile Display</Label>
+                        <Select
+                          value={getSelectedElement()?.settings?.mobileDisplay || getSelectedElement()?.settings?.display || 'block'}
+                          onValueChange={(value) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, mobileDisplay: value }
+                          })}
+                        >
+                          <SelectTrigger className="text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="block">Block</SelectItem>
+                            <SelectItem value="inline-block">Inline Block</SelectItem>
+                            <SelectItem value="flex">Flex</SelectItem>
+                            <SelectItem value="none">Hide on Mobile</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Type-specific settings */}
+                  {getSelectedElement()?.type === 'button' && (
+                    <div className="space-y-3 p-3 bg-blue-50 rounded">
+                      <h4 className="text-sm font-medium">Button Settings</h4>
+                      <div>
+                        <Label>Button Link</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.buttonLink || ''}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, buttonLink: e.target.value }
+                          })}
+                          placeholder="/contact or https://example.com"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Hover Color</Label>
+                        <Input
+                          type="color"
+                          value={getSelectedElement()?.settings?.hoverColor || '#2563EB'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, hoverColor: e.target.value }
+                          })}
+                          className="h-8"
+                        />
+                      </div>
                     </div>
                   )}
 
                   {getSelectedElement()?.type === 'image' && (
-                    <div>
-                      <Label>Image URL</Label>
-                      <Input
-                        value={getSelectedElement()?.settings?.imageUrl || ''}
-                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
-                          settings: { ...getSelectedElement()?.settings, imageUrl: e.target.value }
-                        })}
-                        placeholder="https://example.com/image.jpg"
-                        className="text-sm"
-                      />
+                    <div className="space-y-3 p-3 bg-green-50 rounded">
+                      <h4 className="text-sm font-medium">Image Settings</h4>
+                      <div>
+                        <Label>Image URL</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.imageUrl || ''}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, imageUrl: e.target.value }
+                          })}
+                          placeholder="https://example.com/image.jpg"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Alt Text</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.altText || ''}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, altText: e.target.value }
+                          })}
+                          placeholder="Descriptive text for accessibility"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Object Fit</Label>
+                        <Select
+                          value={getSelectedElement()?.settings?.objectFit || 'cover'}
+                          onValueChange={(value) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, objectFit: value }
+                          })}
+                        >
+                          <SelectTrigger className="text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cover">Cover</SelectItem>
+                            <SelectItem value="contain">Contain</SelectItem>
+                            <SelectItem value="fill">Fill</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="scale-down">Scale Down</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {getSelectedElement()?.type === 'spacer' && (
+                    <div className="space-y-3 p-3 bg-gray-100 rounded">
+                      <h4 className="text-sm font-medium">Spacer Settings</h4>
+                      <div>
+                        <Label>Desktop Height</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.height || '40px'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, height: e.target.value }
+                          })}
+                          placeholder="40px"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label>Mobile Height</Label>
+                        <Input
+                          value={getSelectedElement()?.settings?.mobileHeight || '20px'}
+                          onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, mobileHeight: e.target.value }
+                          })}
+                          placeholder="20px"
+                          className="text-sm"
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
