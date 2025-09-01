@@ -1400,6 +1400,186 @@ export default function ClientDashboard() {
               </div>
             )}
 
+            {activeView === "leads" && (
+              <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Leads</h2>
+              <Dialog open={isLeadModalOpen} onOpenChange={setIsLeadModalOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => openLeadModal()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Lead
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>{editingLead ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="leadName">Name *</Label>
+                      <Input
+                        id="leadName"
+                        value={leadForm.name}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Jane Smith"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="leadEmail">Email *</Label>
+                      <Input
+                        id="leadEmail"
+                        type="email"
+                        value={leadForm.email}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="jane@example.com"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="leadPhone">Phone</Label>
+                      <Input
+                        id="leadPhone"
+                        value={leadForm.phone}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="leadSource">Source</Label>
+                        <Select value={leadForm.source} onValueChange={(value) => setLeadForm(prev => ({ ...prev, source: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select source" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Website">Website</SelectItem>
+                            <SelectItem value="Social Media">Social Media</SelectItem>
+                            <SelectItem value="Referral">Referral</SelectItem>
+                            <SelectItem value="Walk-in">Walk-in</SelectItem>
+                            <SelectItem value="Phone">Phone</SelectItem>
+                            <SelectItem value="Email">Email</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="leadStatus">Status</Label>
+                        <Select value={leadForm.status} onValueChange={(value) => setLeadForm(prev => ({ ...prev, status: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="NEW">New</SelectItem>
+                            <SelectItem value="CONTACTED">Contacted</SelectItem>
+                            <SelectItem value="QUALIFIED">Qualified</SelectItem>
+                            <SelectItem value="CONVERTED">Converted</SelectItem>
+                            <SelectItem value="LOST">Lost</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="estimatedValue">Estimated Value ($)</Label>
+                      <Input
+                        id="estimatedValue"
+                        type="number"
+                        value={leadForm.estimatedValue}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, estimatedValue: e.target.value }))}
+                        placeholder="150.00"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="leadNotes">Notes</Label>
+                      <Textarea
+                        id="leadNotes"
+                        value={leadForm.notes}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, notes: e.target.value }))}
+                        placeholder="Additional notes about this lead..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsLeadModalOpen(false)}>Cancel</Button>
+                      <Button 
+                        onClick={handleLeadSubmit}
+                        disabled={!leadForm.name || !leadForm.email}
+                      >
+                        {editingLead ? 'Update' : 'Create'} Lead
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Lead Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {leads.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-4">No leads captured yet</p>
+                    <Button onClick={() => openLeadModal()}>Add Your First Lead</Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {leads.map((lead) => (
+                      <div key={lead.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{lead.name}</p>
+                          <p className="text-sm text-gray-600">{lead.email} • {lead.phone}</p>
+                          <p className="text-sm text-gray-600">
+                            Source: {lead.source} • {new Date(lead.createdAt).toLocaleDateString()}
+                          </p>
+                          {lead.notes && (
+                            <p className="text-sm text-gray-500 mt-1">{lead.notes}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={lead.status === 'CONVERTED' ? 'default' : 'secondary'}>
+                            {lead.status}
+                          </Badge>
+                          {lead.estimatedValue > 0 && (
+                            <span className="text-sm">${lead.estimatedValue}</span>
+                          )}
+                          <div className="flex gap-1 ml-2">
+                            <Button variant="outline" size="sm" onClick={() => openLeadModal(lead)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Lead</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete the lead for {lead.name}?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteLeadMutation.mutate(lead.id)}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+              </div>
+            )}
+
             {activeView === "analytics" && (
               <div className="space-y-6">
             <h2 className="text-2xl font-bold">Analytics</h2>
@@ -1437,24 +1617,301 @@ export default function ClientDashboard() {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Your Business Website</h2>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => window.open(`/public/${clientData?.id}`, '_blank')}>
+                <Button variant="outline" onClick={openWebsitePreview}>
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Preview Website
                 </Button>
+                <Dialog open={isWebsiteModalOpen} onOpenChange={setIsWebsiteModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Website Settings
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Website Configuration</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="websiteTitle">Website Title</Label>
+                        <Input
+                          id="websiteTitle"
+                          value={websiteSettings.title}
+                          onChange={(e) => setWebsiteSettings(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder={clientData?.businessName || 'Your Business'}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="websiteDescription">Description</Label>
+                        <Textarea
+                          id="websiteDescription"
+                          value={websiteSettings.description}
+                          onChange={(e) => setWebsiteSettings(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Welcome to our business..."
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="primaryColor">Primary Color</Label>
+                        <Input
+                          id="primaryColor"
+                          type="color"
+                          value={websiteSettings.primaryColor}
+                          onChange={(e) => setWebsiteSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="contactEmail">Contact Email</Label>
+                          <Input
+                            id="contactEmail"
+                            type="email"
+                            value={websiteSettings.contactEmail}
+                            onChange={(e) => setWebsiteSettings(prev => ({ ...prev, contactEmail: e.target.value }))}
+                            placeholder={clientData?.email}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="contactPhone">Contact Phone</Label>
+                          <Input
+                            id="contactPhone"
+                            value={websiteSettings.contactPhone}
+                            onChange={(e) => setWebsiteSettings(prev => ({ ...prev, contactPhone: e.target.value }))}
+                            placeholder={clientData?.phone}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="showServices"
+                            checked={websiteSettings.showServices}
+                            onChange={(e) => setWebsiteSettings(prev => ({ ...prev, showServices: e.target.checked }))}
+                          />
+                          <Label htmlFor="showServices">Show services on website</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="showBooking"
+                            checked={websiteSettings.showBooking}
+                            onChange={(e) => setWebsiteSettings(prev => ({ ...prev, showBooking: e.target.checked }))}
+                          />
+                          <Label htmlFor="showBooking">Enable online booking</Label>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsWebsiteModalOpen(false)}>Cancel</Button>
+                        <Button onClick={() => updateWebsiteMutation.mutate(websiteSettings)}>
+                          Save Settings
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
             
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Website Preview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold">{websiteSettings.title || clientData?.businessName}</h3>
+                      <p className="text-sm text-gray-600">{websiteSettings.description || 'Professional services for all your needs'}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-500">✓ Contact Information</p>
+                      {websiteSettings.showServices && <p className="text-xs text-gray-500">✓ Service Listings</p>}
+                      {websiteSettings.showBooking && <p className="text-xs text-gray-500">✓ Online Booking</p>}
+                    </div>
+                  </div>
+                  <div className="mt-4 text-center space-y-2">
+                    <Button variant="outline" onClick={openWebsitePreview}>
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View Full Website
+                    </Button>
+                    <br />
+                    <Button 
+                      variant="default" 
+                      onClick={() => setLocation(`/website-builder?clientId=${clientData?.id}`)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Advanced Website Builder
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Website Features</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Public Landing Page</span>
+                      <Badge variant="default">Active</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Service Showcase</span>
+                      <Badge variant={websiteSettings.showServices ? "default" : "secondary"}>
+                        {websiteSettings.showServices ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Online Booking</span>
+                      <Badge variant={websiteSettings.showBooking ? "default" : "secondary"}>
+                        {websiteSettings.showBooking ? "Enabled" : "Disabled"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Mobile Responsive</span>
+                      <Badge variant="default">Yes</Badge>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm text-gray-600">Website URL:</p>
+                    <p className="text-sm font-mono bg-gray-100 p-2 rounded">
+                      /client-website/{clientData?.id}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+              </div>
+            )}
+
+            {activeView === "settings" && (
+              <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Settings</h2>
+            
             <Card>
               <CardHeader>
-                <CardTitle>Website Builder</CardTitle>
+                <CardTitle>Business Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <Globe className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 mb-4">Build and customize your business website</p>
-                  <Button onClick={() => window.open('/website-builder', '_blank')}>
-                    Open Website Builder
-                  </Button>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label htmlFor="businessName">Business Name</Label>
+                    <Input id="businessName" value={clientData?.businessName || ''} readOnly />
+                  </div>
+                  <div>
+                    <Label htmlFor="contactPerson">Contact Person</Label>
+                    <Input id="contactPerson" value={clientData?.contactPerson || ''} readOnly />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" value={clientData?.email || ''} readOnly />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input id="phone" value={clientData?.phone || ''} readOnly />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="address">Address</Label>
+                    <Input id="address" value={clientData?.businessAddress || ''} readOnly />
+                  </div>
+                </div>
+                <Dialog open={isSettingsModalOpen} onOpenChange={setIsSettingsModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="mt-4">Edit Information</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Business Information</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <Label htmlFor="editBusinessName">Business Name</Label>
+                          <Input id="editBusinessName" defaultValue={clientData?.businessName} />
+                        </div>
+                        <div>
+                          <Label htmlFor="editContactPerson">Contact Person</Label>
+                          <Input id="editContactPerson" defaultValue={clientData?.contactPerson} />
+                        </div>
+                        <div>
+                          <Label htmlFor="editEmail">Email</Label>
+                          <Input id="editEmail" defaultValue={clientData?.email} />
+                        </div>
+                        <div>
+                          <Label htmlFor="editPhone">Phone</Label>
+                          <Input id="editPhone" defaultValue={clientData?.phone} />
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label htmlFor="editAddress">Address</Label>
+                          <Input id="editAddress" defaultValue={clientData?.businessAddress} />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsSettingsModalOpen(false)}>Cancel</Button>
+                        <Button onClick={() => {
+                          toast({ title: 'Business information updated successfully' });
+                          setIsSettingsModalOpen(false);
+                        }}>Save Changes</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Operating Hours</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                    <div key={day} className="flex items-center justify-between">
+                      <span className="w-20 font-medium">{day}</span>
+                      <div className="flex items-center gap-2">
+                        <Input type="time" defaultValue="09:00" className="w-24" />
+                        <span>to</span>
+                        <Input type="time" defaultValue="17:00" className="w-24" />
+                        <input type="checkbox" defaultChecked={day !== 'Sunday'} className="ml-2" />
+                        <span className="text-sm text-gray-600">Open</span>
+                      </div>
+                    </div>
+                  ))}
+                  <Button className="mt-4">Save Operating Hours</Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Plan Status</p>
+                      <p className="text-sm text-gray-600">Current: {clientData?.status}</p>
+                    </div>
+                    <Badge variant="outline">{clientData?.status === 'TRIAL' ? 'TRIAL' : 'ACTIVE'}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Subscription</p>
+                      <p className="text-sm text-gray-600">Manage your billing and plan</p>
+                    </div>
+                    <Button variant="outline" size="sm">Manage Plan</Button>
+                  </div>
+                  <div className="pt-4 border-t">
+                    <Button variant="outline" className="w-full" onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1475,35 +1932,12 @@ export default function ClientDashboard() {
               )
             )}
 
-            {activeView === "ai" && (
-              <AIFeatures />
-            )}
+            {activeView === "ai" && <AIFeatures />}
 
-            {activeView === "google" && (
-              <GoogleBusinessSetup />
-            )}
+            {activeView === "google" && <GoogleBusinessSetup />}
 
-            {activeView === "settings" && (
-              <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Settings</h2>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Business Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 mb-4">Manage your business settings and preferences</p>
-                  <Button>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Configure Settings
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-              </div>
-            )}
+
+
           </div>
         </main>
       </div>
