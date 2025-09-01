@@ -744,7 +744,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/client/:clientId/services/:serviceId", requirePermission('services.edit'), async (req, res) => {
+  app.delete("/api/client/:clientId/services/:serviceId", requirePermission('services.delete'), async (req, res) => {
     try {
       const { serviceId } = req.params;
       await storage.deleteClientService(serviceId);
@@ -1071,32 +1071,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Client authentication route
+  // Unified client authentication route - handles both business owners and team members
   app.post("/api/auth/client-login", async (req, res) => {
     try {
       const { email, password } = req.body;
       
-      // Find user by email
+      // Check for business owner first
       const user = await storage.getUserByEmail(email);
-      if (!user || user.role !== 'CLIENT') {
-        return res.status(401).json({ error: "Invalid credentials" });
+      if (user && user.role === 'CLIENT' && user.password === password) {
+        const client = await storage.getClientByEmail(email);
+        if (client) {
+          res.json({
+            user: { 
+              id: user.id, 
+              email: user.email, 
+              role: "BUSINESS_OWNER",
+              clientId: client.id,
+              permissions: ["*"], // Full access
+              name: client.contactPerson
+            },
+            client,
+            userType: "BUSINESS_OWNER"
+          });
+          return;
+        }
       }
       
-      // Verify password (simple comparison for demo)
-      if (user.password !== password) {
-        return res.status(401).json({ error: "Invalid credentials" });
+      // Check for team members
+      console.log(`Looking for team member with email: ${email}`);
+      
+      const clients = await storage.getClients();
+      const allTeamMembers = [];
+      
+      for (const client of clients) {
+        try {
+          const clientTeamMembers = await storage.getTeamMembers(client.id);
+          allTeamMembers.push(...clientTeamMembers);
+        } catch (error) {
+          console.error(`Error fetching team members for client ${client.id}:`, error);
+        }
       }
       
-      // Find client by email
-      const client = await storage.getClientByEmail(email);
-      if (!client) {
-        return res.status(404).json({ error: "Client not found" });
+      const teamMember = allTeamMembers.find(member => 
+        member.email === email && member.isActive !== false
+      );
+      
+      if (teamMember && teamMember.password === password) {
+        console.log(`Found team member: ${teamMember.name} (${teamMember.email})`);
+        
+        const client = await storage.getClient(teamMember.clientId);
+        if (client) {
+          console.log("Team login successful");
+          res.json({
+            user: {
+              id: teamMember.id,
+              email: teamMember.email,
+              role: "TEAM_MEMBER",
+              clientId: teamMember.clientId,
+              permissions: teamMember.permissions,
+              name: teamMember.name
+            },
+            client,
+            userType: "TEAM_MEMBER",
+            teamMember: {
+              id: teamMember.id,
+              name: teamMember.name,
+              email: teamMember.email,
+              role: teamMember.role,
+              permissions: teamMember.permissions,
+              clientId: teamMember.clientId
+            }
+          });
+          return;
+        }
       }
       
-      res.json({
-        user: { id: user.id, email: user.email, role: user.role },
-        client
-      });
+      // No match found
+      res.status(401).json({ error: "Invalid credentials" });
     } catch (error) {
       console.error("Client login error:", error);
       res.status(500).json({ error: "Login failed" });

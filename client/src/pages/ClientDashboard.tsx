@@ -39,6 +39,7 @@ import { useLocation } from 'wouter';
 import TeamManagement from './TeamManagement';
 import AIFeatures from './AIFeatures';
 import GoogleBusinessSetup from './GoogleBusinessSetup';
+import ServicesManagement from '../components/dashboard/ServicesManagement';
 
 interface Client {
   id: string;
@@ -1209,23 +1210,49 @@ export default function ClientDashboard() {
             )}
 
             {activeView === "services" && (
+              <ServicesManagement 
+                hasPermission={hasPermission}
+                clientId={clientData?.id || "client_1"}
+              />
+            )}
+
+            {activeView === "leads" && (
               <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Services</h2>
-              <Dialog open={isServiceModalOpen} onOpenChange={setIsServiceModalOpen}>
+              <h2 className="text-2xl font-bold">Leads</h2>
+              <Dialog open={isLeadModalOpen} onOpenChange={setIsLeadModalOpen}>
                 <DialogTrigger asChild>
-                  <Button onClick={() => openServiceModal()}>
+                  <Button onClick={() => openLeadModal()}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Service
+                    Add Lead
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
-                    <DialogTitle>{editingService ? 'Edit Service' : 'Add New Service'}</DialogTitle>
+                    <DialogTitle>{editingLead ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="serviceName">Service Name *</Label>
+                      <Label htmlFor="leadName">Name *</Label>
+                      <Input
+                        id="leadName"
+                        value={leadForm.name}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Jane Smith"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="leadEmail">Email *</Label>
+                      <Input
+                        id="leadEmail"
+                        type="email"
+                        value={leadForm.email}
+                        onChange={(e) => setLeadForm(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="jane@example.com"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="leadPhone">Phone</Label>
                       <Input
                         id="serviceName"
                         value={serviceForm.name}

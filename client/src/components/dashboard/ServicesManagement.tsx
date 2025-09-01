@@ -42,7 +42,12 @@ const DURATION_OPTIONS = [
   { value: 360, label: "6 hours" }
 ];
 
-export default function ServicesManagement() {
+interface ServicesManagementProps {
+  hasPermission?: (permission: string) => boolean;
+  clientId?: string;
+}
+
+export default function ServicesManagement({ hasPermission, clientId = "client_1" }: ServicesManagementProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
@@ -51,9 +56,14 @@ export default function ServicesManagement() {
   const { selectedIndustry } = useIndustry();
   const terminology = getTerminology(selectedIndustry.id as any);
 
+  // Permission helper - defaults to full access if no permission function provided
+  const canPerform = (permission: string) => {
+    return hasPermission ? hasPermission(permission) : true;
+  };
+
   const { data: services = [], isLoading } = useQuery<Service[]>({
-    queryKey: ["/api/services"],
-    queryFn: () => apiRequest("GET", "/api/services").then(res => res.json())
+    queryKey: [`/api/client/${clientId}/services`],
+    queryFn: () => apiRequest("GET", `/api/client/${clientId}/services`).then(res => res.json())
   });
 
   const form = useForm<FormData>({
@@ -69,9 +79,9 @@ export default function ServicesManagement() {
 
   const createMutation = useMutation({
     mutationFn: (data: FormData) => 
-      apiRequest("POST", "/api/services", data).then(res => res.json()),
+      apiRequest("POST", `/api/client/${clientId}/services`, data).then(res => res.json()),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/services"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/services`] });
       setIsAddDialogOpen(false);
       form.reset();
       toast({
@@ -79,10 +89,10 @@ export default function ServicesManagement() {
         description: "Successfully added new service"
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to add service",
+        description: error.message || "Failed to add service",
         variant: "destructive"
       });
     }
@@ -90,26 +100,40 @@ export default function ServicesManagement() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: FormData }) =>
-      apiRequest("PUT", `/api/services/${id}`, data).then(res => res.json()),
+      apiRequest("PUT", `/api/client/${clientId}/services/${id}`, data).then(res => res.json()),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/services"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/services`] });
       setEditingService(null);
       form.reset();
       toast({
         title: "Service Updated",
         description: "Successfully updated service"
       });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update service",
+        variant: "destructive"
+      });
     }
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      apiRequest("DELETE", `/api/services/${id}`),
+      apiRequest("DELETE", `/api/client/${clientId}/services/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/services"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/services`] });
       toast({
         title: "Service Removed",
         description: "Service has been removed"
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete service",
+        variant: "destructive"
       });
     }
   });
@@ -168,16 +192,20 @@ export default function ServicesManagement() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Services Management</h2>
           <p className="text-muted-foreground">
-            Manage your services, pricing, and durations
+            {canPerform('services.create') || canPerform('services.edit') 
+              ? "Manage your services, pricing, and durations"
+              : "View services and their details"
+            }
           </p>
         </div>
-        <Dialog open={isAddDialogOpen || !!editingService} onOpenChange={closeDialog}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Service
-            </Button>
-          </DialogTrigger>
+        {canPerform('services.create') && (
+          <Dialog open={isAddDialogOpen || !!editingService} onOpenChange={closeDialog}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Service
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>
@@ -303,7 +331,8 @@ export default function ServicesManagement() {
               </form>
             </Form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -332,21 +361,25 @@ export default function ServicesManagement() {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleEdit(service)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDelete(service.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {canPerform('services.edit') && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleEdit(service)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {canPerform('services.delete') && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDelete(service.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -365,12 +398,17 @@ export default function ServicesManagement() {
               <Scissors className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-medium mb-2">No Services Yet</h3>
               <p className="text-muted-foreground mb-4">
-                Add your first service to start taking bookings
+                {canPerform('services.create') 
+                  ? "Add your first service to start taking bookings"
+                  : "No services have been created yet"
+                }
               </p>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Service
-              </Button>
+              {canPerform('services.create') && (
+                <Button onClick={() => setIsAddDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Service
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
