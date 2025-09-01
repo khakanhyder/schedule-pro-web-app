@@ -24,18 +24,33 @@ export default function TeamLogin() {
 
     try {
       console.log("Attempting team login for:", email);
-      const response = await apiRequest("/api/auth/team-login", "POST", {
-        email,
-        password,
-      }) as any;
+      const response = await fetch("/api/auth/team-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-      console.log("Login response:", response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      if (response && response.teamMember && response.client) {
+      const data = await response.json();
+
+      console.log("Login response:", data);
+      console.log("Response type:", typeof data);
+      console.log("Has teamMember:", !!data?.teamMember);
+      console.log("Has client:", !!data?.client);
+
+      if (data && data.teamMember) {
         // Store team member session data
         const sessionData = {
-          teamMember: response.teamMember,
-          client: response.client,
+          teamMember: data.teamMember,
+          client: data.client || null, // Allow client to be optional for now
           loginTime: new Date().toISOString()
         };
         
@@ -44,7 +59,7 @@ export default function TeamLogin() {
 
         toast({
           title: "Login successful",
-          description: `Welcome back, ${response.teamMember.name}!`,
+          description: `Welcome back, ${data.teamMember.name}!`,
         });
 
         // Use setTimeout to ensure state updates complete before redirect
@@ -52,7 +67,7 @@ export default function TeamLogin() {
           setLocation("/team-dashboard");
         }, 100);
       } else {
-        console.error("Invalid response structure:", response);
+        console.error("Invalid response structure:", data);
         toast({
           title: "Login failed",
           description: "Invalid response from server.",
