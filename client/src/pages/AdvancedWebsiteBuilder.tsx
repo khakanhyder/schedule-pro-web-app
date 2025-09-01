@@ -23,6 +23,18 @@ interface WebsiteSection {
     padding?: 'small' | 'medium' | 'large';
     fontSize?: 'small' | 'medium' | 'large';
   };
+  data?: {
+    phone?: string;
+    email?: string;
+    address?: string;
+    buttonText?: string;
+    buttonLink?: string;
+    items?: Array<{
+      title: string;
+      description: string;
+      price?: string;
+    }>;
+  };
 }
 
 interface WebsiteData {
@@ -122,14 +134,23 @@ export default function AdvancedWebsiteBuilder() {
             type: "hero",
             title: `Welcome to ${clientData.client.businessName}`,
             content: `Professional ${clientData.client.industry.toLowerCase()} services for all your needs.`,
-            settings: { backgroundColor: "#3B82F6", textColor: "#FFFFFF", alignment: "center", padding: "large" }
+            settings: { backgroundColor: "#3B82F6", textColor: "#FFFFFF", alignment: "center", padding: "large" },
+            data: {
+              buttonText: "Book Appointment",
+              buttonLink: "/booking"
+            }
           },
           {
             id: "contact-info",
             type: "contact-info",
             title: "Contact Information",
             content: "Get in touch with us through multiple channels",
-            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "center", padding: "medium" }
+            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "center", padding: "medium" },
+            data: {
+              phone: clientData.client.phone || "555-0101",
+              email: clientData.client.email || "info@business.com",
+              address: clientData.client.businessAddress || "Business Address"
+            }
           },
           {
             id: "services",
@@ -183,7 +204,15 @@ export default function AdvancedWebsiteBuilder() {
         alignment: "left",
         padding: "medium",
         fontSize: "medium"
-      }
+      },
+      data: type === 'contact-info' ? {
+        phone: clientData?.client?.phone || "555-0101",
+        email: clientData?.client?.email || "info@business.com", 
+        address: clientData?.client?.businessAddress || "Business Address"
+      } : type === 'hero' ? {
+        buttonText: "Book Appointment",
+        buttonLink: "/booking"
+      } : undefined
     };
 
     setWebsiteData(prev => ({
@@ -208,6 +237,17 @@ export default function AdvancedWebsiteBuilder() {
       sections: prev.sections.map(section =>
         section.id === id 
           ? { ...section, settings: { ...section.settings, ...settings } }
+          : section
+      )
+    }));
+  };
+
+  const updateSectionData = (id: string, data: Partial<WebsiteSection['data']>) => {
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section =>
+        section.id === id 
+          ? { ...section, data: { ...section.data, ...data } }
           : section
       )
     }));
@@ -440,8 +480,19 @@ export default function AdvancedWebsiteBuilder() {
         {/* Section Editor */}
         {selectedSectionData && (
           <div className="border-t border-gray-200 p-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Edit Section</h3>
-            <div className="space-y-3">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-gray-900">Edit Section</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => deleteSection(selectedSection!)}
+                className="text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
               <div>
                 <Label htmlFor="sectionTitle">Section Title</Label>
                 <Input
@@ -450,6 +501,7 @@ export default function AdvancedWebsiteBuilder() {
                   onChange={(e) => updateSection(selectedSection!, 'title', e.target.value)}
                 />
               </div>
+              
               <div>
                 <Label htmlFor="sectionContent">Content</Label>
                 <Textarea
@@ -459,39 +511,122 @@ export default function AdvancedWebsiteBuilder() {
                   rows={3}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label>Background</Label>
-                  <Input
-                    type="color"
-                    value={selectedSectionData.settings?.backgroundColor || (selectedSectionData.type === 'hero' ? websiteData.primaryColor : '#FFFFFF')}
-                    onChange={(e) => updateSectionSettings(selectedSection!, { backgroundColor: e.target.value })}
-                  />
+
+              {/* Section-specific data fields */}
+              {selectedSectionData.type === 'contact-info' && (
+                <div className="space-y-3 p-3 bg-gray-50 rounded">
+                  <h4 className="font-medium text-sm">Contact Details</h4>
+                  <div>
+                    <Label htmlFor="contact-phone">Phone Number</Label>
+                    <Input
+                      id="contact-phone"
+                      value={selectedSectionData.data?.phone || ""}
+                      onChange={(e) => updateSectionData(selectedSection!, { phone: e.target.value })}
+                      placeholder="555-0101"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact-email">Email Address</Label>
+                    <Input
+                      id="contact-email"
+                      value={selectedSectionData.data?.email || ""}
+                      onChange={(e) => updateSectionData(selectedSection!, { email: e.target.value })}
+                      placeholder="info@business.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="contact-address">Address</Label>
+                    <Textarea
+                      id="contact-address"
+                      value={selectedSectionData.data?.address || ""}
+                      onChange={(e) => updateSectionData(selectedSection!, { address: e.target.value })}
+                      placeholder="123 Main St, City, State"
+                      rows={2}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label>Text Color</Label>
-                  <Input
-                    type="color"
-                    value={selectedSectionData.settings?.textColor || (selectedSectionData.type === 'hero' ? '#FFFFFF' : '#1F2937')}
-                    onChange={(e) => updateSectionSettings(selectedSection!, { textColor: e.target.value })}
-                  />
+              )}
+
+              {selectedSectionData.type === 'hero' && (
+                <div className="space-y-3 p-3 bg-gray-50 rounded">
+                  <h4 className="font-medium text-sm">Call-to-Action Button</h4>
+                  <div>
+                    <Label htmlFor="hero-button-text">Button Text</Label>
+                    <Input
+                      id="hero-button-text"
+                      value={selectedSectionData.data?.buttonText || ""}
+                      onChange={(e) => updateSectionData(selectedSection!, { buttonText: e.target.value })}
+                      placeholder="Book Appointment"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="hero-button-link">Button Link</Label>
+                    <Input
+                      id="hero-button-link"
+                      value={selectedSectionData.data?.buttonLink || ""}
+                      onChange={(e) => updateSectionData(selectedSection!, { buttonLink: e.target.value })}
+                      placeholder="/booking"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <Label>Text Alignment</Label>
-                <Select 
-                  value={selectedSectionData.settings?.alignment || 'left'} 
-                  onValueChange={(value) => updateSectionSettings(selectedSection!, { alignment: value as any })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="left">Left</SelectItem>
-                    <SelectItem value="center">Center</SelectItem>
-                    <SelectItem value="right">Right</SelectItem>
-                  </SelectContent>
-                </Select>
+              )}
+
+              {/* Styling Options */}
+              <div className="space-y-3 p-3 bg-gray-50 rounded">
+                <h4 className="font-medium text-sm">Styling</h4>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label>Background</Label>
+                    <Input
+                      type="color"
+                      value={selectedSectionData.settings?.backgroundColor || (selectedSectionData.type === 'hero' ? websiteData.primaryColor : '#FFFFFF')}
+                      onChange={(e) => updateSectionSettings(selectedSection!, { backgroundColor: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Text Color</Label>
+                    <Input
+                      type="color"
+                      value={selectedSectionData.settings?.textColor || (selectedSectionData.type === 'hero' ? '#FFFFFF' : '#1F2937')}
+                      onChange={(e) => updateSectionSettings(selectedSection!, { textColor: e.target.value })}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label>Text Alignment</Label>
+                  <Select 
+                    value={selectedSectionData.settings?.alignment || 'left'} 
+                    onValueChange={(value) => updateSectionSettings(selectedSection!, { alignment: value as any })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="left">Left</SelectItem>
+                      <SelectItem value="center">Center</SelectItem>
+                      <SelectItem value="right">Right</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Padding</Label>
+                  <Select 
+                    value={selectedSectionData.settings?.padding || 'medium'} 
+                    onValueChange={(value) => updateSectionSettings(selectedSection!, { padding: value as any })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="small">Small</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="large">Large</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </div>
@@ -564,17 +699,17 @@ export default function AdvancedWebsiteBuilder() {
                       <div className="text-center p-4 bg-white bg-opacity-10 rounded">
                         <Phone className="h-8 w-8 mx-auto mb-2" />
                         <h3 className="font-semibold">Call Us</h3>
-                        <p>{clientData?.client?.phone || '555-0101'}</p>
+                        <p>{section.data?.phone || clientData?.client?.phone || '555-0101'}</p>
                       </div>
                       <div className="text-center p-4 bg-white bg-opacity-10 rounded">
                         <Mail className="h-8 w-8 mx-auto mb-2" />
                         <h3 className="font-semibold">Email Us</h3>
-                        <p>{clientData?.client?.email || 'info@business.com'}</p>
+                        <p>{section.data?.email || clientData?.client?.email || 'info@business.com'}</p>
                       </div>
                       <div className="text-center p-4 bg-white bg-opacity-10 rounded">
                         <Layout className="h-8 w-8 mx-auto mb-2" />
                         <h3 className="font-semibold">Visit Us</h3>
-                        <p>{clientData?.client?.businessAddress || 'Business Address'}</p>
+                        <p>{section.data?.address || clientData?.client?.businessAddress || 'Business Address'}</p>
                       </div>
                     </div>
                   </div>

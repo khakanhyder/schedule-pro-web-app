@@ -233,21 +233,21 @@ export default function ClientWebsite() {
                   <CardContent className="p-6 text-center">
                     <Phone className="h-8 w-8 text-blue-600 mx-auto mb-3" />
                     <h3 className="font-semibold mb-2">Call Us</h3>
-                    <p className="text-gray-600">{client.phone || 'Contact for phone'}</p>
+                    <p className="text-gray-600">{section.data?.phone || client.phone || 'Contact for phone'}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-6 text-center">
                     <Mail className="h-8 w-8 text-blue-600 mx-auto mb-3" />
                     <h3 className="font-semibold mb-2">Email Us</h3>
-                    <p className="text-gray-600">{client.email}</p>
+                    <p className="text-gray-600">{section.data?.email || client.email}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-6 text-center">
                     <MapPin className="h-8 w-8 text-blue-600 mx-auto mb-3" />
                     <h3 className="font-semibold mb-2">Visit Us</h3>
-                    <p className="text-gray-600">{client.businessAddress || 'Contact for address'}</p>
+                    <p className="text-gray-600">{section.data?.address || client.businessAddress || 'Contact for address'}</p>
                   </CardContent>
                 </Card>
               </div>
