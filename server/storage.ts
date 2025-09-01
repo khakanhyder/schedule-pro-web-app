@@ -140,9 +140,9 @@ class MemStorage implements IStorage {
 
     await this.createPlan({
       name: "Basic",
-      price: 29.99,
+      price: 15.00,
       billing: "MONTHLY",
-      features: ["1 User", "10GB Storage", "Basic Support"],
+      features: ["1 User", "10GB Storage", "Basic Support", "Online Booking", "Client Management"],
       maxUsers: 1,
       storageGB: 10,
       isActive: true,

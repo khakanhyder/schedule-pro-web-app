@@ -48,6 +48,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // =============================================================================
+  // STRIPE PAYMENT ROUTES
+  // =============================================================================
+  
+  // Create payment intent for plan purchase
+  app.post("/api/payments/create-payment-intent", async (req, res) => {
+    if (!stripe) {
+      return res.status(500).json({ error: "Stripe not configured" });
+    }
+
+    try {
+      const { planId, clientEmail } = req.body;
+      
+      const plan = await storage.getPlan(planId);
+      if (!plan) {
+        return res.status(404).json({ error: "Plan not found" });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(plan.price * 100), // Convert to cents
+        currency: 'usd',
+        metadata: {
+          planId: plan.id,
+          planName: plan.name,
+          clientEmail: clientEmail
+        }
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        planName: plan.name,
+        amount: plan.price
+      });
+    } catch (error) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ error: "Failed to create payment intent" });
+    }
+  });
+
+  // Handle successful payment
+  app.post("/api/payments/confirm", async (req, res) => {
+    try {
+      const { paymentIntentId, clientId } = req.body;
+      
+      if (!stripe) {
+        return res.status(500).json({ error: "Stripe not configured" });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status === 'succeeded') {
+        // Update client status to ACTIVE
+        const planId = paymentIntent.metadata.planId;
+        if (clientId && planId) {
+          await storage.updateClient(clientId, { 
+            status: "ACTIVE", 
+            planId: planId 
+          });
+        }
+        
+        res.json({ success: true, status: paymentIntent.status });
+      } else {
+        res.json({ success: false, status: paymentIntent.status });
+      }
+    } catch (error) {
+      console.error("Error confirming payment:", error);
+      res.status(500).json({ error: "Failed to confirm payment" });
+    }
+  });
+
+  // =============================================================================
   // AUTHENTICATION ROUTES
   // =============================================================================
 
@@ -972,33 +1042,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       
-      // Find team member by email
-      const teamMembers = await storage.getTeamMembers(""); // Get all team members
-      const allTeamMembers = [];
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
       
       // Get team members from all clients
       const clients = await storage.getClients();
+      const allTeamMembers = [];
+      
       for (const client of clients) {
-        const clientTeamMembers = await storage.getTeamMembers(client.id);
-        allTeamMembers.push(...clientTeamMembers);
+        try {
+          const clientTeamMembers = await storage.getTeamMembers(client.id);
+          allTeamMembers.push(...clientTeamMembers);
+        } catch (error) {
+          console.error(`Error fetching team members for client ${client.id}:`, error);
+        }
       }
       
-      const teamMember = allTeamMembers.find(member => member.email === email && member.isActive);
+      console.log(`Found ${allTeamMembers.length} total team members`);
+      console.log(`Looking for team member with email: ${email}`);
+      
+      const teamMember = allTeamMembers.find(member => 
+        member.email === email && member.isActive !== false
+      );
+      
       if (!teamMember) {
+        console.log("Team member not found or inactive");
         return res.status(401).json({ error: "Invalid credentials" });
       }
       
+      console.log(`Found team member: ${teamMember.name} (${teamMember.email})`);
+      
       // Verify password (simple comparison for demo)
       if (teamMember.password !== password) {
+        console.log("Password mismatch");
         return res.status(401).json({ error: "Invalid credentials" });
       }
       
       // Get the client info for the team member
       const client = await storage.getClient(teamMember.clientId);
       if (!client) {
+        console.log(`Client ${teamMember.clientId} not found`);
         return res.status(404).json({ error: "Client not found" });
       }
       
+      console.log("Team login successful");
       res.json({
         teamMember: {
           id: teamMember.id,
