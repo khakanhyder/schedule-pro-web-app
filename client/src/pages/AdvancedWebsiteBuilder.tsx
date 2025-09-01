@@ -1891,6 +1891,46 @@ export default function AdvancedWebsiteBuilder() {
                         </button>
                       </div>
                     )}
+                    
+                    {/* Render section elements */}
+                    {section.columns && section.columns.length > 0 && (
+                      <div className="space-y-4 mt-6">
+                        {section.columns.map((column) => (
+                          <div key={column.id} className="space-y-3">
+                            {column.elements.map((element) => (
+                              <div
+                                key={element.id}
+                                className={`relative group cursor-pointer border-2 border-dashed border-transparent hover:border-blue-300 p-2 rounded transition-all ${
+                                  selectedElement === element.id ? 'border-blue-500 bg-blue-50' : ''
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedElement(element.id);
+                                  setSelectedColumn(column.id);
+                                  setSelectedSection(section.id);
+                                  setEditMode('element');
+                                }}
+                              >
+                                {renderElement(element)}
+                                
+                                {/* Element delete button */}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteElement(section.id, column.id, element.id);
+                                  }}
+                                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-100"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
