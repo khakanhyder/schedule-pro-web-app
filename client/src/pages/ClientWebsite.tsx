@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useParams } from 'wouter';
+import LeadForm from '@/components/LeadForm';
 
 interface Client {
   id: string;
@@ -350,6 +351,18 @@ export default function ClientWebsite() {
                   </div>
                   <Button type="submit" className="w-full">Send Message</Button>
                 </form>
+              </CardContent>
+            </Card>
+          ) : section.type === 'lead-form' ? (
+            <Card>
+              <CardContent className="p-6">
+                <LeadForm
+                  clientId={clientId}
+                  title={section.title}
+                  description={section.content}
+                  buttonText="Get My Quote"
+                  buttonColor={websiteData?.primaryColor || '#10B981'}
+                />
               </CardContent>
             </Card>
           ) : section.type === 'about' ? (

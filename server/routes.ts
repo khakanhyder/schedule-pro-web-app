@@ -1304,6 +1304,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public lead form submission
+  app.post("/api/public/client/:clientId/submit-lead", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { name, email, phone, serviceInterest, estimatedBudget, contactMethod, notes } = req.body;
+      
+      // Validate required fields
+      if (!name || !email) {
+        return res.status(400).json({ error: "Name and email are required" });
+      }
+      
+      // Parse estimated budget if provided
+      let estimatedValue = null;
+      if (estimatedBudget && estimatedBudget.trim()) {
+        const cleanBudget = estimatedBudget.replace(/[^\d.]/g, '');
+        const parsedBudget = parseFloat(cleanBudget);
+        if (!isNaN(parsedBudget)) {
+          estimatedValue = parsedBudget;
+        }
+      }
+      
+      // Create lead from lead form
+      const lead = await storage.createLead({
+        clientId,
+        name,
+        email,
+        phone: phone || "",
+        source: "website-lead-form",
+        status: "NEW",
+        notes: notes || `Contact preference: ${contactMethod || 'Not specified'}`,
+        interestedServices: serviceInterest ? [serviceInterest] : [],
+        estimatedValue,
+        followUpDate: null,
+        convertedToAppointment: false,
+        appointmentId: null
+      });
+      
+      res.json({ message: "Lead submitted successfully! We'll contact you within 24 hours.", leadId: lead.id });
+    } catch (error) {
+      console.error("Error submitting lead form:", error);
+      res.status(500).json({ error: "Failed to submit lead form" });
+    }
+  });
+
   // Public appointment booking
   app.post("/api/public/client/:clientId/book", async (req, res) => {
     try {

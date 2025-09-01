@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Save, Eye, Plus, Trash2, ArrowLeft, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer } from "lucide-react";
+import LeadForm from "@/components/LeadForm";
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -47,7 +48,7 @@ interface WebsiteColumn {
 
 interface WebsiteSection {
   id: string;
-  type: 'hero' | 'about' | 'services' | 'contact-info' | 'contact-form' | 'testimonials' | 'gallery' | 'text' | 'image' | 'columns' | 'spacer';
+  type: 'hero' | 'about' | 'services' | 'contact-info' | 'contact-form' | 'lead-form' | 'testimonials' | 'gallery' | 'text' | 'image' | 'columns' | 'spacer';
   title?: string;
   content?: string;
   columns?: WebsiteColumn[];
@@ -250,6 +251,7 @@ export default function AdvancedWebsiteBuilder() {
       services: { title: "Our Services", content: "Discover what we can do for you." },
       'contact-info': { title: "Contact Information", content: "Get in touch with us through multiple channels." },
       'contact-form': { title: "Contact Form", content: "Send us a message and we'll get back to you soon." },
+      'lead-form': { title: "Get a Quote", content: "Tell us about your needs and we'll contact you with a personalized quote." },
       testimonials: { title: "What Our Clients Say", content: "Read testimonials from our satisfied customers." },
       gallery: { title: "Gallery", content: "View our portfolio and past work." },
       text: { title: "Text Section", content: "Add your custom text content here." },
@@ -992,6 +994,10 @@ export default function AdvancedWebsiteBuilder() {
               <Phone className="h-3 w-3 mr-1" />
               Contact
             </Button>
+            <Button variant="outline" size="sm" onClick={() => addSection('lead-form')}>
+              <Mail className="h-3 w-3 mr-1" />
+              Lead Form
+            </Button>
             <Button variant="outline" size="sm" onClick={() => addSection('image')}>
               <Image className="h-3 w-3 mr-1" />
               Image
@@ -1046,7 +1052,7 @@ export default function AdvancedWebsiteBuilder() {
                     <Input
                       id="sectionTitle"
                       value={getSelectedSection()?.title || ''}
-                      onChange={(e) => updateSection(selectedSection!, { title: e.target.value })}
+                      onChange={(e) => updateSection(selectedSection!, 'title', e.target.value)}
                       placeholder="Section title"
                       className="text-sm"
                     />
@@ -1056,12 +1062,7 @@ export default function AdvancedWebsiteBuilder() {
                     <Input
                       type="color"
                       value={getSelectedSection()?.settings?.backgroundColor || '#FFFFFF'}
-                      onChange={(e) => updateSection(selectedSection!, {
-                        settings: {
-                          ...getSelectedSection()?.settings,
-                          backgroundColor: e.target.value
-                        }
-                      })}
+                      onChange={(e) => updateSectionSettings(selectedSection!, { backgroundColor: e.target.value })}
                       className="h-8"
                     />
                   </div>
@@ -1658,6 +1659,14 @@ export default function AdvancedWebsiteBuilder() {
                       <button className="p-3 bg-blue-600 text-white rounded sm:col-span-2 text-sm font-medium hover:bg-blue-700 transition-colors">Send Message</button>
                     </div>
                   </div>
+                ) : section.type === 'lead-form' ? (
+                  <LeadForm
+                    clientId={clientId}
+                    title={section.title}
+                    description={section.content}
+                    buttonText="Get My Quote"
+                    buttonColor={websiteData.primaryColor}
+                  />
                 ) : section.type === 'testimonials' ? (
                   <div>
                     <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
