@@ -7,7 +7,7 @@ import ClientDashboard from "@/pages/ClientDashboard";
 import ClientLogin from "@/pages/ClientLogin";
 import TeamLogin from "@/pages/TeamLogin";
 import TeamDashboard from "@/pages/TeamDashboard";
-import WebsiteBuilder from "@/pages/SimpleWebsiteBuilder";
+import AdvancedWebsiteBuilder from "@/pages/AdvancedWebsiteBuilder";
 import CheckoutPage from "@/pages/CheckoutPage";
 import ClientWebsite from "@/pages/ClientWebsite";
 import NotFound from "@/pages/not-found";
@@ -41,7 +41,7 @@ function App() {
           <Route path="/team-dashboard" component={TeamDashboard} />
           
           {/* Website Builder */}
-          <Route path="/website-builder" component={WebsiteBuilder} />
+          <Route path="/website-builder" component={AdvancedWebsiteBuilder} />
           
           {/* Checkout */}
           <Route path="/checkout" component={CheckoutPage} />

@@ -1606,10 +1606,19 @@ export default function ClientDashboard() {
                       {websiteSettings.showBooking && <p className="text-xs text-gray-500">✓ Online Booking</p>}
                     </div>
                   </div>
-                  <div className="mt-4 text-center">
+                  <div className="mt-4 text-center space-y-2">
                     <Button variant="outline" onClick={openWebsitePreview}>
                       <ExternalLink className="h-4 w-4 mr-2" />
                       View Full Website
+                    </Button>
+                    <br />
+                    <Button 
+                      variant="default" 
+                      onClick={() => setLocation(`/website-builder?clientId=${clientData?.id}`)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Advanced Website Builder
                     </Button>
                   </div>
                 </CardContent>
