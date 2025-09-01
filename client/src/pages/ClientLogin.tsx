@@ -29,9 +29,14 @@ export default function ClientLogin() {
       return response.json();
     },
     onSuccess: (data) => {
+      // Clear any team member data when business owner logs in
+      localStorage.removeItem('teamMemberSession');
+      localStorage.removeItem('teamMemberContext');
+      
       // Store client login info and redirect to client dashboard
       localStorage.setItem('clientUser', JSON.stringify(data.user));
       localStorage.setItem('clientData', JSON.stringify(data.client));
+      console.log('Business owner login successful, cleared team data:', data);
       setLocation('/client-dashboard');
     },
     onError: (error: Error) => {

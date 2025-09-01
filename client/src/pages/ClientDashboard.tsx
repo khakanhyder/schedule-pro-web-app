@@ -185,9 +185,31 @@ export default function ClientDashboard() {
   });
 
   useEffect(() => {
-    // Check for team member context first
+    // Load client data from localStorage (set during onboarding)
+    const storedClient = localStorage.getItem('clientData');
+    const storedUser = localStorage.getItem('clientUser');
+    
+    if (!storedClient || !storedUser) {
+      setLocation('/client-login');
+      return;
+    }
+    
+    const userData = JSON.parse(storedUser);
+    const clientData = JSON.parse(storedClient);
+    
+    // Check if this is a team member login vs business owner login
     const teamContextData = localStorage.getItem("teamMemberContext");
-    if (teamContextData) {
+    const teamSession = localStorage.getItem("teamMemberSession");
+    
+    // If user has role BUSINESS_OWNER or no team context, they are the business owner
+    if (userData.role === 'BUSINESS_OWNER' || userData.userType === 'BUSINESS_OWNER' || !teamContextData || !teamSession) {
+      // Clear any team member context for business owners
+      localStorage.removeItem("teamMemberContext");
+      localStorage.removeItem("teamMemberSession");
+      setTeamContext(null);
+      console.log("Business owner login detected, clearing team member context");
+    } else if (teamContextData) {
+      // This is a team member - set team context
       try {
         const context = JSON.parse(teamContextData);
         setTeamContext(context);
@@ -201,17 +223,8 @@ export default function ClientDashboard() {
         console.error("Error parsing team context:", error);
       }
     }
-
-    // Load client data from localStorage (set during onboarding)
-    const storedClient = localStorage.getItem('clientData');
-    const storedUser = localStorage.getItem('clientUser');
     
-    if (!storedClient || !storedUser) {
-      setLocation('/client-login');
-      return;
-    }
-    
-    setClientData(JSON.parse(storedClient));
+    setClientData(clientData);
   }, [setLocation]);
 
   const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
@@ -733,7 +746,7 @@ export default function ClientDashboard() {
                       <span className="flex-1 text-left">{item.label}</span>
                     )}
                     {isTeamMember() && isSidebarOpen && (
-                      <Shield className="w-3 h-3 text-blue-500 ml-1" title="Limited Access" />
+                      <Shield className="w-3 h-3 text-blue-500 ml-1" />
                     )}
                   </Button>
                 </li>
