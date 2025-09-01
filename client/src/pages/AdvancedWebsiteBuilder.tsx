@@ -532,11 +532,11 @@ export default function AdvancedWebsiteBuilder() {
     setEditMode('element');
   };
 
-  const updateSection = (id: string, field: keyof WebsiteSection, value: any) => {
+  const updateSection = (id: string, updates: Partial<WebsiteSection>) => {
     setWebsiteData(prev => ({
       ...prev,
       sections: prev.sections.map(section =>
-        section.id === id ? { ...section, [field]: value } : section
+        section.id === id ? { ...section, ...updates } : section
       )
     }));
   };
