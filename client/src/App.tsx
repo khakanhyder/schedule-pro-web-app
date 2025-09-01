@@ -7,7 +7,7 @@ import ClientDashboard from "@/pages/ClientDashboard";
 import ClientLogin from "@/pages/ClientLogin";
 import TeamLogin from "@/pages/TeamLogin";
 import TeamDashboard from "@/pages/TeamDashboard";
-import WebsiteBuilder from "@/pages/WebsiteBuilder";
+import WebsiteBuilder from "@/pages/SimpleWebsiteBuilder";
 import CheckoutPage from "@/pages/CheckoutPage";
 import ClientWebsite from "@/pages/ClientWebsite";
 import NotFound from "@/pages/not-found";

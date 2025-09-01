@@ -229,6 +229,17 @@ class MemStorage implements IStorage {
       category: "Hair"
     });
 
+    // Add sample team member for testing team login
+    await this.createTeamMember({
+      clientId: "client_1",
+      name: "Khisal Test",
+      email: "khisal@test.com",
+      role: "MANAGER",
+      password: "password123",
+      permissions: ["overview.view", "appointments.view", "appointments.create", "appointments.edit", "services.view", "team.view"],
+      isActive: true
+    });
+
     console.log("✅ Sample data initialized for SaaS platform");
   }
 
