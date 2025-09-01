@@ -166,6 +166,8 @@ export default function AdvancedWebsiteBuilder() {
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<'section' | 'column' | 'element'>('section');
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [draggedSection, setDraggedSection] = useState<number | null>(null);
+  const [draggedElement, setDraggedElement] = useState<{ sectionId: string; columnId: string; elementId: string; index: number } | null>(null);
 
   // Initialize with existing website data or create full default structure
   useEffect(() => {
@@ -443,6 +445,90 @@ export default function AdvancedWebsiteBuilder() {
           : section
       )
     }));
+  };
+
+  // Move element function for drag and drop
+  const moveElement = (draggedElement: { sectionId: string; columnId: string; elementId: string; index: number }, targetSectionId: string, targetColumnId: string, targetIndex: number) => {
+    setWebsiteData(prev => {
+      const newSections = [...prev.sections];
+      
+      // Find source section and column
+      const sourceSection = newSections.find(s => s.id === draggedElement.sectionId);
+      const sourceColumn = sourceSection?.columns?.find(c => c.id === draggedElement.columnId);
+      
+      // Find target section and column
+      const targetSection = newSections.find(s => s.id === targetSectionId);
+      const targetColumn = targetSection?.columns?.find(c => c.id === targetColumnId);
+      
+      if (!sourceColumn || !targetColumn) return prev;
+      
+      // Remove element from source
+      const elementToMove = sourceColumn.elements[draggedElement.index];
+      sourceColumn.elements.splice(draggedElement.index, 1);
+      
+      // Add element to target position
+      targetColumn.elements.splice(targetIndex, 0, elementToMove);
+      
+      return { ...prev, sections: newSections };
+    });
+  };
+
+  // Add element to any section (not just columns)
+  const addElementToSection = (sectionId: string, type: WebsiteElement['type']) => {
+    const elementTemplates = {
+      text: { content: 'Your text content here' },
+      button: { content: 'Button Text' },
+      image: { content: '' },
+      spacer: { content: '' }
+    };
+
+    const template = elementTemplates[type];
+    const newElement: WebsiteElement = {
+      id: `element_${Date.now()}`,
+      type,
+      content: template.content,
+      settings: {
+        fontSize: type === 'text' ? '16px' : undefined,
+        textColor: '#1F2937',
+        backgroundColor: type === 'button' ? '#3B82F6' : undefined,
+        padding: type === 'button' ? '12px 24px' : undefined,
+        borderRadius: type === 'button' ? '6px' : undefined,
+        height: type === 'spacer' ? '40px' : undefined
+      }
+    };
+
+    setWebsiteData(prev => ({
+      ...prev,
+      sections: prev.sections.map(section => {
+        if (section.id === sectionId) {
+          // If section doesn't have columns, create a default column
+          if (!section.columns || section.columns.length === 0) {
+            return {
+              ...section,
+              columns: [{
+                id: `column_${Date.now()}`,
+                width: 'auto',
+                elements: [newElement]
+              }]
+            };
+          } else {
+            // Add to first column
+            return {
+              ...section,
+              columns: section.columns.map((column, index) => 
+                index === 0 
+                  ? { ...column, elements: [...column.elements, newElement] }
+                  : column
+              )
+            };
+          }
+        }
+        return section;
+      })
+    }));
+    
+    setSelectedElement(newElement.id);
+    setEditMode('element');
   };
 
   const updateSection = (id: string, field: keyof WebsiteSection, value: any) => {
@@ -763,8 +849,26 @@ export default function AdvancedWebsiteBuilder() {
       case 'button':
         return (
           <button 
-            style={style} 
-            className="inline-block cursor-pointer transition-opacity hover:opacity-80"
+            style={{
+              ...style,
+              backgroundColor: style.backgroundColor || '#3B82F6',
+              color: style.color || '#FFFFFF',
+              padding: style.padding || '12px 24px',
+              borderRadius: style.borderRadius || '6px',
+              border: 'none',
+              cursor: 'pointer'
+            }} 
+            className="inline-block font-medium transition-opacity hover:opacity-90"
+            onClick={(e) => {
+              if (element.settings?.buttonLink) {
+                e.preventDefault();
+                if (element.settings.buttonLink.startsWith('http')) {
+                  window.open(element.settings.buttonLink, '_blank');
+                } else {
+                  window.location.href = element.settings.buttonLink;
+                }
+              }
+            }}
           >
             {element.content || 'Button'}
           </button>
@@ -1036,6 +1140,20 @@ export default function AdvancedWebsiteBuilder() {
                           settings: { ...getSelectedElement()?.settings, backgroundColor: e.target.value }
                         })}
                         className="h-8"
+                      />
+                    </div>
+                  )}
+
+                  {getSelectedElement()?.type === 'button' && (
+                    <div>
+                      <Label>Button Link</Label>
+                      <Input
+                        value={getSelectedElement()?.settings?.buttonLink || ''}
+                        onChange={(e) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                          settings: { ...getSelectedElement()?.settings, buttonLink: e.target.value }
+                        })}
+                        placeholder="/contact or https://example.com"
+                        className="text-sm"
                       />
                     </div>
                   )}
@@ -1470,24 +1588,44 @@ export default function AdvancedWebsiteBuilder() {
                 style={getBackgroundStyle(section.settings)}
                 onClick={() => setSelectedSection(section.id)}
               >
+                {/* Add Elements to Section */}
+                <div className="flex flex-wrap gap-2 mb-4 p-2 bg-gray-50 rounded border-2 border-dashed border-gray-300">
+                  <Button size="sm" variant="outline" onClick={() => addElementToSection(section.id, 'text')} className="text-xs">
+                    <Type className="h-3 w-3 mr-1" />
+                    Text
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => addElementToSection(section.id, 'button')} className="text-xs">
+                    <MousePointer className="h-3 w-3 mr-1" />
+                    Button
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => addElementToSection(section.id, 'image')} className="text-xs">
+                    <Image className="h-3 w-3 mr-1" />
+                    Image
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => addElementToSection(section.id, 'spacer')} className="text-xs">
+                    <Square className="h-3 w-3 mr-1" />
+                    Spacer
+                  </Button>
+                </div>
+
                 {/* Section-specific rendering */}
                 {section.type === 'contact-info' ? (
                   <div>
                     <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
                       {section.title}
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
-                      <div className="text-center p-4 bg-white bg-opacity-10 rounded">
+                    <div className="flex flex-col space-y-4 lg:flex-row lg:space-y-0 lg:space-x-6 lg:justify-center mt-6">
+                      <div className="text-center p-4 bg-white bg-opacity-10 rounded flex-1 lg:max-w-xs">
                         <Phone className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2" />
                         <h3 className="font-semibold text-sm sm:text-base">Call Us</h3>
                         <p className="text-xs sm:text-sm break-all">{section.data?.phone || clientData?.client?.phone || '555-0101'}</p>
                       </div>
-                      <div className="text-center p-4 bg-white bg-opacity-10 rounded">
+                      <div className="text-center p-4 bg-white bg-opacity-10 rounded flex-1 lg:max-w-xs">
                         <Mail className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2" />
                         <h3 className="font-semibold text-sm sm:text-base">Email Us</h3>
                         <p className="text-xs sm:text-sm break-all">{section.data?.email || clientData?.client?.email || 'info@business.com'}</p>
                       </div>
-                      <div className="text-center p-4 bg-white bg-opacity-10 rounded sm:col-span-2 xl:col-span-1">
+                      <div className="text-center p-4 bg-white bg-opacity-10 rounded flex-1 lg:max-w-xs">
                         <Layout className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2" />
                         <h3 className="font-semibold text-sm sm:text-base">Visit Us</h3>
                         <p className="text-xs sm:text-sm break-words">{section.data?.address || clientData?.client?.businessAddress || 'Business Address'}</p>
@@ -1591,9 +1729,32 @@ export default function AdvancedWebsiteBuilder() {
                             {column.elements.map((element, elementIndex) => (
                               <div
                                 key={element.id}
+                                draggable
+                                onDragStart={(e) => {
+                                  setDraggedElement({
+                                    sectionId: section.id,
+                                    columnId: column.id,
+                                    elementId: element.id,
+                                    index: elementIndex
+                                  });
+                                  e.dataTransfer.effectAllowed = 'move';
+                                }}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.dataTransfer.dropEffect = 'move';
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  if (draggedElement && 
+                                      (draggedElement.columnId !== column.id || draggedElement.index !== elementIndex)) {
+                                    // Move element within same column or to different column
+                                    moveElement(draggedElement, section.id, column.id, elementIndex);
+                                  }
+                                  setDraggedElement(null);
+                                }}
                                 className={`group relative cursor-pointer border border-dashed border-transparent hover:border-blue-300 p-2 rounded transition-colors ${
                                   selectedElement === element.id ? 'border-blue-500 bg-blue-50' : ''
-                                }`}
+                                } ${draggedElement?.elementId === element.id ? 'opacity-50' : ''}`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setSelectedElement(element.id);
@@ -1602,7 +1763,12 @@ export default function AdvancedWebsiteBuilder() {
                                   setEditMode('element');
                                 }}
                               >
-                                {renderElement(element)}
+                                <div className="flex items-center gap-2">
+                                  <GripVertical className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 cursor-grab" />
+                                  <div className="flex-1">
+                                    {renderElement(element)}
+                                  </div>
+                                </div>
                                 
                                 {/* Element Controls */}
                                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
