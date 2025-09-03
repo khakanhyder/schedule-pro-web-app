@@ -6,30 +6,50 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Eye, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer } from "lucide-react";
+import { Save, Eye, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer, ChevronLeft, ChevronRight } from "lucide-react";
 import LeadForm from "@/components/LeadForm";
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface WebsiteElement {
   id: string;
-  type: 'text' | 'button' | 'image' | 'spacer';
+  type: 'text' | 'button' | 'image' | 'spacer' | 'reviews';
   content?: string;
   settings?: {
     fontSize?: string;
-    fontWeight?: 'normal' | 'bold';
+    fontWeight?: 'normal' | 'bold' | string;
     textColor?: string;
     backgroundColor?: string;
     padding?: string;
     margin?: string;
     borderRadius?: string;
     alignment?: 'left' | 'center' | 'right';
+    textAlign?: string;
     width?: string;
     height?: string;
     link?: string;
     imageUrl?: string;
     alt?: string;
+    altText?: string;
     buttonLink?: string;
+    hoverColor?: string;
+    display?: string;
+    borderWidth?: string;
+    borderColor?: string;
+    objectFit?: string;
+    mobileFontSize?: string;
+    mobileTextAlign?: string;
+    mobileWidth?: string;
+    mobileHeight?: string;
+    mobileDisplay?: string;
+    reviews?: Array<{
+      id: string;
+      name: string;
+      rating: number;
+      text: string;
+      date?: string;
+    }>;
+    reviewStyle?: 'carousel' | 'grid';
   };
 }
 
@@ -117,6 +137,125 @@ interface ClientData {
     status: string;
     planId: string;
   };
+}
+
+// Reviews Carousel Component
+function ReviewsCarousel({ element }: { element: WebsiteElement }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const reviews = element.settings?.reviews || [];
+  
+  const nextReview = () => {
+    setCurrentIndex((prev) => (prev + 1) % reviews.length);
+  };
+  
+  const prevReview = () => {
+    setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
+  };
+  
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star 
+        key={i} 
+        className={`h-4 w-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+      />
+    ));
+  };
+
+  if (!reviews.length) {
+    return (
+      <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+        <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-600 mb-2">No Reviews Added</h3>
+        <p className="text-sm text-gray-500">Add customer reviews to display here</p>
+      </div>
+    );
+  }
+
+  if (element.settings?.reviewStyle === 'grid') {
+    return (
+      <div className="py-8">
+        <h2 className="text-2xl font-bold text-center mb-8 text-gray-900">
+          {element.content || 'Customer Reviews'}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reviews.map((review) => (
+            <div key={review.id} className="bg-white p-6 rounded-lg shadow-lg border">
+              <div className="flex items-center mb-4">
+                <div className="flex mr-2">
+                  {renderStars(review.rating)}
+                </div>
+                <span className="text-sm text-gray-600">({review.rating}/5)</span>
+              </div>
+              <p className="text-gray-700 mb-4 italic">"{review.text}"</p>
+              <div className="text-right">
+                <p className="font-semibold text-gray-900">{review.name}</p>
+                {review.date && (
+                  <p className="text-sm text-gray-500">{new Date(review.date).toLocaleDateString()}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Carousel view (default)
+  return (
+    <div className="py-8 px-4">
+      <h2 className="text-2xl font-bold text-center mb-8 text-gray-900">
+        {element.content || 'Customer Reviews'}
+      </h2>
+      <div className="max-w-4xl mx-auto relative">
+        <div className="bg-white rounded-xl shadow-xl p-8 text-center min-h-[300px] flex flex-col justify-center">
+          <div className="flex justify-center mb-6">
+            {renderStars(reviews[currentIndex].rating)}
+          </div>
+          <blockquote className="text-xl text-gray-700 mb-6 italic leading-relaxed">
+            "{reviews[currentIndex].text}"
+          </blockquote>
+          <div>
+            <p className="font-bold text-lg text-gray-900">{reviews[currentIndex].name}</p>
+            {reviews[currentIndex].date && (
+              <p className="text-sm text-gray-500 mt-1">
+                {new Date(reviews[currentIndex].date).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        </div>
+        
+        {reviews.length > 1 && (
+          <>
+            <button
+              onClick={prevReview}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors"
+            >
+              <ChevronLeft className="h-6 w-6 text-gray-600" />
+            </button>
+            <button
+              onClick={nextReview}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors"
+            >
+              <ChevronRight className="h-6 w-6 text-gray-600" />
+            </button>
+            
+            {/* Pagination dots */}
+            <div className="flex justify-center mt-6 space-x-2">
+              {reviews.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function AdvancedWebsiteBuilder() {
@@ -347,7 +486,8 @@ export default function AdvancedWebsiteBuilder() {
       text: { content: 'Your text content here' },
       button: { content: 'Button Text' },
       image: { content: '' },
-      spacer: { content: '' }
+      spacer: { content: '' },
+      reviews: { content: 'Customer Reviews' }
     };
 
     const template = elementTemplates[type];
@@ -361,7 +501,31 @@ export default function AdvancedWebsiteBuilder() {
         backgroundColor: type === 'button' ? '#3B82F6' : undefined,
         padding: type === 'button' ? '12px 24px' : undefined,
         borderRadius: type === 'button' ? '6px' : undefined,
-        height: type === 'spacer' ? '40px' : undefined
+        height: type === 'spacer' ? '40px' : undefined,
+        reviews: type === 'reviews' ? [
+          {
+            id: '1',
+            name: 'Sarah Johnson',
+            rating: 5,
+            text: 'Amazing service! Highly recommend to everyone.',
+            date: '2024-01-15'
+          },
+          {
+            id: '2',
+            name: 'Mike Chen',
+            rating: 5,
+            text: 'Professional, reliable, and exceeded expectations.',
+            date: '2024-01-10'
+          },
+          {
+            id: '3',
+            name: 'Lisa Rodriguez',
+            rating: 5,
+            text: 'Outstanding quality and customer service.',
+            date: '2024-01-05'
+          }
+        ] : undefined,
+        reviewStyle: type === 'reviews' ? 'carousel' : undefined
       }
     };
 
@@ -482,7 +646,8 @@ export default function AdvancedWebsiteBuilder() {
       text: { content: 'Your text content here' },
       button: { content: 'Button Text' },
       image: { content: '' },
-      spacer: { content: '' }
+      spacer: { content: '' },
+      reviews: { content: 'Customer Reviews' }
     };
 
     const template = elementTemplates[type];
@@ -496,7 +661,31 @@ export default function AdvancedWebsiteBuilder() {
         backgroundColor: type === 'button' ? '#3B82F6' : undefined,
         padding: type === 'button' ? '12px 24px' : undefined,
         borderRadius: type === 'button' ? '6px' : undefined,
-        height: type === 'spacer' ? '40px' : undefined
+        height: type === 'spacer' ? '40px' : undefined,
+        reviews: type === 'reviews' ? [
+          {
+            id: '1',
+            name: 'Sarah Johnson',
+            rating: 5,
+            text: 'Amazing service! Highly recommend to everyone.',
+            date: '2024-01-15'
+          },
+          {
+            id: '2',
+            name: 'Mike Chen',
+            rating: 5,
+            text: 'Professional, reliable, and exceeded expectations.',
+            date: '2024-01-10'
+          },
+          {
+            id: '3',
+            name: 'Lisa Rodriguez',
+            rating: 5,
+            text: 'Outstanding quality and customer service.',
+            date: '2024-01-05'
+          }
+        ] : undefined,
+        reviewStyle: type === 'reviews' ? 'carousel' : undefined
       }
     };
 
@@ -928,6 +1117,8 @@ export default function AdvancedWebsiteBuilder() {
             className={`w-full ${className}`}
           />
         );
+      case 'reviews':
+        return <ReviewsCarousel element={element} />;
       default:
         return <div style={style} className={className}>Unknown element</div>;
     }
@@ -1570,6 +1761,139 @@ export default function AdvancedWebsiteBuilder() {
                           placeholder="20px"
                           className="text-sm"
                         />
+                      </div>
+                    </div>
+                  )}
+
+                  {getSelectedElement()?.type === 'reviews' && (
+                    <div className="space-y-3 p-3 bg-purple-50 rounded">
+                      <h4 className="text-sm font-medium">Reviews Settings</h4>
+                      <div>
+                        <Label>Display Style</Label>
+                        <Select
+                          value={getSelectedElement()?.settings?.reviewStyle || 'carousel'}
+                          onValueChange={(value) => updateElement(selectedSection, selectedColumn!, selectedElement, {
+                            settings: { ...getSelectedElement()?.settings, reviewStyle: value as 'carousel' | 'grid' }
+                          })}
+                        >
+                          <SelectTrigger className="text-sm">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="carousel">Carousel</SelectItem>
+                            <SelectItem value="grid">Grid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label>Customer Reviews</Label>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              const currentReviews = getSelectedElement()?.settings?.reviews || [];
+                              const newReview = {
+                                id: `review_${Date.now()}`,
+                                name: 'New Customer',
+                                rating: 5,
+                                text: 'Great service!',
+                                date: new Date().toISOString().split('T')[0]
+                              };
+                              updateElement(selectedSection, selectedColumn!, selectedElement, {
+                                settings: { 
+                                  ...getSelectedElement()?.settings, 
+                                  reviews: [...currentReviews, newReview] 
+                                }
+                              });
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add Review
+                          </Button>
+                        </div>
+                        
+                        <div className="max-h-60 overflow-y-auto space-y-3">
+                          {(getSelectedElement()?.settings?.reviews || []).map((review, index) => (
+                            <div key={review.id} className="p-3 bg-white rounded border">
+                              <div className="flex items-center justify-between mb-2">
+                                <Input
+                                  value={review.name}
+                                  onChange={(e) => {
+                                    const updatedReviews = [...(getSelectedElement()?.settings?.reviews || [])];
+                                    updatedReviews[index] = { ...review, name: e.target.value };
+                                    updateElement(selectedSection, selectedColumn!, selectedElement, {
+                                      settings: { ...getSelectedElement()?.settings, reviews: updatedReviews }
+                                    });
+                                  }}
+                                  placeholder="Customer Name"
+                                  className="text-xs"
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    const updatedReviews = (getSelectedElement()?.settings?.reviews || []).filter((_, i) => i !== index);
+                                    updateElement(selectedSection, selectedColumn!, selectedElement, {
+                                      settings: { ...getSelectedElement()?.settings, reviews: updatedReviews }
+                                    });
+                                  }}
+                                  className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 mb-2">
+                                <Select
+                                  value={review.rating.toString()}
+                                  onValueChange={(value) => {
+                                    const updatedReviews = [...(getSelectedElement()?.settings?.reviews || [])];
+                                    updatedReviews[index] = { ...review, rating: parseInt(value) };
+                                    updateElement(selectedSection, selectedColumn!, selectedElement, {
+                                      settings: { ...getSelectedElement()?.settings, reviews: updatedReviews }
+                                    });
+                                  }}
+                                >
+                                  <SelectTrigger className="text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="1">⭐ 1 Star</SelectItem>
+                                    <SelectItem value="2">⭐⭐ 2 Stars</SelectItem>
+                                    <SelectItem value="3">⭐⭐⭐ 3 Stars</SelectItem>
+                                    <SelectItem value="4">⭐⭐⭐⭐ 4 Stars</SelectItem>
+                                    <SelectItem value="5">⭐⭐⭐⭐⭐ 5 Stars</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <Input
+                                  value={review.date || ''}
+                                  onChange={(e) => {
+                                    const updatedReviews = [...(getSelectedElement()?.settings?.reviews || [])];
+                                    updatedReviews[index] = { ...review, date: e.target.value };
+                                    updateElement(selectedSection, selectedColumn!, selectedElement, {
+                                      settings: { ...getSelectedElement()?.settings, reviews: updatedReviews }
+                                    });
+                                  }}
+                                  type="date"
+                                  className="text-xs"
+                                />
+                              </div>
+                              <Textarea
+                                value={review.text}
+                                onChange={(e) => {
+                                  const updatedReviews = [...(getSelectedElement()?.settings?.reviews || [])];
+                                  updatedReviews[index] = { ...review, text: e.target.value };
+                                  updateElement(selectedSection, selectedColumn!, selectedElement, {
+                                    settings: { ...getSelectedElement()?.settings, reviews: updatedReviews }
+                                  });
+                                }}
+                                placeholder="Review text..."
+                                className="text-xs"
+                                rows={2}
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -2227,6 +2551,13 @@ export default function AdvancedWebsiteBuilder() {
                             }} className="text-xs">
                               <Square className="h-3 w-3 mr-1" />
                               Space
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={(e) => {
+                              e.stopPropagation();
+                              addElement(column.id, 'reviews');
+                            }} className="text-xs col-span-2">
+                              <Star className="h-3 w-3 mr-1" />
+                              Reviews
                             </Button>
                           </div>
                         </div>

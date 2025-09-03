@@ -15,7 +15,9 @@ import {
   Mail,
   MapPin,
   Star,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useParams } from 'wouter';
@@ -39,6 +41,132 @@ interface ClientService {
   durationMinutes: number;
   category: string;
   isActive: boolean;
+}
+
+// Reviews Carousel Component for Client Website
+function ReviewsCarousel({ reviews, title, style }: { 
+  reviews: Array<{
+    id: string;
+    name: string;
+    rating: number;
+    text: string;
+    date?: string;
+  }>;
+  title?: string;
+  style?: 'carousel' | 'grid';
+}) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const nextReview = () => {
+    setCurrentIndex((prev) => (prev + 1) % reviews.length);
+  };
+  
+  const prevReview = () => {
+    setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
+  };
+  
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star 
+        key={i} 
+        className={`h-4 w-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+      />
+    ));
+  };
+
+  if (!reviews.length) {
+    return null;
+  }
+
+  if (style === 'grid') {
+    return (
+      <div className="py-8">
+        {title && (
+          <h2 className="text-2xl font-bold text-center mb-8 text-gray-900">
+            {title}
+          </h2>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {reviews.map((review) => (
+            <div key={review.id} className="bg-white p-6 rounded-lg shadow-lg border">
+              <div className="flex items-center mb-4">
+                <div className="flex mr-2">
+                  {renderStars(review.rating)}
+                </div>
+                <span className="text-sm text-gray-600">({review.rating}/5)</span>
+              </div>
+              <p className="text-gray-700 mb-4 italic">"{review.text}"</p>
+              <div className="text-right">
+                <p className="font-semibold text-gray-900">{review.name}</p>
+                {review.date && (
+                  <p className="text-sm text-gray-500">{new Date(review.date).toLocaleDateString()}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Carousel view (default)
+  return (
+    <div className="py-8 px-4">
+      {title && (
+        <h2 className="text-2xl font-bold text-center mb-8 text-gray-900">
+          {title}
+        </h2>
+      )}
+      <div className="max-w-4xl mx-auto relative">
+        <div className="bg-white rounded-xl shadow-xl p-8 text-center min-h-[300px] flex flex-col justify-center">
+          <div className="flex justify-center mb-6">
+            {renderStars(reviews[currentIndex].rating)}
+          </div>
+          <blockquote className="text-xl text-gray-700 mb-6 italic leading-relaxed">
+            "{reviews[currentIndex].text}"
+          </blockquote>
+          <div>
+            <p className="font-bold text-lg text-gray-900">{reviews[currentIndex].name}</p>
+            {reviews[currentIndex].date && (
+              <p className="text-sm text-gray-500 mt-1">
+                {new Date(reviews[currentIndex].date).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        </div>
+        
+        {reviews.length > 1 && (
+          <>
+            <button
+              onClick={prevReview}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors"
+            >
+              <ChevronLeft className="h-6 w-6 text-gray-600" />
+            </button>
+            <button
+              onClick={nextReview}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors"
+            >
+              <ChevronRight className="h-6 w-6 text-gray-600" />
+            </button>
+            
+            {/* Pagination dots */}
+            <div className="flex justify-center mt-6 space-x-2">
+              {reviews.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === currentIndex ? 'bg-blue-500' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function ClientWebsite() {
@@ -386,7 +514,7 @@ export default function ClientWebsite() {
               </CardContent>
             </Card>
           ) : (
-            // Default section rendering
+            // Default section rendering with element support
             <>
               <h2 className={`font-bold mb-4 ${section.type === 'hero' ? 'text-3xl md:text-6xl' : 'text-2xl md:text-3xl'} ${getFontSizeClass(section.settings?.fontSize)}`}>
                 {section.title}
@@ -405,6 +533,105 @@ export default function ClientWebsite() {
                     Book Appointment
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
+                </div>
+              )}
+              
+              {/* Render section columns and elements */}
+              {section.columns && section.columns.length > 0 && (
+                <div className={`grid gap-4 mt-6 ${section.columns.length === 1 ? 'grid-cols-1' : section.columns.length === 2 ? 'grid-cols-1 md:grid-cols-2' : section.columns.length === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+                  {section.columns.map((column: any) => (
+                    <div key={column.id} className="space-y-4">
+                      {column.elements?.map((element: any) => (
+                        <div key={element.id}>
+                          {element.type === 'text' && (
+                            <div 
+                              style={{
+                                fontSize: element.settings?.fontSize,
+                                color: element.settings?.textColor,
+                                backgroundColor: element.settings?.backgroundColor,
+                                padding: element.settings?.padding,
+                                margin: element.settings?.margin,
+                                borderRadius: element.settings?.borderRadius,
+                                textAlign: element.settings?.textAlign as any,
+                                fontWeight: element.settings?.fontWeight
+                              }}
+                              className="whitespace-pre-wrap"
+                            >
+                              {element.content || 'Text element'}
+                            </div>
+                          )}
+                          {element.type === 'button' && (
+                            <Button 
+                              style={{
+                                backgroundColor: element.settings?.backgroundColor || '#3B82F6',
+                                color: element.settings?.textColor || '#FFFFFF',
+                                padding: element.settings?.padding || '12px 24px',
+                                borderRadius: element.settings?.borderRadius || '6px'
+                              }}
+                              onClick={() => {
+                                if (element.settings?.buttonLink) {
+                                  if (element.settings.buttonLink.startsWith('http')) {
+                                    window.open(element.settings.buttonLink, '_blank');
+                                  } else {
+                                    window.location.href = element.settings.buttonLink;
+                                  }
+                                }
+                              }}
+                            >
+                              {element.content || 'Button'}
+                            </Button>
+                          )}
+                          {element.type === 'image' && element.settings?.imageUrl && (
+                            <img 
+                              src={element.settings.imageUrl} 
+                              alt={element.settings?.altText || element.content || ''}
+                              style={{
+                                width: element.settings?.width,
+                                height: element.settings?.height,
+                                borderRadius: element.settings?.borderRadius,
+                                objectFit: element.settings?.objectFit as any || 'cover'
+                              }}
+                              className="max-w-full h-auto"
+                            />
+                          )}
+                          {element.type === 'spacer' && (
+                            <div 
+                              style={{ 
+                                backgroundColor: element.settings?.backgroundColor || 'transparent',
+                                minHeight: element.settings?.height || '40px'
+                              }} 
+                              className="w-full"
+                            />
+                          )}
+                          {element.type === 'reviews' && element.settings?.reviews && (
+                            <ReviewsCarousel 
+                              reviews={element.settings.reviews}
+                              title={element.content}
+                              style={element.settings.reviewStyle}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Render non-column elements directly in section */}
+              {section.elements && section.elements.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  {section.elements.map((element: any) => (
+                    <div key={element.id}>
+                      {element.type === 'reviews' && element.settings?.reviews && (
+                        <ReviewsCarousel 
+                          reviews={element.settings.reviews}
+                          title={element.content}
+                          style={element.settings.reviewStyle}
+                        />
+                      )}
+                      {/* Add other element types as needed */}
+                    </div>
+                  ))}
                 </div>
               )}
             </>
