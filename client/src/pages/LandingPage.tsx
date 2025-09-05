@@ -6,6 +6,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Users, BarChart3, Settings, Shield, Zap, Calendar, MessageCircle, FileText, Globe, Star, ArrowRight, Play } from "lucide-react";
 
+// Import assets
+import gradientBg from "@assets/Group 477_1757064264173.png";
+import step3Frame from "@assets/Frame 47_1757064264174.png";
+import step2Frame from "@assets/Frame 48_1757064264174.png";
+import step1Frame from "@assets/Frame 49_1757064264175.png";
+import checkmarkIcon from "@assets/Subtract_1757064264175.png";
+import heroImage from "@assets/Group 138 (1)_1757064264176.png";
+import ratingStars from "@assets/Group 154_1757064264176.png";
+
 interface Plan {
   id: string;
   name: string;
@@ -98,7 +107,7 @@ export default function LandingPage() {
             <div className="relative">
               <div className="relative">
                 <img 
-                  src="/attached_assets/Group 138 (1)_1757064264176.png" 
+                  src={heroImage} 
                   alt="Professional with business dashboard" 
                   className="w-full h-auto rounded-2xl"
                 />
@@ -150,7 +159,7 @@ export default function LandingPage() {
             <div className="text-center">
               <div className="flex justify-center mb-4">
                 <img 
-                  src="/attached_assets/Frame 49_1757064264175.png" 
+                  src={step1Frame} 
                   alt="Step 1" 
                   className="w-16 h-16"
                 />
@@ -162,7 +171,7 @@ export default function LandingPage() {
             <div className="text-center">
               <div className="flex justify-center mb-4">
                 <img 
-                  src="/attached_assets/Frame 48_1757064264174.png" 
+                  src={step2Frame} 
                   alt="Step 2" 
                   className="w-16 h-16"
                 />
@@ -174,7 +183,7 @@ export default function LandingPage() {
             <div className="text-center">
               <div className="flex justify-center mb-4">
                 <img 
-                  src="/attached_assets/Frame 47_1757064264174.png" 
+                  src={step3Frame} 
                   alt="Step 3" 
                   className="w-16 h-16"
                 />
@@ -263,15 +272,15 @@ export default function LandingPage() {
                 </div>
                 <ul className="space-y-3 text-left mb-8">
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>Get started with messaging</span>
                   </li>
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>Flexible team meetings</span>
                   </li>
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>5 TB cloud storage</span>
                   </li>
                 </ul>
@@ -285,7 +294,7 @@ export default function LandingPage() {
             <Card className="p-8 border-2 border-orange-500 relative bg-gradient-to-b from-orange-50 to-white overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <img 
-                  src="/attached_assets/Group 477_1757064264173.png" 
+                  src={gradientBg} 
                   alt="" 
                   className="w-full h-full object-cover"
                 />
@@ -302,15 +311,15 @@ export default function LandingPage() {
                 </div>
                 <ul className="space-y-3 text-left mb-8">
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>All features in Basic</span>
                   </li>
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>Flexible call scheduling</span>
                   </li>
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>15 TB cloud storage</span>
                   </li>
                 </ul>
@@ -331,15 +340,15 @@ export default function LandingPage() {
                 </div>
                 <ul className="space-y-3 text-left mb-8">
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>All features in Pro</span>
                   </li>
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>Growth tracking & reporting</span>
                   </li>
                   <li className="flex items-center">
-                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
+                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
                     <span>Unlimited cloud storage</span>
                   </li>
                 </ul>
@@ -364,7 +373,7 @@ export default function LandingPage() {
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                   <div className="flex items-center mb-4">
                     <img 
-                      src="/attached_assets/Group 154_1757064264176.png" 
+                      src={ratingStars} 
                       alt="4.9/5 rating" 
                       className="h-8"
                     />
