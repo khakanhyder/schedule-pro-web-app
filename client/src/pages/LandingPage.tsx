@@ -75,9 +75,9 @@ export default function LandingPage() {
             </div>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#" className="text-gray-600 hover:text-gray-900">Features</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">Pricing</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">About</a>
+              <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
+              <a href="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
+              <a href="#footer" className="text-gray-600 hover:text-gray-900">About</a>
               <a href="#" className="text-gray-600 hover:text-gray-900">Contact</a>
             </nav>
             
@@ -154,7 +154,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-white">
+      <section id="how-it-works" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             {/* Left Column */}
@@ -248,7 +248,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50">
+      <section id="features" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Features you can get</h2>
@@ -354,7 +354,11 @@ export default function LandingPage() {
                 </li>
               </ul>
               
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => handleGetStarted('plan_1')}
+              >
                 Signup for free
               </Button>
             </Card>
@@ -408,7 +412,10 @@ export default function LandingPage() {
                   </ul>
                 </div>
                 
-                <Button className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white rounded-xl">
+                <Button 
+                  className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white rounded-xl"
+                  onClick={() => handleGetStarted('plan_2')}
+                >
                   Go to pro
                 </Button>
               </div>
@@ -449,7 +456,11 @@ export default function LandingPage() {
                 </li>
               </ul>
               
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => handleGetStarted('plan_3')}
+              >
                 Goto Business
               </Button>
             </Card>
@@ -458,7 +469,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-blue-400 text-white py-20">
+      <footer id="footer" className="bg-blue-400 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
             {/* Left Column - Testimonials */}
