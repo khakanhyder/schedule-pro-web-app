@@ -325,7 +325,7 @@ export default function LandingPage() {
               <p className="text-sm text-gray-600 mb-8">Have a go and test your<br />superpowers</p>
               
               <div className="mb-8 relative">
-                <span className="text-lg text-gray-400 absolute -top-2 -left-4">$</span>
+                <span className="text-lg text-gray-400 absolute -top-1 -left-2">$</span>
                 <span className="text-5xl font-bold text-gray-900">15</span>
               </div>
               
@@ -369,15 +369,11 @@ export default function LandingPage() {
               ></div>
               
               <div className="relative z-10 p-8">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-orange-500 text-white px-4 py-1 text-xs">Most popular save money</Badge>
-                </div>
-                
-                <h3 className="text-2xl font-bold text-white mb-2 mt-4">Pro</h3>
+                <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
                 <p className="text-sm text-white/90 mb-6">Experiment the power<br />of infinite possibilities</p>
                 
                 <div className="mb-4 relative">
-                  <span className="text-lg text-white/70 absolute -top-2 -left-4">$</span>
+                  <span className="text-lg text-white/70 absolute -top-1 -left-2">$</span>
                   <span className="text-5xl font-bold text-white">30</span>
                 </div>
                 <p className="text-xs text-white/80 mb-8">Save $50 a year</p>
@@ -420,7 +416,7 @@ export default function LandingPage() {
               <p className="text-sm text-gray-600 mb-8">Unveil new superpowers and<br />join the Design Leaque</p>
               
               <div className="mb-8 relative">
-                <span className="text-lg text-gray-400 absolute -top-2 -left-4">$</span>
+                <span className="text-lg text-gray-400 absolute -top-1 -left-2">$</span>
                 <span className="text-5xl font-bold text-gray-900">46</span>
               </div>
               
