@@ -357,44 +357,60 @@ export default function LandingPage() {
             </Card>
 
             {/* Pro Plan - Highlighted */}
-            <Card className="p-8 border-2 border-orange-400 relative bg-gradient-to-b from-orange-100 to-pink-100 text-center transform scale-105">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-orange-500 text-white px-4 py-1 text-xs">Most popular save money</Badge>
+            <Card className="p-0 border-none relative text-center transform scale-105 overflow-hidden rounded-xl">
+              <div 
+                className="absolute inset-0 w-full h-full rounded-xl"
+                style={{
+                  backgroundImage: `url(${gradientBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              ></div>
+              
+              <div className="relative z-10 p-8">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-orange-500 text-white px-4 py-1 text-xs">Most popular save money</Badge>
+                </div>
+                
+                <h3 className="text-2xl font-bold text-white mb-2 mt-4">Pro</h3>
+                <p className="text-sm text-white/90 mb-6">Experiment the power<br />of infinite possibilities</p>
+                
+                <div className="mb-4">
+                  <span className="text-gray-400">$</span>
+                  <span className="text-5xl font-bold text-white">30</span>
+                </div>
+                <p className="text-xs text-white/80 mb-8">Save $50 a year</p>
+                
+                {/* White content box for features */}
+                <div className="bg-white rounded-xl p-6 mb-6">
+                  <ul className="space-y-3 text-left">
+                    <li className="flex items-center">
+                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                      <span className="text-sm text-gray-900">4 Users</span>
+                    </li>
+                    <li className="flex items-center">
+                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                      <span className="text-sm text-gray-900">All apps</span>
+                    </li>
+                    <li className="flex items-center">
+                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                      <span className="text-sm text-gray-900">Unlimited editable exports</span>
+                    </li>
+                    <li className="flex items-center">
+                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                      <span className="text-sm text-gray-900">Folders and collaboration</span>
+                    </li>
+                    <li className="flex items-center">
+                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                      <span className="text-sm text-gray-900">All incoming apps</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <Button className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white rounded-xl">
+                  Go to pro
+                </Button>
               </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 mb-2 mt-4">Pro</h3>
-              <p className="text-sm text-gray-600 mb-8">Experiment the power<br />of infinite possibilities</p>
-              
-              <div className="mb-8">
-                <span className="text-5xl font-bold text-gray-900">30</span>
-              </div>
-              
-              <ul className="space-y-3 text-left mb-8">
-                <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">4 Users</span>
-                </li>
-                <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">All apps</span>
-                </li>
-                <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Unlimited editable exports</span>
-                </li>
-                <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Folders and collaboration</span>
-                </li>
-                <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">All integrations</span>
-                </li>
-              </ul>
-              
-              <Button className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white">
-                Go to pro
-              </Button>
             </Card>
 
             {/* Business Plan */}
