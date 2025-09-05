@@ -303,111 +303,135 @@ export default function LandingPage() {
       <section id="pricing" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Plan</h2>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4">That's Right For You</h3>
-            <p className="text-lg text-gray-600">Choose plan that works best for you, feel free to contact us</p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-2">Choose Plan</h2>
+            <h3 className="text-4xl font-bold text-gray-900 mb-6">That's Right For You</h3>
+            <p className="text-gray-600 mb-8">Choose plan that works best for you, feel free to contact us</p>
             
-            <div className="flex justify-center mt-6 space-x-2">
-              <Button variant="outline" className="px-6">Bill Monthly</Button>
-              <Button className="bg-blue-500 hover:bg-blue-600 text-white px-6">Bill Yearly</Button>
+            {/* Toggle Buttons */}
+            <div className="inline-flex bg-gray-100 rounded-lg p-1 mb-8">
+              <button className="px-6 py-2 rounded-md text-gray-600 hover:text-gray-900">
+                Bil Monthly
+              </button>
+              <button className="px-6 py-2 bg-blue-500 text-white rounded-md">
+                Bil Yearly
+              </button>
             </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Basic Plan */}
-            <Card className="p-8 border border-gray-200">
-              <div className="text-center">
-                <h3 className="text-xl font-semibold mb-2">Basic</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$15</span>
-                  <span className="text-gray-600">/month</span>
-                </div>
-                <ul className="space-y-3 text-left mb-8">
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>Get started with messaging</span>
-                  </li>
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>Flexible team meetings</span>
-                  </li>
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>5 TB cloud storage</span>
-                  </li>
-                </ul>
-                <Button variant="outline" className="w-full">
-                  Start Free Trial
-                </Button>
+            <Card className="p-8 border border-gray-200 text-center">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Basic</h3>
+              <p className="text-sm text-gray-600 mb-8">Have a go and test your<br />superpowers</p>
+              
+              <div className="mb-8">
+                <span className="text-5xl font-bold text-gray-900">15</span>
               </div>
+              
+              <ul className="space-y-3 text-left mb-8">
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">2 Users</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">2 Files</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Public Share & Comments</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Chat Support</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">New income apps</span>
+                </li>
+              </ul>
+              
+              <Button variant="outline" className="w-full">
+                Signup for free
+              </Button>
             </Card>
 
             {/* Pro Plan - Highlighted */}
-            <Card className="p-8 border-2 border-orange-500 relative bg-gradient-to-b from-orange-50 to-white overflow-hidden">
-              <div className="absolute inset-0 opacity-10">
-                <img 
-                  src={gradientBg} 
-                  alt="" 
-                  className="w-full h-full object-cover"
-                />
+            <Card className="p-8 border-2 border-orange-400 relative bg-gradient-to-b from-orange-100 to-pink-100 text-center transform scale-105">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-orange-500 text-white px-4 py-1 text-xs">Most popular save money</Badge>
               </div>
-              <div className="relative z-10">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-orange-500 text-white px-4 py-1">Most Popular</Badge>
-                </div>
-              <div className="text-center">
-                <h3 className="text-xl font-semibold mb-2">Pro</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$30</span>
-                  <span className="text-gray-600">/month</span>
-                </div>
-                <ul className="space-y-3 text-left mb-8">
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>All features in Basic</span>
-                  </li>
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>Flexible call scheduling</span>
-                  </li>
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>15 TB cloud storage</span>
-                  </li>
-                </ul>
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                  Start Free Trial
-                </Button>
+              
+              <h3 className="text-2xl font-bold text-gray-900 mb-2 mt-4">Pro</h3>
+              <p className="text-sm text-gray-600 mb-8">Experiment the power<br />of infinite possibilities</p>
+              
+              <div className="mb-8">
+                <span className="text-5xl font-bold text-gray-900">30</span>
               </div>
-              </div>
+              
+              <ul className="space-y-3 text-left mb-8">
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">4 Users</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">All apps</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Unlimited editable exports</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Folders and collaboration</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">All integrations</span>
+                </li>
+              </ul>
+              
+              <Button className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white">
+                Go to pro
+              </Button>
             </Card>
 
             {/* Business Plan */}
-            <Card className="p-8 border border-gray-200">
-              <div className="text-center">
-                <h3 className="text-xl font-semibold mb-2">Business</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$45</span>
-                  <span className="text-gray-600">/month</span>
-                </div>
-                <ul className="space-y-3 text-left mb-8">
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>All features in Pro</span>
-                  </li>
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>Growth tracking & reporting</span>
-                  </li>
-                  <li className="flex items-center">
-                    <img src={checkmarkIcon} alt="Check" className="w-5 h-5 mr-3" />
-                    <span>Unlimited cloud storage</span>
-                  </li>
-                </ul>
-                <Button variant="outline" className="w-full">
-                  Start Free Trial
-                </Button>
+            <Card className="p-8 border border-gray-200 text-center">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Business</h3>
+              <p className="text-sm text-gray-600 mb-8">Unveil new superpowers and<br />join the Design Leaque</p>
+              
+              <div className="mb-8">
+                <span className="text-5xl font-bold text-gray-900">46</span>
               </div>
+              
+              <ul className="space-y-3 text-left mb-8">
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">All the features of pro plan</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Account success Manager</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Single Sign-On (SSO)</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Co-conception pogram</span>
+                </li>
+                <li className="flex items-center">
+                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
+                  <span className="text-sm">Collaboration-Soon</span>
+                </li>
+              </ul>
+              
+              <Button variant="outline" className="w-full">
+                Goto Business
+              </Button>
             </Card>
           </div>
         </div>
