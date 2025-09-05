@@ -516,3 +516,32 @@ export const insertGoogleBusinessProfileSchema = createInsertSchema(googleBusine
 
 export type InsertGoogleBusinessProfile = z.infer<typeof insertGoogleBusinessProfileSchema>;
 export type GoogleBusinessProfile = typeof googleBusinessProfiles.$inferSelect;
+
+// Review platforms for landing page "How It Works" section
+export const reviewPlatforms = pgTable("landing_review_platforms", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(), // e.g., "Google", "Yelp", "Trust Pilot"
+  displayName: text("display_name").notNull(), // e.g., "Google Reviews"
+  rating: real("rating").notNull(), // e.g., 4.9
+  maxRating: real("max_rating").notNull().default(5), // e.g., 5
+  reviewCount: integer("review_count"), // Optional: number of reviews
+  logoUrl: text("logo_url"), // Optional: logo image URL
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0), // For ordering on frontend
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertReviewPlatformSchema = createInsertSchema(reviewPlatforms).pick({
+  name: true,
+  displayName: true,
+  rating: true,
+  maxRating: true,
+  reviewCount: true,
+  logoUrl: true,
+  isActive: true,
+  sortOrder: true,
+});
+
+export type InsertReviewPlatform = z.infer<typeof insertReviewPlatformSchema>;
+export type ReviewPlatform = typeof reviewPlatforms.$inferSelect;

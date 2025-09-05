@@ -17,7 +17,8 @@ import {
   insertLeadSchema,
   insertClientWebsiteSchema,
   insertAppointmentSlotSchema,
-  insertTeamMemberSchema
+  insertTeamMemberSchema,
+  insertReviewPlatformSchema
 } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 
@@ -273,6 +274,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting plan:", error);
       res.status(500).json({ error: "Failed to delete plan" });
+    }
+  });
+
+  // =============================================================================
+  // SUPER ADMIN ROUTES - Review Platforms Management
+  // =============================================================================
+
+  // Get all review platforms
+  app.get("/api/review-platforms", async (req, res) => {
+    try {
+      const platforms = await storage.getReviewPlatforms();
+      res.json(platforms);
+    } catch (error) {
+      console.error("Error fetching review platforms:", error);
+      res.status(500).json({ error: "Failed to fetch review platforms" });
+    }
+  });
+
+  // Create new review platform
+  app.post("/api/review-platforms", async (req, res) => {
+    try {
+      const platformData = insertReviewPlatformSchema.parse(req.body);
+      const platform = await storage.createReviewPlatform(platformData);
+      res.json(platform);
+    } catch (error) {
+      console.error("Error creating review platform:", error);
+      res.status(500).json({ error: "Failed to create review platform" });
+    }
+  });
+
+  // Update review platform
+  app.put("/api/review-platforms/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const platform = await storage.updateReviewPlatform(id, updates);
+      res.json(platform);
+    } catch (error) {
+      console.error("Error updating review platform:", error);
+      res.status(500).json({ error: "Failed to update review platform" });
+    }
+  });
+
+  // Delete review platform
+  app.delete("/api/review-platforms/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteReviewPlatform(id);
+      res.json({ message: "Review platform deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting review platform:", error);
+      res.status(500).json({ error: "Failed to delete review platform" });
     }
   });
 

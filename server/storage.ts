@@ -12,6 +12,7 @@ import {
   clientWebsites, type ClientWebsite, type InsertClientWebsite,
   appointmentSlots, type AppointmentSlot, type InsertAppointmentSlot,
   teamMembers, type TeamMember, type InsertTeamMember,
+  reviewPlatforms, type ReviewPlatform, type InsertReviewPlatform,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -94,6 +95,13 @@ export interface IStorage {
   createTeamMember(member: InsertTeamMember): Promise<TeamMember>;
   updateTeamMember(id: string, updates: Partial<InsertTeamMember>): Promise<TeamMember>;
   deleteTeamMember(id: string): Promise<void>;
+
+  // Review Platforms (for landing page)
+  getReviewPlatforms(): Promise<ReviewPlatform[]>;
+  getReviewPlatform(id: string): Promise<ReviewPlatform | undefined>;
+  createReviewPlatform(platform: InsertReviewPlatform): Promise<ReviewPlatform>;
+  updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform>;
+  deleteReviewPlatform(id: string): Promise<void>;
 }
 
 // In-memory storage implementation
@@ -131,6 +139,7 @@ class MemStorage implements IStorage {
   ];
   private appointmentSlots: AppointmentSlot[] = [];
   private teamMembers: TeamMember[] = [];
+  private reviewPlatforms: ReviewPlatform[] = [];
 
   constructor() {
     this.initializeData();
@@ -142,6 +151,40 @@ class MemStorage implements IStorage {
       email: "admin@saas.com",
       password: "admin123",
       role: "SUPER_ADMIN"
+    });
+
+    // Create sample review platforms for landing page
+    await this.createReviewPlatform({
+      name: "google",
+      displayName: "Google",
+      rating: 4.9,
+      maxRating: 5,
+      reviewCount: 245,
+      logoUrl: null,
+      isActive: true,
+      sortOrder: 1
+    });
+
+    await this.createReviewPlatform({
+      name: "trustpilot", 
+      displayName: "Trust Pilot",
+      rating: 4.8,
+      maxRating: 5,
+      reviewCount: 189,
+      logoUrl: null,
+      isActive: true,
+      sortOrder: 2
+    });
+
+    await this.createReviewPlatform({
+      name: "yelp",
+      displayName: "Yelp",
+      rating: 4.7,
+      maxRating: 5,
+      reviewCount: 132,
+      logoUrl: null,
+      isActive: true,
+      sortOrder: 3
     });
 
     // Create sample plans
@@ -833,6 +876,51 @@ class MemStorage implements IStorage {
     const index = this.teamMembers.findIndex(member => member.id === id);
     if (index === -1) throw new Error("Team member not found");
     this.teamMembers.splice(index, 1);
+  }
+
+  // Review Platforms methods
+  async getReviewPlatforms(): Promise<ReviewPlatform[]> {
+    return this.reviewPlatforms.filter(platform => platform.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getReviewPlatform(id: string): Promise<ReviewPlatform | undefined> {
+    return this.reviewPlatforms.find(platform => platform.id === id);
+  }
+
+  async createReviewPlatform(platform: InsertReviewPlatform): Promise<ReviewPlatform> {
+    const newPlatform: ReviewPlatform = {
+      id: `review_platform_${this.reviewPlatforms.length + 1}`,
+      name: platform.name,
+      displayName: platform.displayName,
+      rating: platform.rating,
+      maxRating: platform.maxRating || 5,
+      reviewCount: platform.reviewCount || null,
+      logoUrl: platform.logoUrl || null,
+      isActive: platform.isActive ?? true,
+      sortOrder: platform.sortOrder || 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.reviewPlatforms.push(newPlatform);
+    return newPlatform;
+  }
+
+  async updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform> {
+    const index = this.reviewPlatforms.findIndex(platform => platform.id === id);
+    if (index === -1) throw new Error("Review platform not found");
+    
+    this.reviewPlatforms[index] = {
+      ...this.reviewPlatforms[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.reviewPlatforms[index];
+  }
+
+  async deleteReviewPlatform(id: string): Promise<void> {
+    const index = this.reviewPlatforms.findIndex(platform => platform.id === id);
+    if (index === -1) throw new Error("Review platform not found");
+    this.reviewPlatforms.splice(index, 1);
   }
 }
 

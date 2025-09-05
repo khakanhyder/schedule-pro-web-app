@@ -43,6 +43,16 @@ export default function LandingPage() {
     }
   });
 
+  // Fetch review platforms for How It Works section
+  const { data: reviewPlatforms = [] } = useQuery({
+    queryKey: ['/api/review-platforms'],
+    queryFn: async () => {
+      const response = await fetch('/api/review-platforms');
+      if (!response.ok) throw new Error('Failed to fetch review platforms');
+      return response.json();
+    }
+  });
+
   const handleGetStarted = async (planId: string) => {
     try {
       const response = await fetch('/api/onboarding/start', {
@@ -169,33 +179,25 @@ export default function LandingPage() {
               
               {/* Ratings */}
               <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <div className="flex items-center mb-2">
-                    <div className="flex text-yellow-400 mr-2">
-                      <Star className="w-4 h-4 fill-current" />
-                      <Star className="w-4 h-4 fill-current" />
-                      <Star className="w-4 h-4 fill-current" />
-                      <Star className="w-4 h-4 fill-current" />
-                      <Star className="w-4 h-4 fill-current" />
+                {reviewPlatforms.map((platform: any) => (
+                  <div key={platform.id}>
+                    <div className="flex items-center mb-2">
+                      <div className="flex text-yellow-400 mr-2">
+                        {[...Array(Math.floor(platform.rating))].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-current" />
+                        ))}
+                        {platform.rating % 1 !== 0 && (
+                          <Star className="w-4 h-4 fill-current opacity-50" />
+                        )}
+                        {[...Array(platform.maxRating - Math.ceil(platform.rating))].map((_, i) => (
+                          <Star key={`empty-${i}`} className="w-4 h-4 text-gray-300" />
+                        ))}
+                      </div>
                     </div>
+                    <p className="font-semibold text-gray-900">{platform.rating} / {platform.maxRating} rating</p>
+                    <p className="text-sm text-gray-600">{platform.displayName}</p>
                   </div>
-                  <p className="font-semibold text-gray-900">4.9 / 5 rating</p>
-                  <p className="text-sm text-gray-600">Google</p>
-                </div>
-                
-                <div>
-                  <div className="flex items-center mb-2">
-                    <div className="flex text-yellow-400 mr-2">
-                      <Star className="w-4 h-4 fill-current" />
-                      <Star className="w-4 h-4 fill-current" />
-                      <Star className="w-4 h-4 fill-current" />
-                      <Star className="w-4 h-4 fill-current" />
-                      <Star className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <p className="font-semibold text-gray-900">4.8 / 5 rating</p>
-                  <p className="text-sm text-gray-600">Trust Pilot</p>
-                </div>
+                ))}
               </div>
             </div>
 
