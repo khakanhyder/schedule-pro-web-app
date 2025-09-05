@@ -96,32 +96,12 @@ export default function LandingPage() {
             
             {/* Right Column - Hero Image */}
             <div className="relative">
-              <div className="bg-blue-400 rounded-2xl p-8 relative overflow-hidden">
-                {/* Background decorative elements */}
-                <div className="absolute top-4 right-4 w-12 h-12 bg-yellow-400 rounded-full"></div>
-                <div className="absolute top-16 left-4 w-8 h-8 bg-white/30 rounded"></div>
-                <div className="absolute bottom-4 left-8 w-6 h-6 bg-orange-400 rounded-full"></div>
-                
-                {/* Professional person image placeholder */}
-                <div className="relative z-10 flex items-center justify-center">
-                  <div className="w-64 h-80 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-20 h-20 bg-gray-400 rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <Users className="w-10 h-10 text-gray-600" />
-                      </div>
-                      <div className="w-16 h-24 bg-gray-800 rounded mx-auto mb-2"></div>
-                      <p className="text-xs text-gray-500">Professional with tablet</p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Floating UI elements */}
-                <div className="absolute top-8 left-8 bg-white rounded-lg p-2 shadow-lg">
-                  <Calendar className="w-4 h-4 text-blue-500" />
-                </div>
-                <div className="absolute bottom-16 right-8 bg-white rounded-lg p-2 shadow-lg">
-                  <MessageCircle className="w-4 h-4 text-green-500" />
-                </div>
+              <div className="relative">
+                <img 
+                  src="/attached_assets/Group 138 (1)_1757064264176.png" 
+                  alt="Professional with business dashboard" 
+                  className="w-full h-auto rounded-2xl"
+                />
               </div>
             </div>
           </div>
@@ -168,24 +148,36 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                1
+              <div className="flex justify-center mb-4">
+                <img 
+                  src="/attached_assets/Frame 49_1757064264175.png" 
+                  alt="Step 1" 
+                  className="w-16 h-16"
+                />
               </div>
               <h3 className="text-xl font-semibold mb-3">Sign in Register your Account</h3>
               <p className="text-gray-600">Create your account and get started with our intuitive platform in just a few clicks.</p>
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                2
+              <div className="flex justify-center mb-4">
+                <img 
+                  src="/attached_assets/Frame 48_1757064264174.png" 
+                  alt="Step 2" 
+                  className="w-16 h-16"
+                />
               </div>
               <h3 className="text-xl font-semibold mb-3">Set up your projects and Applications</h3>
               <p className="text-gray-600">Configure your workspace, add team members, and set up your first project with our guided setup.</p>
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                3
+              <div className="flex justify-center mb-4">
+                <img 
+                  src="/attached_assets/Frame 47_1757064264174.png" 
+                  alt="Step 3" 
+                  className="w-16 h-16"
+                />
               </div>
               <h3 className="text-xl font-semibold mb-3">Share it with customers & start selling</h3>
               <p className="text-gray-600">Launch your booking system and start accepting appointments from customers right away.</p>
@@ -271,15 +263,15 @@ export default function LandingPage() {
                 </div>
                 <ul className="space-y-3 text-left mb-8">
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>Get started with messaging</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>Flexible team meetings</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>5 TB cloud storage</span>
                   </li>
                 </ul>
@@ -290,10 +282,18 @@ export default function LandingPage() {
             </Card>
 
             {/* Pro Plan - Highlighted */}
-            <Card className="p-8 border-2 border-orange-500 relative bg-gradient-to-b from-orange-50 to-white">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-orange-500 text-white px-4 py-1">Most Popular</Badge>
+            <Card className="p-8 border-2 border-orange-500 relative bg-gradient-to-b from-orange-50 to-white overflow-hidden">
+              <div className="absolute inset-0 opacity-10">
+                <img 
+                  src="/attached_assets/Group 477_1757064264173.png" 
+                  alt="" 
+                  className="w-full h-full object-cover"
+                />
               </div>
+              <div className="relative z-10">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <Badge className="bg-orange-500 text-white px-4 py-1">Most Popular</Badge>
+                </div>
               <div className="text-center">
                 <h3 className="text-xl font-semibold mb-2">Pro</h3>
                 <div className="mb-6">
@@ -302,21 +302,22 @@ export default function LandingPage() {
                 </div>
                 <ul className="space-y-3 text-left mb-8">
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>All features in Basic</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>Flexible call scheduling</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>15 TB cloud storage</span>
                   </li>
                 </ul>
                 <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
                   Start Free Trial
                 </Button>
+              </div>
               </div>
             </Card>
 
@@ -330,15 +331,15 @@ export default function LandingPage() {
                 </div>
                 <ul className="space-y-3 text-left mb-8">
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>All features in Pro</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>Growth tracking & reporting</span>
                   </li>
                   <li className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-3" />
+                    <img src="/attached_assets/Subtract_1757064264175.png" alt="Check" className="w-5 h-5 mr-3" />
                     <span>Unlimited cloud storage</span>
                   </li>
                 </ul>
@@ -362,13 +363,11 @@ export default function LandingPage() {
               <div className="space-y-6">
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                   <div className="flex items-center mb-4">
-                    <div className="flex text-yellow-400">
-                      <Star className="w-5 h-5 fill-current" />
-                      <Star className="w-5 h-5 fill-current" />
-                      <Star className="w-5 h-5 fill-current" />
-                      <Star className="w-5 h-5 fill-current" />
-                      <Star className="w-5 h-5 fill-current" />
-                    </div>
+                    <img 
+                      src="/attached_assets/Group 154_1757064264176.png" 
+                      alt="4.9/5 rating" 
+                      className="h-8"
+                    />
                   </div>
                   <p className="mb-4">"Everything you need to grow your business with advanced features and seamless integration."</p>
                   <div className="flex items-center">
