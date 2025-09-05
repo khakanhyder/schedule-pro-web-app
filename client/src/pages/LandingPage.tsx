@@ -96,11 +96,32 @@ export default function LandingPage() {
             
             {/* Right Column - Hero Image */}
             <div className="relative">
-              <div className="bg-blue-100 rounded-2xl p-8 text-center">
-                <div className="inline-block bg-white rounded-full p-4 mb-4">
-                  <Users className="w-16 h-16 text-blue-500" />
+              <div className="bg-blue-400 rounded-2xl p-8 relative overflow-hidden">
+                {/* Background decorative elements */}
+                <div className="absolute top-4 right-4 w-12 h-12 bg-yellow-400 rounded-full"></div>
+                <div className="absolute top-16 left-4 w-8 h-8 bg-white/30 rounded"></div>
+                <div className="absolute bottom-4 left-8 w-6 h-6 bg-orange-400 rounded-full"></div>
+                
+                {/* Professional person image placeholder */}
+                <div className="relative z-10 flex items-center justify-center">
+                  <div className="w-64 h-80 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-20 h-20 bg-gray-400 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <Users className="w-10 h-10 text-gray-600" />
+                      </div>
+                      <div className="w-16 h-24 bg-gray-800 rounded mx-auto mb-2"></div>
+                      <p className="text-xs text-gray-500">Professional with tablet</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-600">Professional scheduling made simple</p>
+                
+                {/* Floating UI elements */}
+                <div className="absolute top-8 left-8 bg-white rounded-lg p-2 shadow-lg">
+                  <Calendar className="w-4 h-4 text-blue-500" />
+                </div>
+                <div className="absolute bottom-16 right-8 bg-white rounded-lg p-2 shadow-lg">
+                  <MessageCircle className="w-4 h-4 text-green-500" />
+                </div>
               </div>
             </div>
           </div>
@@ -398,6 +419,74 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8">
+            {/* Company Info */}
+            <div>
+              <div className="flex items-center mb-6">
+                <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="ml-3 text-xl font-bold text-gray-900">Scheduled Pro</h3>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Get started with Scheduled Pro today and transform your business operations with our comprehensive platform.
+              </p>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white">
+                Get Started Now
+              </Button>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-4">Support</h4>
+              <ul className="space-y-3 text-gray-600">
+                <li><a href="#" className="hover:text-gray-900">Help Center</a></li>
+                <li><a href="#" className="hover:text-gray-900">Live Chat</a></li>
+                <li><a href="#" className="hover:text-gray-900">Documentation</a></li>
+                <li><a href="#" className="hover:text-gray-900">Community</a></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-4">Company</h4>
+              <ul className="space-y-3 text-gray-600">
+                <li><a href="#" className="hover:text-gray-900">About Us</a></li>
+                <li><a href="#" className="hover:text-gray-900">Careers</a></li>
+                <li><a href="#" className="hover:text-gray-900">Press</a></li>
+                <li><a href="#" className="hover:text-gray-900">Contact</a></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-4">Legal</h4>
+              <ul className="space-y-3 text-gray-600">
+                <li><a href="#" className="hover:text-gray-900">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-gray-900">Terms of Service</a></li>
+                <li><a href="#" className="hover:text-gray-900">Cookie Policy</a></li>
+                <li><a href="#" className="hover:text-gray-900">GDPR</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 mt-12 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="flex items-center space-x-4 text-gray-600">
+                <Globe className="w-5 h-5" />
+                <span>English (United States)</span>
+              </div>
+              <p className="text-gray-600 mt-4 md:mt-0">
+                &copy; 2024 Scheduled Pro. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
