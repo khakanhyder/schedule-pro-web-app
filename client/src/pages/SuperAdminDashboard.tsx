@@ -26,7 +26,9 @@ import {
   UserPlus,
   CreditCard,
   Home,
-  Globe
+  Globe,
+  Star,
+  ExternalLink
 } from "lucide-react";
 
 interface Client {
@@ -90,6 +92,20 @@ export default function SuperAdminDashboard() {
     storageGB: 10
   });
   const [newFeature, setNewFeature] = useState('');
+  
+  // Review platforms state
+  const [editingPlatform, setEditingPlatform] = useState<any>(null);
+  const [showAddPlatformForm, setShowAddPlatformForm] = useState(false);
+  const [platformForm, setPlatformForm] = useState({
+    name: '',
+    displayName: '',
+    rating: 5.0,
+    maxRating: 5,
+    reviewCount: 0,
+    logoUrl: '',
+    isActive: true,
+    sortOrder: 0
+  });
 
   const queryClient = useQueryClient();
 
@@ -114,6 +130,16 @@ export default function SuperAdminDashboard() {
 
   const { data: onboardingSessions = [] } = useQuery<any[]>({
     queryKey: ['/api/onboarding/sessions']
+  });
+
+  // Review platforms query
+  const { data: reviewPlatforms = [], isLoading: reviewPlatformsLoading } = useQuery({
+    queryKey: ['/api/review-platforms'],
+    queryFn: async () => {
+      const response = await fetch('/api/review-platforms');
+      if (!response.ok) throw new Error('Failed to fetch review platforms');
+      return response.json();
+    }
   });
 
   // Mutations for client management
@@ -229,6 +255,54 @@ export default function SuperAdminDashboard() {
     }
   });
 
+  // Review platform mutations
+  const createPlatformMutation = useMutation({
+    mutationFn: async (platformData: typeof platformForm) => {
+      const response = await fetch('/api/review-platforms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(platformData)
+      });
+      if (!response.ok) throw new Error('Failed to create platform');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/review-platforms'] });
+      setShowAddPlatformForm(false);
+      resetPlatformForm();
+    }
+  });
+
+  const updatePlatformMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: typeof platformForm }) => {
+      const response = await fetch(`/api/review-platforms/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update platform');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/review-platforms'] });
+      setEditingPlatform(null);
+      resetPlatformForm();
+    }
+  });
+
+  const deletePlatformMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/review-platforms/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Failed to delete platform');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/review-platforms'] });
+    }
+  });
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     window.location.href = '/admin';
@@ -267,6 +341,43 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  // Review platform helper functions
+  const resetPlatformForm = () => {
+    setPlatformForm({
+      name: '',
+      displayName: '',
+      rating: 5.0,
+      maxRating: 5,
+      reviewCount: 0,
+      logoUrl: '',
+      isActive: true,
+      sortOrder: 0
+    });
+  };
+
+  const handlePlatformSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingPlatform) {
+      updatePlatformMutation.mutate({ id: editingPlatform.id, data: platformForm });
+    } else {
+      createPlatformMutation.mutate(platformForm);
+    }
+  };
+
+  const startEditPlatform = (platform: any) => {
+    setEditingPlatform(platform);
+    setPlatformForm({
+      name: platform.name,
+      displayName: platform.displayName,
+      rating: platform.rating,
+      maxRating: platform.maxRating,
+      reviewCount: platform.reviewCount || 0,
+      logoUrl: platform.logoUrl || '',
+      isActive: platform.isActive,
+      sortOrder: platform.sortOrder
+    });
+  };
+
   const getStatusBadge = (status: string) => {
     const colors = {
       ACTIVE: "bg-green-100 text-green-800",
@@ -283,6 +394,7 @@ export default function SuperAdminDashboard() {
     { id: "plans", label: "Plans", icon: CreditCard },
     { id: "payments", label: "Payments", icon: DollarSign },
     { id: "onboarding", label: "Onboarding", icon: UserPlus },
+    { id: "reviews", label: "Reviews", icon: Star },
   ];
 
   return (
@@ -1322,6 +1434,241 @@ export default function SuperAdminDashboard() {
                         onClick={() => window.open('/onboarding', '_blank')}
                       >
                         Test Onboarding
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {activeView === "reviews" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">Review Platforms Management</h2>
+                    <p className="text-gray-600">Manage Google Reviews, Yelp, Trust Pilot and other review platforms for the landing page</p>
+                  </div>
+                  <Button 
+                    onClick={() => setShowAddPlatformForm(true)} 
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Platform
+                  </Button>
+                </div>
+
+                {/* Add/Edit Form */}
+                {(showAddPlatformForm || editingPlatform) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{editingPlatform ? 'Edit Platform' : 'Add New Platform'}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={handlePlatformSubmit} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="name">Platform Key</Label>
+                            <Input
+                              id="name"
+                              value={platformForm.name}
+                              onChange={(e) => setPlatformForm({ ...platformForm, name: e.target.value })}
+                              placeholder="e.g., google, yelp, trustpilot"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="displayName">Display Name</Label>
+                            <Input
+                              id="displayName"
+                              value={platformForm.displayName}
+                              onChange={(e) => setPlatformForm({ ...platformForm, displayName: e.target.value })}
+                              placeholder="e.g., Google Reviews"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="rating">Current Rating</Label>
+                            <Input
+                              id="rating"
+                              type="number"
+                              step="0.1"
+                              min="0"
+                              max="5"
+                              value={platformForm.rating}
+                              onChange={(e) => setPlatformForm({ ...platformForm, rating: parseFloat(e.target.value) })}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="maxRating">Max Rating</Label>
+                            <Input
+                              id="maxRating"
+                              type="number"
+                              min="1"
+                              max="10"
+                              value={platformForm.maxRating}
+                              onChange={(e) => setPlatformForm({ ...platformForm, maxRating: parseInt(e.target.value) })}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="reviewCount">Review Count</Label>
+                            <Input
+                              id="reviewCount"
+                              type="number"
+                              min="0"
+                              value={platformForm.reviewCount}
+                              onChange={(e) => setPlatformForm({ ...platformForm, reviewCount: parseInt(e.target.value) })}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="logoUrl">Logo URL (Optional)</Label>
+                            <Input
+                              id="logoUrl"
+                              value={platformForm.logoUrl}
+                              onChange={(e) => setPlatformForm({ ...platformForm, logoUrl: e.target.value })}
+                              placeholder="https://example.com/logo.png"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="sortOrder">Sort Order</Label>
+                            <Input
+                              id="sortOrder"
+                              type="number"
+                              min="0"
+                              value={platformForm.sortOrder}
+                              onChange={(e) => setPlatformForm({ ...platformForm, sortOrder: parseInt(e.target.value) })}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Label>
+                            <Input
+                              type="checkbox"
+                              checked={platformForm.isActive}
+                              onChange={(e) => setPlatformForm({ ...platformForm, isActive: e.target.checked })}
+                              className="mr-2"
+                            />
+                            Active (Show on landing page)
+                          </Label>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button type="submit" disabled={createPlatformMutation.isPending || updatePlatformMutation.isPending}>
+                            {editingPlatform ? 'Update' : 'Create'} Platform
+                          </Button>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => {
+                              setShowAddPlatformForm(false);
+                              setEditingPlatform(null);
+                              resetPlatformForm();
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </form>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Platforms List */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Existing Platforms</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {reviewPlatformsLoading ? (
+                      <div className="text-center py-8">Loading platforms...</div>
+                    ) : reviewPlatforms.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Star className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                        <p className="text-gray-600">No review platforms configured yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {reviewPlatforms.map((platform: any) => (
+                          <div key={platform.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center space-x-4">
+                              {platform.logoUrl && (
+                                <img src={platform.logoUrl} alt={platform.displayName} className="w-8 h-8 rounded" />
+                              )}
+                              <div>
+                                <h3 className="font-semibold">{platform.displayName}</h3>
+                                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                  <div className="flex text-yellow-400">
+                                    {[...Array(Math.floor(platform.rating))].map((_, i) => (
+                                      <Star key={i} className="w-3 h-3 fill-current" />
+                                    ))}
+                                    {platform.rating % 1 !== 0 && (
+                                      <Star className="w-3 h-3 fill-current opacity-50" />
+                                    )}
+                                  </div>
+                                  <span>{platform.rating} / {platform.maxRating}</span>
+                                  {platform.reviewCount && <span>• {platform.reviewCount} reviews</span>}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant={platform.isActive ? "default" : "secondary"}>
+                                {platform.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => startEditPlatform(platform)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => deletePlatformMutation.mutate(platform.id)}
+                                disabled={deletePlatformMutation.isPending}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Quick Links */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Quick Links</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                      <Button variant="outline" className="flex items-center gap-2" asChild>
+                        <a href="https://business.google.com" target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4" />
+                          Google Business
+                        </a>
+                      </Button>
+                      <Button variant="outline" className="flex items-center gap-2" asChild>
+                        <a href="https://business.yelp.com" target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4" />
+                          Yelp Business
+                        </a>
+                      </Button>
+                      <Button variant="outline" className="flex items-center gap-2" asChild>
+                        <a href="https://business.trustpilot.com" target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-4 h-4" />
+                          Trustpilot Business
+                        </a>
                       </Button>
                     </div>
                   </CardContent>
