@@ -151,45 +151,92 @@ export default function LandingPage() {
       {/* How It Works Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <img 
-                  src={step1Frame} 
-                  alt="Step 1" 
-                  className="w-16 h-16"
-                />
+          <div className="grid md:grid-cols-2 gap-16 items-start">
+            {/* Left Column */}
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">How It Works</h2>
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                Lorem Ipsum has been the industry's standard dummy text ever since the 
+                1500s, when an unknown printer took a galley of type and scrambled it to 
+                make a type specimen book.
+              </p>
+              
+              {/* Ratings */}
+              <div className="grid grid-cols-2 gap-8">
+                <div>
+                  <div className="flex items-center mb-2">
+                    <div className="flex text-yellow-400 mr-2">
+                      <Star className="w-4 h-4 fill-current" />
+                      <Star className="w-4 h-4 fill-current" />
+                      <Star className="w-4 h-4 fill-current" />
+                      <Star className="w-4 h-4 fill-current" />
+                      <Star className="w-4 h-4 fill-current" />
+                    </div>
+                  </div>
+                  <p className="font-semibold text-gray-900">4.9 / 5 rating</p>
+                  <p className="text-sm text-gray-600">Google</p>
+                </div>
+                
+                <div>
+                  <div className="flex items-center mb-2">
+                    <div className="flex text-yellow-400 mr-2">
+                      <Star className="w-4 h-4 fill-current" />
+                      <Star className="w-4 h-4 fill-current" />
+                      <Star className="w-4 h-4 fill-current" />
+                      <Star className="w-4 h-4 fill-current" />
+                      <Star className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <p className="font-semibold text-gray-900">4.8 / 5 rating</p>
+                  <p className="text-sm text-gray-600">Trust Pilot</p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Sign in Register your Account</h3>
-              <p className="text-gray-600">Create your account and get started with our intuitive platform in just a few clicks.</p>
             </div>
 
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <img 
-                  src={step2Frame} 
-                  alt="Step 2" 
-                  className="w-16 h-16"
-                />
+            {/* Right Column - Steps */}
+            <div className="space-y-8">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 mr-6">
+                  <img 
+                    src={step1Frame} 
+                    alt="Step 1" 
+                    className="w-12 h-12"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">Sign up & Register your business</h3>
+                  <p className="text-gray-600">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Set up your projects and Applications</h3>
-              <p className="text-gray-600">Configure your workspace, add team members, and set up your first project with our guided setup.</p>
-            </div>
 
-            <div className="text-center">
-              <div className="flex justify-center mb-4">
-                <img 
-                  src={step3Frame} 
-                  alt="Step 3" 
-                  className="w-16 h-16"
-                />
+              <div className="flex items-start">
+                <div className="flex-shrink-0 mr-6">
+                  <img 
+                    src={step2Frame} 
+                    alt="Step 2" 
+                    className="w-12 h-12"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">We auto-generate your Appearance</h3>
+                  <p className="text-gray-600">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Share it with customers & start selling</h3>
-              <p className="text-gray-600">Launch your booking system and start accepting appointments from customers right away.</p>
+
+              <div className="flex items-start">
+                <div className="flex-shrink-0 mr-6">
+                  <img 
+                    src={step3Frame} 
+                    alt="Step 3" 
+                    className="w-12 h-12"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">Share it with customers & start selling</h3>
+                  <p className="text-gray-600">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
