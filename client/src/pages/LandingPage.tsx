@@ -14,6 +14,11 @@ import step1Frame from "@assets/Frame 49_1757064264175.png";
 import checkmarkIcon from "@assets/Subtract_1757064264175.png";
 import heroImage from "@assets/Group 138 (1)_1757064264176.png";
 import ratingStars from "@assets/Group 154_1757064264176.png";
+import profile1 from "@assets/Ellipse 54_1757064789129.png";
+import profile2 from "@assets/Ellipse 55_1757064789130.png";
+import profile3 from "@assets/Ellipse 56_1757064789130.png";
+import profile4 from "@assets/Ellipse 57_1757064789131.png";
+import playButton from "@assets/Group 215_1757064789132.png";
 
 interface Plan {
   id: string;
@@ -408,136 +413,146 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-blue-500 text-white">
+      {/* Footer */}
+      <footer className="bg-blue-400 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
             {/* Left Column - Testimonials */}
             <div>
-              <h2 className="text-3xl font-bold mb-8">People are Saying About Scheduled Pro</h2>
+              <h2 className="text-3xl font-bold mb-6">People are Saying About Scheduled Pro</h2>
+              <p className="text-white/90 mb-8 leading-relaxed">
+                Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+              </p>
               
-              <div className="space-y-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-                  <div className="flex items-center mb-4">
-                    <img 
-                      src={ratingStars} 
-                      alt="4.9/5 rating" 
-                      className="h-8"
-                    />
+              <div className="mb-8">
+                <div className="text-6xl text-white/30 mb-4">"</div>
+                <p className="text-lg mb-6 leading-relaxed">
+                  Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                  Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
+                </p>
+                <p className="text-white/80 mb-6">— Ana Zaharija</p>
+                
+                <div className="flex items-center space-x-4">
+                  <div className="flex -space-x-2">
+                    <img src={profile1} alt="Profile 1" className="w-12 h-12 rounded-full border-2 border-white" />
+                    <img src={profile2} alt="Profile 2" className="w-12 h-12 rounded-full border-2 border-white" />
+                    <img src={profile3} alt="Profile 3" className="w-12 h-12 rounded-full border-2 border-white" />
+                    <img src={profile4} alt="Profile 4" className="w-12 h-12 rounded-full border-2 border-white" />
                   </div>
-                  <p className="mb-4">"Everything you need to grow your business with advanced features and seamless integration."</p>
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-white/20 rounded-full mr-3"></div>
-                    <div>
-                      <p className="font-semibold">Sarah Johnson</p>
-                      <p className="text-sm opacity-80">Business Owner</p>
-                    </div>
-                  </div>
+                  <img src={playButton} alt="Play" className="w-12 h-12 cursor-pointer" />
                 </div>
-              </div>
-
-              <div className="flex items-center mt-8 space-x-4">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white"></div>
-                  <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white"></div>
-                  <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white"></div>
-                  <div className="w-8 h-8 bg-white/20 rounded-full border-2 border-white"></div>
-                </div>
-                <p className="text-sm">More than 2000+ teams use our platform</p>
               </div>
             </div>
 
             {/* Right Column - Contact Form */}
-            <div className="bg-white rounded-2xl p-8 text-gray-900">
-              <h3 className="text-2xl font-bold mb-6">Ready to get started?</h3>
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-center mb-8">Get Started</h3>
+              
               <form className="space-y-4">
-                <input 
-                  type="text" 
-                  placeholder="Full Name" 
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input 
-                  type="email" 
-                  placeholder="Email Address" 
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <input 
-                  type="tel" 
-                  placeholder="Phone Number" 
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 text-lg">
-                  Get Started Now
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    className="w-full p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input 
+                    type="email" 
+                    placeholder="Enter your email" 
+                    className="w-full p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Message</label>
+                  <textarea 
+                    placeholder="What are you say ?" 
+                    rows={4}
+                    className="w-full p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  ></textarea>
+                </div>
+                <Button className="w-full bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white py-3 text-lg rounded-lg">
+                  Send Message
                 </Button>
               </form>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            {/* Company Info */}
-            <div>
-              <div className="flex items-center mb-6">
-                <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-white" />
+          {/* Bottom Footer */}
+          <div className="border-t border-white/20 pt-8">
+            <div className="grid md:grid-cols-4 gap-8 mb-8">
+              {/* Company Info */}
+              <div>
+                <div className="flex items-center mb-4">
+                  <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-white" />
+                  </div>
+                  <h4 className="ml-3 text-lg font-bold">Scheduled Pro</h4>
                 </div>
-                <h3 className="ml-3 text-xl font-bold text-gray-900">Scheduled Pro</h3>
+                <p className="text-white/80 text-sm mb-4">
+                  Get started now try our product
+                </p>
+                <div className="flex">
+                  <input 
+                    type="email" 
+                    placeholder="Enter your email here" 
+                    className="flex-1 p-2 rounded-l-lg bg-white/20 text-white placeholder-white/70 focus:outline-none"
+                  />
+                  <Button className="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-r-lg">
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-              <p className="text-gray-600 mb-6">
-                Get started with Scheduled Pro today and transform your business operations with our comprehensive platform.
-              </p>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white">
-                Get Started Now
-              </Button>
-            </div>
 
-            {/* Support */}
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Support</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li><a href="#" className="hover:text-gray-900">Help Center</a></li>
-                <li><a href="#" className="hover:text-gray-900">Live Chat</a></li>
-                <li><a href="#" className="hover:text-gray-900">Documentation</a></li>
-                <li><a href="#" className="hover:text-gray-900">Community</a></li>
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Company</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li><a href="#" className="hover:text-gray-900">About Us</a></li>
-                <li><a href="#" className="hover:text-gray-900">Careers</a></li>
-                <li><a href="#" className="hover:text-gray-900">Press</a></li>
-                <li><a href="#" className="hover:text-gray-900">Contact</a></li>
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Legal</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li><a href="#" className="hover:text-gray-900">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-gray-900">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-gray-900">Cookie Policy</a></li>
-                <li><a href="#" className="hover:text-gray-900">GDPR</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-200 mt-12 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <div className="flex items-center space-x-4 text-gray-600">
-                <Globe className="w-5 h-5" />
-                <span>English (United States)</span>
+              {/* Support */}
+              <div>
+                <h4 className="font-semibold mb-4">Support</h4>
+                <ul className="space-y-2 text-white/80 text-sm">
+                  <li><a href="#" className="hover:text-white">Help Centre</a></li>
+                  <li><a href="#" className="hover:text-white">Account Information</a></li>
+                  <li><a href="#" className="hover:text-white">About</a></li>
+                  <li><a href="#" className="hover:text-white">Contact us</a></li>
+                </ul>
               </div>
-              <p className="text-gray-600 mt-4 md:mt-0">
-                &copy; 2024 Scheduled Pro. All rights reserved.
+
+              {/* Help and Solution */}
+              <div>
+                <h4 className="font-semibold mb-4">Help and Solution</h4>
+                <ul className="space-y-2 text-white/80 text-sm">
+                  <li><a href="#" className="hover:text-white">Talk to support</a></li>
+                  <li><a href="#" className="hover:text-white">Support docs</a></li>
+                  <li><a href="#" className="hover:text-white">System status</a></li>
+                  <li><a href="#" className="hover:text-white">Covid responde</a></li>
+                </ul>
+              </div>
+
+              {/* Product */}
+              <div>
+                <h4 className="font-semibold mb-4">Product</h4>
+                <ul className="space-y-2 text-white/80 text-sm">
+                  <li><a href="#" className="hover:text-white">Update</a></li>
+                  <li><a href="#" className="hover:text-white">Security</a></li>
+                  <li><a href="#" className="hover:text-white">Beta test</a></li>
+                  <li><a href="#" className="hover:text-white">Pricing product</a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-between items-center pt-6 border-t border-white/20">
+              <p className="text-white/60 text-sm">
+                © 2025 Scheduled Pro. Copyright and rights reserved
               </p>
+              <div className="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" className="text-white/60 hover:text-white text-sm">Terms and Conditions</a>
+                <a href="#" className="text-white/60 hover:text-white text-sm">Privacy Policy</a>
+              </div>
             </div>
           </div>
         </div>
