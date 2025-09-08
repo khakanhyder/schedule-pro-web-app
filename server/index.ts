@@ -1,11 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Simple log function (moved from vite.ts to avoid importing Vite)
+const log = (message: string) => {
+  const timestamp = new Date().toISOString();
+  console.log(`${timestamp} ${message}`);
+};
 
 // Health check endpoint - add this early
 app.get('/health', (req: Request, res: Response) => {
@@ -69,13 +73,26 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  // Setup development or production serving
+  if (process.env.NODE_ENV === "development") {
+    // Dynamic import to avoid bundling Vite in production
+    const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    // Production static file serving
+    const path = await import("path");
+    const { fileURLToPath } = await import("url");
+    
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const publicPath = path.join(__dirname, "public");
+    
+    // Serve static files from dist/public
+    app.use(express.static(publicPath));
+    
+    // Catch-all handler for SPA
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(publicPath, "index.html"));
+    });
   }
 
   // ALWAYS serve the app on port 5000
