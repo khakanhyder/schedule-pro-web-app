@@ -3,8 +3,28 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Health check endpoint - add this early
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Root health check fallback
+app.get('/', (req: Request, res: Response, next: NextFunction) => {
+  // If this is a health check request, respond quickly
+  if (req.headers['user-agent']?.includes('curl')) {
+    return res.status(200).json({ status: 'ok' });
+  }
+  // Otherwise, continue with normal routing
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
