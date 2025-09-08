@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import express from "express";
-import { storage } from "./storage";
+// Switch to MongoDB storage
+import { storage } from "./mongodb-storage";
 import { sendEmail } from "./sendgrid";
 import { 
   insertUserSchema,
