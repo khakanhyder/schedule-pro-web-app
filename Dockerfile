@@ -1,12 +1,11 @@
 # Build stage
 FROM node:20-alpine AS builder
-
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies (including devDependencies for build)
 RUN npm ci
 
 # Copy source code
@@ -17,17 +16,13 @@ RUN npm run build
 
 # Production stage
 FROM node:18-alpine AS production
-
 WORKDIR /app
 
-# Install curl for health check
+# Install curl for health check and a static file server
 RUN apk add --no-cache curl
 
-# Copy package files
-COPY package*.json ./
-
-# Install ALL dependencies (including dev dependencies needed for runtime)
-RUN npm ci && npm cache clean --force
+# Install serve globally for serving static files
+RUN npm install -g serve
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
@@ -39,5 +34,5 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/ || exit 1
 
-# Start the application
-CMD ["node", "dist/index.js"]
+# Start the application by serving static files
+CMD ["serve", "-s", "dist", "-l", "5000"]
