@@ -27,11 +27,8 @@ COPY package*.json ./
 # Install only production dependencies
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy built application from builder stage
+# Copy built application from builder stage (includes both server and public assets)
 COPY --from=builder /app/dist ./dist
-
-# Copy any static assets that might be needed
-COPY --from=builder /app/public ./public 2>/dev/null || true
 
 # Expose the port
 EXPOSE 5000
