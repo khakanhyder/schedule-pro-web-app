@@ -14,8 +14,8 @@ COPY . .
 # Build both frontend and backend
 RUN npm run build
 
-# Production stage
-FROM node:18-alpine AS production
+# Production stage  
+FROM node:20-alpine AS production
 WORKDIR /app
 
 # Install curl for health check
@@ -24,11 +24,14 @@ RUN apk add --no-cache curl
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (since we're using --packages=external)
-RUN npm ci && npm cache clean --force
+# Install only production dependencies
+RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
+
+# Copy any static assets that might be needed
+COPY --from=builder /app/public ./public 2>/dev/null || true
 
 # Expose the port
 EXPOSE 5000
