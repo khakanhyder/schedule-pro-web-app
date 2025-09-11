@@ -78,7 +78,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
+              <div className="w-8 h-8 rounded flex items-center justify-center" style={{backgroundColor: '#7CB8EA'}}>
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <h1 className="ml-3 text-xl font-bold text-gray-900">Scheduled Pro</h1>
@@ -113,7 +113,7 @@ export default function LandingPage() {
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                 Take your business to the next level with our comprehensive scheduling and management platform designed for modern entrepreneurs.
               </p>
-              <Button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 text-lg">
+              <Button className="text-white px-8 py-3 text-lg" style={{backgroundColor: '#7CB8EA'}} onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#6BA6E0'} onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#7CB8EA'}>
                 Learn More
               </Button>
             </div>
@@ -255,7 +255,7 @@ export default function LandingPage() {
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Features you can get</h2>
             <p className="text-lg text-gray-600">We offer a variety of interesting features that you can help increase your productivity at work and manage your project easily</p>
-            <Button className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
+            <Button className="mt-4 text-white" style={{backgroundColor: '#7CB8EA'}} onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#6BA6E0'} onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#7CB8EA'}>
               Get Started Free
             </Button>
           </div>
@@ -263,37 +263,37 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature Cards */}
             <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 bg-blue-200 rounded-lg mb-4"></div>
+              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
               <h3 className="text-lg font-semibold mb-2">Appointment Management</h3>
               <p className="text-gray-600 text-sm">Track and manage all your appointments in one centralized location.</p>
             </Card>
 
             <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 bg-blue-200 rounded-lg mb-4"></div>
+              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
               <h3 className="text-lg font-semibold mb-2">Revenue Management</h3>
               <p className="text-gray-600 text-sm">Monitor your business revenue and track financial performance.</p>
             </Card>
 
             <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 bg-blue-200 rounded-lg mb-4"></div>
+              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
               <h3 className="text-lg font-semibold mb-2">Leads Management</h3>
               <p className="text-gray-600 text-sm">Capture and nurture leads to grow your customer base.</p>
             </Card>
 
             <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 bg-blue-200 rounded-lg mb-4"></div>
+              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
               <h3 className="text-lg font-semibold mb-2">Web Page Builder</h3>
               <p className="text-gray-600 text-sm">Create beautiful web pages without any coding knowledge.</p>
             </Card>
 
             <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 bg-blue-200 rounded-lg mb-4"></div>
+              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
               <h3 className="text-lg font-semibold mb-2">Team and Collaboration</h3>
               <p className="text-gray-600 text-sm">Work seamlessly with your team members and collaborate effectively.</p>
             </Card>
 
             <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 bg-blue-200 rounded-lg mb-4"></div>
+              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
               <h3 className="text-lg font-semibold mb-2">All in One Agent</h3>
               <p className="text-gray-600 text-sm">Comprehensive solution that handles all your business needs in one place.</p>
             </Card>
@@ -314,7 +314,7 @@ export default function LandingPage() {
               <button className="px-6 py-2 rounded-md text-gray-600 hover:text-gray-900">
                 Bil Monthly
               </button>
-              <button className="px-6 py-2 bg-blue-500 text-white rounded-md">
+              <button className="px-6 py-2 text-white rounded-md" style={{backgroundColor: '#7CB8EA'}}>
                 Bil Yearly
               </button>
             </div>
@@ -471,7 +471,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer id="footer" className="bg-blue-400 text-white py-20">
+      <footer id="footer" className="text-white py-20" style={{backgroundColor: '#7CB8EA'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
             {/* Left Column - Testimonials */}

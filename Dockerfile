@@ -1,23 +1,21 @@
 # Build stage
-FROM node:18-alpine AS builder
-
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install ALL dependencies (including devDependencies for build)
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build both frontend and backend
 RUN npm run build
 
-# Production stage
-FROM node:18-alpine AS production
-
+# Production stage  
+FROM node:20-alpine AS production
 WORKDIR /app
 
 # Install curl for health check
@@ -26,10 +24,10 @@ RUN apk add --no-cache curl
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including dev dependencies needed for runtime)
+# Install all dependencies (since we're using --packages=external)
 RUN npm ci && npm cache clean --force
 
-# Copy built application from builder stage
+# Copy built application from builder stage (includes both server and public assets)
 COPY --from=builder /app/dist ./dist
 
 # Expose the port
@@ -37,7 +35,7 @@ EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/ || exit 1
+    CMD curl -f http://localhost:5000/api/health || curl -f http://localhost:5000/ || exit 1
 
 # Start the application
-CMD ["node", "dist/index.js"]
+CMD ["npm", "start"]
