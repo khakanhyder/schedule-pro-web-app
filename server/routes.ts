@@ -18,7 +18,9 @@ import {
   insertClientWebsiteSchema,
   insertAppointmentSlotSchema,
   insertTeamMemberSchema,
-  insertReviewPlatformSchema
+  insertReviewPlatformSchema,
+  insertDomainConfigurationSchema,
+  insertDomainVerificationLogSchema
 } from "@shared/schema";
 import { v4 as uuidv4 } from "uuid";
 
@@ -1535,6 +1537,181 @@ Email: ${client.email}
     } catch (error) {
       console.error("Error booking appointment:", error);
       res.status(500).json({ error: "Failed to book appointment" });
+    }
+  });
+
+  // =============================================================================
+  // Domain Configuration Management
+  // =============================================================================
+
+  // Get domain configurations for a client
+  app.get("/api/clients/:clientId/domains", requirePermission("domains.view"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const domains = await storage.getDomainConfigurations(clientId);
+      res.json(domains);
+    } catch (error) {
+      console.error("Error fetching domain configurations:", error);
+      res.status(500).json({ error: "Failed to fetch domain configurations" });
+    }
+  });
+
+  // Get a specific domain configuration
+  app.get("/api/domains/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const domain = await storage.getDomainConfiguration(id);
+      if (!domain) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+      res.json(domain);
+    } catch (error) {
+      console.error("Error fetching domain configuration:", error);
+      res.status(500).json({ error: "Failed to fetch domain configuration" });
+    }
+  });
+
+  // Create domain configuration
+  app.post("/api/clients/:clientId/domains", requirePermission("domains.create"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const domainData = insertDomainConfigurationSchema.parse({
+        ...req.body,
+        clientId
+      });
+      
+      // Check if domain already exists
+      const existingDomain = await storage.getDomainConfigurationByDomain(domainData.domain);
+      if (existingDomain) {
+        return res.status(400).json({ error: "Domain already configured" });
+      }
+
+      const domain = await storage.createDomainConfiguration(domainData);
+      res.json(domain);
+    } catch (error) {
+      console.error("Error creating domain configuration:", error);
+      res.status(500).json({ error: "Failed to create domain configuration" });
+    }
+  });
+
+  // Update domain configuration
+  app.put("/api/domains/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // First get the domain to ensure it exists and get clientId for permission check
+      const existingDomain = await storage.getDomainConfiguration(id);
+      if (!existingDomain) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+
+      // Check permissions manually by creating a modified request
+      const permissionCheck = await requirePermission("domains.edit")(
+        { ...req, params: { ...req.params, clientId: existingDomain.clientId } }, 
+        res, 
+        () => {}
+      );
+
+      if (res.headersSent) {
+        return; // Permission check failed and response was sent
+      }
+
+      const updates = insertDomainConfigurationSchema.partial().parse(req.body);
+      const domain = await storage.updateDomainConfiguration(id, updates);
+      res.json(domain);
+    } catch (error) {
+      console.error("Error updating domain configuration:", error);
+      res.status(500).json({ error: "Failed to update domain configuration" });
+    }
+  });
+
+  // Delete domain configuration
+  app.delete("/api/domains/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // First get the domain to ensure it exists and get clientId for permission check
+      const existingDomain = await storage.getDomainConfiguration(id);
+      if (!existingDomain) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+
+      // Check permissions manually by creating a modified request
+      const permissionCheck = await requirePermission("domains.delete")(
+        { ...req, params: { ...req.params, clientId: existingDomain.clientId } }, 
+        res, 
+        () => {}
+      );
+
+      if (res.headersSent) {
+        return; // Permission check failed and response was sent
+      }
+
+      await storage.deleteDomainConfiguration(id);
+      res.json({ message: "Domain configuration deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting domain configuration:", error);
+      res.status(500).json({ error: "Failed to delete domain configuration" });
+    }
+  });
+
+  // Verify domain
+  app.post("/api/domains/:id/verify", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // First get the domain to ensure it exists and get clientId for permission check
+      const existingDomain = await storage.getDomainConfiguration(id);
+      if (!existingDomain) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+
+      // Check permissions manually by creating a modified request
+      const permissionCheck = await requirePermission("domains.edit")(
+        { ...req, params: { ...req.params, clientId: existingDomain.clientId } }, 
+        res, 
+        () => {}
+      );
+
+      if (res.headersSent) {
+        return; // Permission check failed and response was sent
+      }
+
+      const domain = await storage.verifyDomain(id);
+      res.json(domain);
+    } catch (error) {
+      console.error("Error verifying domain:", error);
+      res.status(500).json({ error: "Failed to verify domain" });
+    }
+  });
+
+  // Get domain verification logs
+  app.get("/api/domains/:id/logs", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // First get the domain to ensure it exists and get clientId for permission check
+      const existingDomain = await storage.getDomainConfiguration(id);
+      if (!existingDomain) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+
+      // Check permissions manually by creating a modified request
+      const permissionCheck = await requirePermission("domains.view")(
+        { ...req, params: { ...req.params, clientId: existingDomain.clientId } }, 
+        res, 
+        () => {}
+      );
+
+      if (res.headersSent) {
+        return; // Permission check failed and response was sent
+      }
+
+      const logs = await storage.getDomainVerificationLogs(id);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching domain verification logs:", error);
+      res.status(500).json({ error: "Failed to fetch domain verification logs" });
     }
   });
 
