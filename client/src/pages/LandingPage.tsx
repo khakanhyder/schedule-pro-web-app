@@ -359,63 +359,63 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-white">
+      <section id="pricing" className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-2">Choose Plan</h2>
-            <h3 className="text-4xl font-bold text-gray-900 mb-6">That's Right For You</h3>
-            <p className="text-gray-600 mb-8">Choose plan that works best for you, feel free to contact us</p>
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Choose Plan</h2>
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">That's Right For You</h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">Choose plan that works best for you, feel free to contact us</p>
             
             {/* Toggle Buttons */}
-            <div className="inline-flex bg-gray-100 rounded-lg p-1 mb-8">
-              <button className="px-6 py-2 rounded-md text-gray-600 hover:text-gray-900">
+            <div className="inline-flex bg-gray-100 rounded-lg p-1 mb-6 sm:mb-8">
+              <button className="px-4 sm:px-6 py-2 rounded-md text-gray-600 hover:text-gray-900 text-sm sm:text-base">
                 Bil Monthly
               </button>
-              <button className="px-6 py-2 text-white rounded-md" style={{backgroundColor: '#7CB8EA'}}>
+              <button className="px-4 sm:px-6 py-2 text-white rounded-md text-sm sm:text-base" style={{backgroundColor: '#7CB8EA'}}>
                 Bil Yearly
               </button>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
             {/* Basic Plan */}
-            <Card className="p-8 border border-gray-200 text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Basic</h3>
-              <p className="text-sm text-gray-600 mb-8">Have a go and test your<br />superpowers</p>
+            <Card className="p-4 sm:p-6 lg:p-8 border border-gray-200 text-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Basic</h3>
+              <p className="text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8">Have a go and test your superpowers</p>
               
-              <div className="mb-8">
+              <div className="mb-6 sm:mb-8">
                 <div className="relative inline-block">
-                  <span className="text-5xl font-bold text-gray-900">15</span>
-                  <span className="text-sm text-gray-400 absolute top-2 -left-3">$</span>
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">15</span>
+                  <span className="text-xs sm:text-sm text-gray-400 absolute top-1 sm:top-2 -left-2 sm:-left-3">$</span>
                 </div>
               </div>
               
-              <ul className="space-y-3 text-left mb-8">
+              <ul className="space-y-2 sm:space-y-3 text-left mb-6 sm:mb-8">
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">2 Users</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">2 Users</span>
                 </li>
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">2 Files</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">2 Files</span>
                 </li>
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Public Share & Comments</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">Public Share & Comments</span>
                 </li>
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Chat Support</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">Chat Support</span>
                 </li>
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">New income apps</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">New income apps</span>
                 </li>
               </ul>
               
               <Button 
                 variant="outline" 
-                className="w-full"
+                className="w-full text-sm sm:text-base py-2 sm:py-3"
                 onClick={() => handleGetStarted('plan_1')}
               >
                 Signup for free
@@ -423,7 +423,7 @@ export default function LandingPage() {
             </Card>
 
             {/* Pro Plan - Highlighted */}
-            <Card className="p-0 border-none relative text-center transform scale-105 overflow-hidden rounded-xl">
+            <Card className="p-0 border-none relative text-center md:transform md:scale-105 overflow-hidden rounded-xl">
               <div 
                 className="absolute inset-0 w-full h-full rounded-xl"
                 style={{
@@ -433,46 +433,46 @@ export default function LandingPage() {
                 }}
               ></div>
               
-              <div className="relative z-10 p-8">
-                <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
-                <p className="text-sm text-white/90 mb-6">Experiment the power<br />of infinite possibilities</p>
+              <div className="relative z-10 p-4 sm:p-6 lg:p-8">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Pro</h3>
+                <p className="text-xs sm:text-sm text-white/90 mb-4 sm:mb-6">Experiment the power of infinite possibilities</p>
                 
-                <div className="mb-4">
+                <div className="mb-3 sm:mb-4">
                   <div className="relative inline-block">
-                    <span className="text-5xl font-bold text-white">30</span>
-                    <span className="text-sm text-white/80 absolute top-2 -left-3">$</span>
+                    <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">30</span>
+                    <span className="text-xs sm:text-sm text-white/80 absolute top-1 sm:top-2 -left-2 sm:-left-3">$</span>
                   </div>
                 </div>
-                <p className="text-xs text-white/80 mb-8">Save $50 a year</p>
+                <p className="text-xs text-white/80 mb-6 sm:mb-8">Save $50 a year</p>
                 
                 {/* White content box for features */}
-                <div className="bg-white rounded-xl p-6 mb-6">
-                  <ul className="space-y-3 text-left">
+                <div className="bg-white rounded-xl p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
+                  <ul className="space-y-2 sm:space-y-3 text-left">
                     <li className="flex items-center">
-                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                      <span className="text-sm text-gray-900">4 Users</span>
+                      <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                      <span className="text-xs sm:text-sm text-gray-900">4 Users</span>
                     </li>
                     <li className="flex items-center">
-                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                      <span className="text-sm text-gray-900">All apps</span>
+                      <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                      <span className="text-xs sm:text-sm text-gray-900">All apps</span>
                     </li>
                     <li className="flex items-center">
-                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                      <span className="text-sm text-gray-900">Unlimited editable exports</span>
+                      <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                      <span className="text-xs sm:text-sm text-gray-900">Unlimited editable exports</span>
                     </li>
                     <li className="flex items-center">
-                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                      <span className="text-sm text-gray-900">Folders and collaboration</span>
+                      <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                      <span className="text-xs sm:text-sm text-gray-900">Folders and collaboration</span>
                     </li>
                     <li className="flex items-center">
-                      <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                      <span className="text-sm text-gray-900">All incoming apps</span>
+                      <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                      <span className="text-xs sm:text-sm text-gray-900">All incoming apps</span>
                     </li>
                   </ul>
                 </div>
                 
                 <Button 
-                  className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white rounded-xl"
+                  className="w-full bg-gradient-to-r from-orange-400 to-pink-400 hover:from-orange-500 hover:to-pink-500 text-white rounded-xl text-sm sm:text-base py-2 sm:py-3"
                   onClick={() => handleGetStarted('plan_2')}
                 >
                   Go to pro
@@ -481,43 +481,43 @@ export default function LandingPage() {
             </Card>
 
             {/* Business Plan */}
-            <Card className="p-8 border border-gray-200 text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Business</h3>
-              <p className="text-sm text-gray-600 mb-8">Unveil new superpowers and<br />join the Design Leaque</p>
+            <Card className="p-4 sm:p-6 lg:p-8 border border-gray-200 text-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Business</h3>
+              <p className="text-xs sm:text-sm text-gray-600 mb-6 sm:mb-8">Unveil new superpowers and join the Design League</p>
               
-              <div className="mb-8">
+              <div className="mb-6 sm:mb-8">
                 <div className="relative inline-block">
-                  <span className="text-5xl font-bold text-gray-900">46</span>
-                  <span className="text-sm text-gray-400 absolute top-2 -left-3">$</span>
+                  <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">46</span>
+                  <span className="text-xs sm:text-sm text-gray-400 absolute top-1 sm:top-2 -left-2 sm:-left-3">$</span>
                 </div>
               </div>
               
-              <ul className="space-y-3 text-left mb-8">
+              <ul className="space-y-2 sm:space-y-3 text-left mb-6 sm:mb-8">
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">All the features of pro plan</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">All the features of pro plan</span>
                 </li>
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Account success Manager</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">Account success Manager</span>
                 </li>
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Single Sign-On (SSO)</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">Single Sign-On (SSO)</span>
                 </li>
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Co-conception pogram</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">Co-conception program</span>
                 </li>
                 <li className="flex items-center">
-                  <img src={checkmarkIcon} alt="Check" className="w-4 h-4 mr-3" />
-                  <span className="text-sm">Collaboration-Soon</span>
+                  <img src={checkmarkIcon} alt="Check" className="w-3 h-3 sm:w-4 sm:h-4 mr-2 sm:mr-3" />
+                  <span className="text-xs sm:text-sm">Collaboration-Soon</span>
                 </li>
               </ul>
               
               <Button 
                 variant="outline" 
-                className="w-full"
+                className="w-full text-sm sm:text-base py-2 sm:py-3"
                 onClick={() => handleGetStarted('plan_3')}
               >
                 Goto Business
