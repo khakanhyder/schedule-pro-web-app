@@ -618,3 +618,26 @@ export const insertDomainVerificationLogSchema = createInsertSchema(domainVerifi
 
 export type InsertDomainVerificationLog = z.infer<typeof insertDomainVerificationLogSchema>;
 export type DomainVerificationLog = typeof domainVerificationLogs.$inferSelect;
+
+// Stylist schema (for beauty industry specific features)
+export const stylists = pgTable("stylists", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  specializations: text("specializations").array().default([]),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertStylistSchema = createInsertSchema(stylists).pick({
+  clientId: true,
+  name: true,
+  email: true,
+  specializations: true,
+  isActive: true,
+});
+
+export type InsertStylist = z.infer<typeof insertStylistSchema>;
+export type Stylist = typeof stylists.$inferSelect;
