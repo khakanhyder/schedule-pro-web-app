@@ -216,13 +216,13 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-white">
+      <section id="how-it-works" className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-16 items-start">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-start">
             {/* Left Column */}
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">How It Works</h2>
-              <p className="text-gray-600 mb-8 leading-relaxed">
+            <div className="text-center md:text-left">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 md:mb-6">How It Works</h2>
+              <p className="text-gray-600 mb-6 md:mb-8 leading-relaxed text-sm sm:text-base">
                 Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
                 Lorem Ipsum has been the industry's standard dummy text ever since the 
                 1500s, when an unknown printer took a galley of type and scrambled it to 
@@ -230,10 +230,10 @@ export default function LandingPage() {
               </p>
               
               {/* Ratings */}
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-8">
                 {reviewPlatforms.map((platform: any) => (
-                  <div key={platform.id}>
-                    <div className="flex items-center mb-2">
+                  <div key={platform.id} className="text-center md:text-left">
+                    <div className="flex items-center justify-center md:justify-start mb-2">
                       <div className="flex text-yellow-400 mr-2">
                         {[...Array(Math.floor(platform.rating))].map((_, i) => (
                           <Star key={i} className="w-4 h-4 fill-current" />
@@ -246,54 +246,54 @@ export default function LandingPage() {
                         ))}
                       </div>
                     </div>
-                    <p className="font-semibold text-gray-900">{platform.rating} / {platform.maxRating} rating</p>
-                    <p className="text-sm text-gray-600">{platform.displayName}</p>
+                    <p className="font-semibold text-gray-900 text-sm sm:text-base">{platform.rating} / {platform.maxRating} rating</p>
+                    <p className="text-xs sm:text-sm text-gray-600">{platform.displayName}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Right Column - Steps */}
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8 mt-8 md:mt-0">
               <div className="flex items-start">
-                <div className="flex-shrink-0 mr-6">
+                <div className="flex-shrink-0 mr-4 md:mr-6">
                   <img 
                     src={step1Frame} 
                     alt="Step 1" 
-                    className="w-12 h-12"
+                    className="w-10 h-10 md:w-12 md:h-12"
                   />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">Sign up & Register your business</h3>
-                  <p className="text-gray-600">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+                  <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-900">Sign up & Register your business</h3>
+                  <p className="text-gray-600 text-sm md:text-base">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
                 </div>
               </div>
 
               <div className="flex items-start">
-                <div className="flex-shrink-0 mr-6">
+                <div className="flex-shrink-0 mr-4 md:mr-6">
                   <img 
                     src={step2Frame} 
                     alt="Step 2" 
-                    className="w-12 h-12"
+                    className="w-10 h-10 md:w-12 md:h-12"
                   />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">We auto-generate your Appearance</h3>
-                  <p className="text-gray-600">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+                  <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-900">We auto-generate your Appearance</h3>
+                  <p className="text-gray-600 text-sm md:text-base">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
                 </div>
               </div>
 
               <div className="flex items-start">
-                <div className="flex-shrink-0 mr-6">
+                <div className="flex-shrink-0 mr-4 md:mr-6">
                   <img 
                     src={step3Frame} 
                     alt="Step 3" 
-                    className="w-12 h-12"
+                    className="w-10 h-10 md:w-12 md:h-12"
                   />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">Share it with customers & start selling</h3>
-                  <p className="text-gray-600">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
+                  <h3 className="text-lg md:text-xl font-semibold mb-2 text-gray-900">Share it with customers & start selling</h3>
+                  <p className="text-gray-600 text-sm md:text-base">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
                 </div>
               </div>
             </div>
@@ -302,52 +302,57 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-gray-50">
+      <section id="features" className="py-12 sm:py-16 lg:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Features you can get</h2>
-            <p className="text-lg text-gray-600">We offer a variety of interesting features that you can help increase your productivity at work and manage your project easily</p>
-            <Button className="mt-4 text-white" style={{backgroundColor: '#7CB8EA'}} onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#6BA6E0'} onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#7CB8EA'}>
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Our Features you can get</h2>
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-3xl mx-auto mb-4 sm:mb-6">We offer a variety of interesting features that you can help increase your productivity at work and manage your project easily</p>
+            <Button 
+              className="mt-2 sm:mt-4 text-white px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base w-full sm:w-auto" 
+              style={{backgroundColor: '#7CB8EA'}} 
+              onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#6BA6E0'} 
+              onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#7CB8EA'}
+            >
               Get Started Free
             </Button>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Feature Cards */}
-            <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
-              <h3 className="text-lg font-semibold mb-2">Appointment Management</h3>
-              <p className="text-gray-600 text-sm">Track and manage all your appointments in one centralized location.</p>
+            <Card className="p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-full h-24 sm:h-32 rounded-lg mb-3 sm:mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Appointment Management</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">Track and manage all your appointments in one centralized location.</p>
             </Card>
 
-            <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
-              <h3 className="text-lg font-semibold mb-2">Revenue Management</h3>
-              <p className="text-gray-600 text-sm">Monitor your business revenue and track financial performance.</p>
+            <Card className="p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-full h-24 sm:h-32 rounded-lg mb-3 sm:mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Revenue Management</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">Monitor your business revenue and track financial performance.</p>
             </Card>
 
-            <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
-              <h3 className="text-lg font-semibold mb-2">Leads Management</h3>
-              <p className="text-gray-600 text-sm">Capture and nurture leads to grow your customer base.</p>
+            <Card className="p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-full h-24 sm:h-32 rounded-lg mb-3 sm:mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Leads Management</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">Capture and nurture leads to grow your customer base.</p>
             </Card>
 
-            <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
-              <h3 className="text-lg font-semibold mb-2">Web Page Builder</h3>
-              <p className="text-gray-600 text-sm">Create beautiful web pages without any coding knowledge.</p>
+            <Card className="p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-full h-24 sm:h-32 rounded-lg mb-3 sm:mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Web Page Builder</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">Create beautiful web pages without any coding knowledge.</p>
             </Card>
 
-            <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
-              <h3 className="text-lg font-semibold mb-2">Team and Collaboration</h3>
-              <p className="text-gray-600 text-sm">Work seamlessly with your team members and collaborate effectively.</p>
+            <Card className="p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-full h-24 sm:h-32 rounded-lg mb-3 sm:mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Team and Collaboration</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">Work seamlessly with your team members and collaborate effectively.</p>
             </Card>
 
-            <Card className="p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-full h-32 rounded-lg mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
-              <h3 className="text-lg font-semibold mb-2">All in One Agent</h3>
-              <p className="text-gray-600 text-sm">Comprehensive solution that handles all your business needs in one place.</p>
+            <Card className="p-4 sm:p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+              <div className="w-full h-24 sm:h-32 rounded-lg mb-3 sm:mb-4" style={{backgroundColor: '#D6E9F7'}}></div>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">All in One Agent</h3>
+              <p className="text-gray-600 text-xs sm:text-sm">Comprehensive solution that handles all your business needs in one place.</p>
             </Card>
           </div>
         </div>
