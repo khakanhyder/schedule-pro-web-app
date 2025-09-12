@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Users, BarChart3, Settings, Shield, Zap, Calendar, MessageCircle, FileText, Globe, Star, ArrowRight, Play } from "lucide-react";
+import { CheckCircle, Users, BarChart3, Settings, Shield, Zap, Calendar, MessageCircle, FileText, Globe, Star, ArrowRight, Play, Menu, X } from "lucide-react";
 
 // Import assets
 import gradientBg from "@assets/Group 477_1757064264173.png";
@@ -33,6 +33,7 @@ interface Plan {
 
 export default function LandingPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { data: plans = [], isLoading } = useQuery<Plan[]>({
     queryKey: ['/api/public/plans'],
@@ -74,29 +75,75 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-3 md:py-4">
             <div className="flex items-center">
               <div className="w-8 h-8 rounded flex items-center justify-center" style={{backgroundColor: '#7CB8EA'}}>
                 <Calendar className="w-5 h-5 text-white" />
               </div>
-              <h1 className="ml-3 text-xl font-bold text-gray-900">Scheduled Pro</h1>
+              <h1 className="ml-3 text-lg md:text-xl font-bold text-gray-900">Scheduled Pro</h1>
             </div>
             
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</a>
-              <a href="#footer" className="text-gray-600 hover:text-gray-900">About</a>
-              <a href="#" className="text-gray-600 hover:text-gray-900">Contact</a>
+              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
+              <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">Pricing</a>
+              <a href="#footer" className="text-gray-600 hover:text-gray-900 transition-colors">About</a>
+              <a href="#contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</a>
             </nav>
             
-            <div className="flex items-center space-x-4">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white px-6">
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white px-4 md:px-6 py-2 text-sm md:text-base">
                 Get Started
               </Button>
+              
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                aria-label="Toggle mobile menu"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </div>
+          
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 py-4">
+              <nav className="flex flex-col space-y-4">
+                <a 
+                  href="#features" 
+                  className="text-gray-600 hover:text-gray-900 transition-colors px-2 py-1"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Features
+                </a>
+                <a 
+                  href="#pricing" 
+                  className="text-gray-600 hover:text-gray-900 transition-colors px-2 py-1"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Pricing
+                </a>
+                <a 
+                  href="#footer" 
+                  className="text-gray-600 hover:text-gray-900 transition-colors px-2 py-1"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  About
+                </a>
+                <a 
+                  href="#contact" 
+                  className="text-gray-600 hover:text-gray-900 transition-colors px-2 py-1"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contact
+                </a>
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
