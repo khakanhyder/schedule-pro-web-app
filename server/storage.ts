@@ -13,6 +13,8 @@ import {
   appointmentSlots, type AppointmentSlot, type InsertAppointmentSlot,
   teamMembers, type TeamMember, type InsertTeamMember,
   reviewPlatforms, type ReviewPlatform, type InsertReviewPlatform,
+  domainConfigurations, type DomainConfiguration, type InsertDomainConfiguration,
+  domainVerificationLogs, type DomainVerificationLog, type InsertDomainVerificationLog,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -102,6 +104,19 @@ export interface IStorage {
   createReviewPlatform(platform: InsertReviewPlatform): Promise<ReviewPlatform>;
   updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform>;
   deleteReviewPlatform(id: string): Promise<void>;
+
+  // Domain Configurations
+  getDomainConfigurations(clientId: string): Promise<DomainConfiguration[]>;
+  getDomainConfiguration(id: string): Promise<DomainConfiguration | undefined>;
+  getDomainConfigurationByDomain(domain: string): Promise<DomainConfiguration | undefined>;
+  createDomainConfiguration(domain: InsertDomainConfiguration): Promise<DomainConfiguration>;
+  updateDomainConfiguration(id: string, updates: Partial<InsertDomainConfiguration>): Promise<DomainConfiguration>;
+  deleteDomainConfiguration(id: string): Promise<void>;
+  verifyDomain(id: string): Promise<DomainConfiguration>;
+
+  // Domain Verification Logs
+  getDomainVerificationLogs(domainConfigId: string): Promise<DomainVerificationLog[]>;
+  createDomainVerificationLog(log: InsertDomainVerificationLog): Promise<DomainVerificationLog>;
 }
 
 // In-memory storage implementation
@@ -140,6 +155,8 @@ class MemStorage implements IStorage {
   private appointmentSlots: AppointmentSlot[] = [];
   private teamMembers: TeamMember[] = [];
   private reviewPlatforms: ReviewPlatform[] = [];
+  private domainConfigurations: DomainConfiguration[] = [];
+  private domainVerificationLogs: DomainVerificationLog[] = [];
 
   constructor() {
     this.initializeData();
@@ -880,7 +897,7 @@ class MemStorage implements IStorage {
 
   // Review Platforms methods
   async getReviewPlatforms(): Promise<ReviewPlatform[]> {
-    return this.reviewPlatforms.filter(platform => platform.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
+    return this.reviewPlatforms.filter(platform => platform.isActive).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   }
 
   async getReviewPlatform(id: string): Promise<ReviewPlatform | undefined> {
@@ -921,6 +938,142 @@ class MemStorage implements IStorage {
     const index = this.reviewPlatforms.findIndex(platform => platform.id === id);
     if (index === -1) throw new Error("Review platform not found");
     this.reviewPlatforms.splice(index, 1);
+  }
+
+  // Domain Configuration methods
+  async getDomainConfigurations(clientId: string): Promise<DomainConfiguration[]> {
+    return this.domainConfigurations.filter(d => d.clientId === clientId);
+  }
+
+  async getDomainConfiguration(id: string): Promise<DomainConfiguration | undefined> {
+    return this.domainConfigurations.find(d => d.id === id);
+  }
+
+  async getDomainConfigurationByDomain(domain: string): Promise<DomainConfiguration | undefined> {
+    return this.domainConfigurations.find(d => d.domain === domain);
+  }
+
+  async createDomainConfiguration(domainConfig: InsertDomainConfiguration): Promise<DomainConfiguration> {
+    const newDomainConfig: DomainConfiguration = {
+      id: `domain_${this.domainConfigurations.length + 1}`,
+      clientId: domainConfig.clientId,
+      domainType: domainConfig.domainType,
+      domain: domainConfig.domain,
+      subdomain: domainConfig.subdomain || null,
+      isActive: domainConfig.isActive ?? false,
+      verificationStatus: domainConfig.verificationStatus || "PENDING",
+      verificationToken: this.generateVerificationToken(),
+      verificationMethod: domainConfig.verificationMethod || "DNS_TXT",
+      sslStatus: domainConfig.sslStatus || "PENDING",
+      sslCertificateId: domainConfig.sslCertificateId || null,
+      sslIssuedAt: domainConfig.sslIssuedAt || null,
+      sslExpiresAt: domainConfig.sslExpiresAt || null,
+      dnsRecords: domainConfig.dnsRecords || this.generateDnsRecords(domainConfig.domain),
+      redirectToHttps: domainConfig.redirectToHttps ?? true,
+      customSettings: domainConfig.customSettings || null,
+      lastCheckedAt: null,
+      verifiedAt: domainConfig.verifiedAt || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.domainConfigurations.push(newDomainConfig);
+    return newDomainConfig;
+  }
+
+  async updateDomainConfiguration(id: string, updates: Partial<InsertDomainConfiguration>): Promise<DomainConfiguration> {
+    const index = this.domainConfigurations.findIndex(d => d.id === id);
+    if (index === -1) throw new Error("Domain configuration not found");
+    
+    this.domainConfigurations[index] = {
+      ...this.domainConfigurations[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.domainConfigurations[index];
+  }
+
+  async deleteDomainConfiguration(id: string): Promise<void> {
+    const index = this.domainConfigurations.findIndex(d => d.id === id);
+    if (index === -1) throw new Error("Domain configuration not found");
+    this.domainConfigurations.splice(index, 1);
+  }
+
+  async verifyDomain(id: string): Promise<DomainConfiguration> {
+    const domain = await this.getDomainConfiguration(id);
+    if (!domain) throw new Error("Domain configuration not found");
+
+    // Simulate domain verification (in production, this would check DNS records)
+    const verificationSuccess = Math.random() > 0.3; // 70% success rate for demo
+
+    if (verificationSuccess) {
+      return this.updateDomainConfiguration(id, {
+        verificationStatus: "VERIFIED",
+        isActive: true,
+        verifiedAt: new Date(),
+        lastCheckedAt: new Date()
+      });
+    } else {
+      await this.createDomainVerificationLog({
+        domainConfigId: id,
+        verificationAttempt: 1,
+        verificationMethod: domain.verificationMethod,
+        status: "FAILED",
+        errorMessage: "DNS TXT record not found or invalid",
+        verificationData: JSON.stringify({
+          expected: domain.verificationToken,
+          found: null
+        }),
+        responseTime: 3000
+      });
+
+      return this.updateDomainConfiguration(id, {
+        verificationStatus: "FAILED",
+        lastCheckedAt: new Date()
+      });
+    }
+  }
+
+  // Domain Verification Log methods
+  async getDomainVerificationLogs(domainConfigId: string): Promise<DomainVerificationLog[]> {
+    return this.domainVerificationLogs.filter(l => l.domainConfigId === domainConfigId);
+  }
+
+  async createDomainVerificationLog(log: InsertDomainVerificationLog): Promise<DomainVerificationLog> {
+    const newLog: DomainVerificationLog = {
+      id: `log_${this.domainVerificationLogs.length + 1}`,
+      domainConfigId: log.domainConfigId,
+      verificationAttempt: log.verificationAttempt || 1,
+      verificationMethod: log.verificationMethod,
+      status: log.status,
+      errorMessage: log.errorMessage || null,
+      verificationData: log.verificationData || null,
+      responseTime: log.responseTime || null,
+      createdAt: new Date()
+    };
+    this.domainVerificationLogs.push(newLog);
+    return newLog;
+  }
+
+  // Helper methods for domain functionality
+  private generateVerificationToken(): string {
+    return `verify-domain-${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+  }
+
+  private generateDnsRecords(domain: string): string {
+    return JSON.stringify([
+      {
+        type: "TXT",
+        name: `_scheduled-verification.${domain}`,
+        value: this.generateVerificationToken(),
+        ttl: 300
+      },
+      {
+        type: "CNAME",
+        name: domain,
+        value: "scheduled-platform.com",
+        ttl: 300
+      }
+    ]);
   }
 }
 
