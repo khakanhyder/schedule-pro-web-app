@@ -16,6 +16,7 @@ import {
   domainConfigurations, type DomainConfiguration, type InsertDomainConfiguration,
   domainVerificationLogs, type DomainVerificationLog, type InsertDomainVerificationLog,
 } from "@shared/schema";
+import { dnsVerificationService } from "./dns-verification";
 
 export interface IStorage {
   // Authentication & Users
@@ -1002,28 +1003,68 @@ class MemStorage implements IStorage {
     const domain = await this.getDomainConfiguration(id);
     if (!domain) throw new Error("Domain configuration not found");
 
-    // Simulate domain verification (in production, this would check DNS records)
-    const verificationSuccess = Math.random() > 0.3; // 70% success rate for demo
+    // Get verification attempt count for this domain
+    const existingLogs = await this.getDomainVerificationLogs(id);
+    const attemptNumber = existingLogs.length + 1;
 
-    if (verificationSuccess) {
-      return this.updateDomainConfiguration(id, {
-        verificationStatus: "VERIFIED",
-        isActive: true,
-        verifiedAt: new Date(),
-        lastCheckedAt: new Date()
-      });
-    } else {
+    let verificationResult;
+    
+    try {
+      // Perform real DNS verification based on verification method
+      if (domain.verificationMethod === "DNS_TXT") {
+        verificationResult = await dnsVerificationService.verifyDomainViaDNS(
+          domain.domain, 
+          domain.verificationToken || ""
+        );
+      } else if (domain.verificationMethod === "CNAME") {
+        verificationResult = await dnsVerificationService.verifyDomainViaCNAME(
+          domain.domain,
+          "scheduled-platform.com"
+        );
+      } else {
+        throw new Error(`Unsupported verification method: ${domain.verificationMethod}`);
+      }
+
+      // Log the verification attempt
       await this.createDomainVerificationLog({
         domainConfigId: id,
-        verificationAttempt: 1,
+        verificationAttempt: attemptNumber,
+        verificationMethod: domain.verificationMethod,
+        status: verificationResult.success ? "SUCCESS" : "FAILED",
+        errorMessage: verificationResult.errorMessage || null,
+        verificationData: JSON.stringify(verificationResult.verificationData),
+        responseTime: verificationResult.responseTime
+      });
+
+      // Update domain based on verification result
+      if (verificationResult.success) {
+        return this.updateDomainConfiguration(id, {
+          verificationStatus: "VERIFIED",
+          isActive: true,
+          verifiedAt: new Date(),
+          lastCheckedAt: new Date()
+        });
+      } else {
+        return this.updateDomainConfiguration(id, {
+          verificationStatus: "FAILED",
+          lastCheckedAt: new Date()
+        });
+      }
+    } catch (error: any) {
+      // Log the verification failure
+      await this.createDomainVerificationLog({
+        domainConfigId: id,
+        verificationAttempt: attemptNumber,
         verificationMethod: domain.verificationMethod,
         status: "FAILED",
-        errorMessage: "DNS TXT record not found or invalid",
+        errorMessage: `Verification error: ${error.message}`,
         verificationData: JSON.stringify({
           expected: domain.verificationToken,
-          found: null
+          found: null,
+          recordName: `_scheduled-verification.${domain.domain}`,
+          error: error.message
         }),
-        responseTime: 3000
+        responseTime: 0
       });
 
       return this.updateDomainConfiguration(id, {

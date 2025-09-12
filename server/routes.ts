@@ -22,6 +22,11 @@ import {
   insertDomainConfigurationSchema,
   insertDomainVerificationLogSchema
 } from "@shared/schema";
+import { 
+  validateDomain, 
+  DomainValidationError, 
+  enhancedDomainConfigurationSchema 
+} from "./domain-validation";
 import { v4 as uuidv4 } from "uuid";
 
 // Initialize Stripe (if configured)
@@ -43,8 +48,8 @@ const requirePermission = (requiredPermission: string) => {
       const teamMemberSession = req.headers['x-team-member-session'];
       
       if (!teamMemberSession) {
-        // No team member session, assume business owner access
-        return next();
+        // SECURITY FIX: Require authentication for all domain operations
+        return res.status(401).json({ error: "Authentication required: Missing team member session" });
       }
 
       // Parse team member session
@@ -52,19 +57,19 @@ const requirePermission = (requiredPermission: string) => {
       try {
         sessionData = JSON.parse(teamMemberSession as string);
       } catch {
-        return res.status(401).json({ error: "Invalid team member session" });
+        return res.status(401).json({ error: "Invalid team member session format" });
       }
 
       // Verify client ID matches
       const { clientId } = req.params;
-      if (sessionData.clientId !== clientId) {
-        return res.status(403).json({ error: "Access denied: Client mismatch" });
+      if (!clientId || sessionData.clientId !== clientId) {
+        return res.status(403).json({ error: "Access denied: Client ID mismatch or missing" });
       }
 
       // Check if team member has required permission
       if (!sessionData.permissions.includes(requiredPermission)) {
         return res.status(403).json({ 
-          error: `Access denied: Missing permission '${requiredPermission}'` 
+          error: `Access denied: Missing required permission '${requiredPermission}'` 
         });
       }
 
@@ -1575,21 +1580,73 @@ Email: ${client.email}
   app.post("/api/clients/:clientId/domains", requirePermission("domains.create"), async (req, res) => {
     try {
       const { clientId } = req.params;
-      const domainData = insertDomainConfigurationSchema.parse({
-        ...req.body,
-        clientId
-      });
       
-      // Check if domain already exists
-      const existingDomain = await storage.getDomainConfigurationByDomain(domainData.domain);
-      if (existingDomain) {
-        return res.status(400).json({ error: "Domain already configured" });
+      // Enhanced domain validation
+      let validatedData;
+      try {
+        validatedData = enhancedDomainConfigurationSchema.parse(req.body);
+      } catch (validationError: any) {
+        return res.status(400).json({ 
+          error: "Domain validation failed", 
+          details: validationError.errors || validationError.message 
+        });
       }
+
+      // Comprehensive uniqueness validation
+      const normalizedDomain = validateDomain(validatedData.domain);
+      
+      // Check if exact domain already exists
+      const existingDomain = await storage.getDomainConfigurationByDomain(normalizedDomain);
+      if (existingDomain) {
+        return res.status(400).json({ 
+          error: "Domain already configured",
+          domain: normalizedDomain
+        });
+      }
+
+      // Check for similar domains (with/without www)
+      const wwwDomain = `www.${normalizedDomain}`;
+      const nonWwwDomain = normalizedDomain.replace(/^www\./, '');
+      
+      if (normalizedDomain !== wwwDomain) {
+        const wwwExists = await storage.getDomainConfigurationByDomain(wwwDomain);
+        if (wwwExists) {
+          return res.status(400).json({ 
+            error: "Domain conflict: www variant already configured",
+            conflicting_domain: wwwDomain
+          });
+        }
+      }
+      
+      if (normalizedDomain !== nonWwwDomain) {
+        const nonWwwExists = await storage.getDomainConfigurationByDomain(nonWwwDomain);
+        if (nonWwwExists) {
+          return res.status(400).json({ 
+            error: "Domain conflict: non-www variant already configured",
+            conflicting_domain: nonWwwDomain
+          });
+        }
+      }
+
+      // Create domain configuration with validated data
+      const domainData = {
+        ...validatedData,
+        clientId,
+        domain: normalizedDomain
+      };
 
       const domain = await storage.createDomainConfiguration(domainData);
       res.json(domain);
     } catch (error) {
       console.error("Error creating domain configuration:", error);
+      
+      if (error instanceof DomainValidationError) {
+        return res.status(400).json({ 
+          error: error.message,
+          code: error.code
+        });
+      }
+      
       res.status(500).json({ error: "Failed to create domain configuration" });
     }
   });
@@ -1616,11 +1673,44 @@ Email: ${client.email}
         return; // Permission check failed and response was sent
       }
 
-      const updates = insertDomainConfigurationSchema.partial().parse(req.body);
-      const domain = await storage.updateDomainConfiguration(id, updates);
+      // Validate update data with enhanced validation
+      let validatedUpdates;
+      try {
+        validatedUpdates = enhancedDomainConfigurationSchema.partial().parse(req.body);
+      } catch (validationError: any) {
+        return res.status(400).json({ 
+          error: "Domain validation failed", 
+          details: validationError.errors || validationError.message 
+        });
+      }
+
+      // If domain is being updated, validate uniqueness
+      if (validatedUpdates.domain && validatedUpdates.domain !== existingDomain.domain) {
+        const normalizedDomain = validateDomain(validatedUpdates.domain);
+        const domainExists = await storage.getDomainConfigurationByDomain(normalizedDomain);
+        
+        if (domainExists && domainExists.id !== id) {
+          return res.status(400).json({ 
+            error: "Domain already configured by another configuration",
+            domain: normalizedDomain
+          });
+        }
+        
+        validatedUpdates.domain = normalizedDomain;
+      }
+
+      const domain = await storage.updateDomainConfiguration(id, validatedUpdates);
       res.json(domain);
     } catch (error) {
       console.error("Error updating domain configuration:", error);
+      
+      if (error instanceof DomainValidationError) {
+        return res.status(400).json({ 
+          error: error.message,
+          code: error.code
+        });
+      }
+      
       res.status(500).json({ error: "Failed to update domain configuration" });
     }
   });
@@ -1651,6 +1741,11 @@ Email: ${client.email}
       res.json({ message: "Domain configuration deleted successfully" });
     } catch (error) {
       console.error("Error deleting domain configuration:", error);
+      
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+      
       res.status(500).json({ error: "Failed to delete domain configuration" });
     }
   });
@@ -1681,6 +1776,15 @@ Email: ${client.email}
       res.json(domain);
     } catch (error) {
       console.error("Error verifying domain:", error);
+      
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+      
+      if (error instanceof Error && error.message.includes("verification")) {
+        return res.status(400).json({ error: error.message });
+      }
+      
       res.status(500).json({ error: "Failed to verify domain" });
     }
   });
