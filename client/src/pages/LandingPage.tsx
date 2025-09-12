@@ -528,71 +528,71 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer id="footer" className="text-white py-20" style={{backgroundColor: '#7CB8EA'}}>
+      <footer id="footer" className="text-white py-12 sm:py-16 lg:py-20" style={{backgroundColor: '#7CB8EA'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start mb-8 sm:mb-12 lg:mb-16">
             {/* Left Column - Testimonials */}
-            <div>
-              <h2 className="text-3xl font-bold mb-6">People are Saying About Scheduled Pro</h2>
-              <p className="text-white/90 mb-8 leading-relaxed">
+            <div className="text-center lg:text-left">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">People are Saying About Scheduled Pro</h2>
+              <p className="text-white/90 mb-6 sm:mb-8 leading-relaxed text-sm sm:text-base">
                 Lorem Ipsum is simply dummy text of the printing and typesetting industry.
               </p>
               
-              <div className="mb-8">
-                <div className="text-6xl text-white/30 mb-4">"</div>
-                <p className="text-lg mb-6 leading-relaxed">
+              <div className="mb-6 sm:mb-8">
+                <div className="text-4xl sm:text-5xl lg:text-6xl text-white/30 mb-3 sm:mb-4">"</div>
+                <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 leading-relaxed">
                   Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
                   Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
                 </p>
-                <p className="text-white/80 mb-6">— Ana Zaharija</p>
+                <p className="text-white/80 mb-4 sm:mb-6 text-sm sm:text-base">— Ana Zaharija</p>
                 
-                <div className="flex items-center space-x-4">
-                  <div className="flex -space-x-2">
-                    <img src={profile1} alt="Profile 1" className="w-12 h-12 rounded-full border-2 border-white" />
-                    <img src={profile2} alt="Profile 2" className="w-12 h-12 rounded-full border-2 border-white" />
-                    <img src={profile3} alt="Profile 3" className="w-12 h-12 rounded-full border-2 border-white" />
-                    <img src={profile4} alt="Profile 4" className="w-12 h-12 rounded-full border-2 border-white" />
+                <div className="flex items-center justify-center lg:justify-start space-x-3 sm:space-x-4">
+                  <div className="flex -space-x-1 sm:-space-x-2">
+                    <img src={profile1} alt="Profile 1" className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full border-2 border-white" />
+                    <img src={profile2} alt="Profile 2" className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full border-2 border-white" />
+                    <img src={profile3} alt="Profile 3" className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full border-2 border-white" />
+                    <img src={profile4} alt="Profile 4" className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full border-2 border-white" />
                   </div>
-                  <img src={playButton} alt="Play" className="w-12 h-12 cursor-pointer" />
+                  <img src={playButton} alt="Play" className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 cursor-pointer" />
                 </div>
               </div>
             </div>
 
             {/* Right Column - Contact Form */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
-              <div className="flex items-center justify-center mb-6">
-                <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 mt-8 lg:mt-0">
+              <div className="flex items-center justify-center mb-4 sm:mb-6">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-center mb-8">Get Started</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8">Get Started</h3>
               
-              <form className="space-y-4">
+              <form className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Email</label>
                   <input 
                     type="email" 
                     placeholder="Enter your email" 
-                    className="w-full p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full p-2 sm:p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Name</label>
                   <input 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    className="w-full p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    type="text" 
+                    placeholder="Enter your name" 
+                    className="w-full p-2 sm:p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Message</label>
+                  <label className="block text-xs sm:text-sm font-medium mb-1 sm:mb-2">Message</label>
                   <textarea 
-                    placeholder="What are you say ?" 
-                    rows={4}
-                    className="w-full p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="What can we help you with?" 
+                    rows={3}
+                    className="w-full p-2 sm:p-3 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
                   ></textarea>
                 </div>
-                <Button className="w-full bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white py-3 text-lg rounded-lg">
+                <Button className="w-full bg-gradient-to-r from-orange-400 to-pink-500 hover:from-orange-500 hover:to-pink-600 text-white py-2 sm:py-3 text-sm sm:text-lg rounded-lg">
                   Send Message
                 </Button>
               </form>
@@ -600,35 +600,35 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom Footer */}
-          <div className="border-t border-white/20 pt-8">
-            <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="border-t border-white/20 pt-6 sm:pt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
               {/* Company Info */}
-              <div>
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-white" />
+              <div className="text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start mb-3 sm:mb-4">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-500 rounded flex items-center justify-center">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <h4 className="ml-3 text-lg font-bold">Scheduled Pro</h4>
+                  <h4 className="ml-2 sm:ml-3 text-base sm:text-lg font-bold">Scheduled Pro</h4>
                 </div>
-                <p className="text-white/80 text-sm mb-4">
+                <p className="text-white/80 text-xs sm:text-sm mb-3 sm:mb-4">
                   Get started now try our product
                 </p>
-                <div className="flex">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input 
                     type="email" 
                     placeholder="Enter your email here" 
-                    className="flex-1 p-2 rounded-l-lg bg-white/20 text-white placeholder-white/70 focus:outline-none"
+                    className="flex-1 p-2 rounded-lg sm:rounded-l-lg sm:rounded-r-none bg-white/20 text-white placeholder-white/70 focus:outline-none text-xs sm:text-sm"
                   />
-                  <Button className="bg-orange-500 hover:bg-orange-600 text-white px-4 rounded-r-lg">
-                    <ArrowRight className="w-4 h-4" />
+                  <Button className="bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-l-none sm:rounded-r-lg">
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </div>
               </div>
 
               {/* Support */}
-              <div>
-                <h4 className="font-semibold mb-4">Support</h4>
-                <ul className="space-y-2 text-white/80 text-sm">
+              <div className="text-center sm:text-left">
+                <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Support</h4>
+                <ul className="space-y-1 sm:space-y-2 text-white/80 text-xs sm:text-sm">
                   <li><a href="#" className="hover:text-white">Help Centre</a></li>
                   <li><a href="#" className="hover:text-white">Account Information</a></li>
                   <li><a href="#" className="hover:text-white">About</a></li>
@@ -637,20 +637,20 @@ export default function LandingPage() {
               </div>
 
               {/* Help and Solution */}
-              <div>
-                <h4 className="font-semibold mb-4">Help and Solution</h4>
-                <ul className="space-y-2 text-white/80 text-sm">
+              <div className="text-center sm:text-left">
+                <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Help and Solution</h4>
+                <ul className="space-y-1 sm:space-y-2 text-white/80 text-xs sm:text-sm">
                   <li><a href="#" className="hover:text-white">Talk to support</a></li>
                   <li><a href="#" className="hover:text-white">Support docs</a></li>
                   <li><a href="#" className="hover:text-white">System status</a></li>
-                  <li><a href="#" className="hover:text-white">Covid responde</a></li>
+                  <li><a href="#" className="hover:text-white">Covid response</a></li>
                 </ul>
               </div>
 
               {/* Product */}
-              <div>
-                <h4 className="font-semibold mb-4">Product</h4>
-                <ul className="space-y-2 text-white/80 text-sm">
+              <div className="text-center sm:text-left">
+                <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Product</h4>
+                <ul className="space-y-1 sm:space-y-2 text-white/80 text-xs sm:text-sm">
                   <li><a href="#" className="hover:text-white">Update</a></li>
                   <li><a href="#" className="hover:text-white">Security</a></li>
                   <li><a href="#" className="hover:text-white">Beta test</a></li>
@@ -659,13 +659,13 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between items-center pt-6 border-t border-white/20">
-              <p className="text-white/60 text-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-center pt-4 sm:pt-6 border-t border-white/20 gap-3 sm:gap-0">
+              <p className="text-white/60 text-xs sm:text-sm text-center sm:text-left">
                 © 2025 Scheduled Pro. Copyright and rights reserved
               </p>
-              <div className="flex space-x-6 mt-4 md:mt-0">
-                <a href="#" className="text-white/60 hover:text-white text-sm">Terms and Conditions</a>
-                <a href="#" className="text-white/60 hover:text-white text-sm">Privacy Policy</a>
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-6">
+                <a href="#" className="text-white/60 hover:text-white text-xs sm:text-sm text-center">Terms and Conditions</a>
+                <a href="#" className="text-white/60 hover:text-white text-xs sm:text-sm text-center">Privacy Policy</a>
               </div>
             </div>
           </div>
