@@ -40,6 +40,7 @@ import TeamManagement from './TeamManagement';
 import AIFeatures from './AIFeatures';
 import GoogleBusinessSetup from './GoogleBusinessSetup';
 import ServicesManagement from '../components/dashboard/ServicesManagement';
+import SettingsManagement from '../components/dashboard/SettingsManagement';
 
 interface Client {
   id: string;
@@ -1788,135 +1789,7 @@ export default function ClientDashboard() {
               </div>
             )}
 
-            {activeView === "settings" && (
-              <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Settings</h2>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Business Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="businessName">Business Name</Label>
-                    <Input id="businessName" value={clientData?.businessName || ''} readOnly />
-                  </div>
-                  <div>
-                    <Label htmlFor="contactPerson">Contact Person</Label>
-                    <Input id="contactPerson" value={clientData?.contactPerson || ''} readOnly />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" value={clientData?.email || ''} readOnly />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" value={clientData?.phone || ''} readOnly />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input id="address" value={clientData?.businessAddress || ''} readOnly />
-                  </div>
-                </div>
-                <Dialog open={isSettingsModalOpen} onOpenChange={setIsSettingsModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="mt-4">Edit Information</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Edit Business Information</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div>
-                          <Label htmlFor="editBusinessName">Business Name</Label>
-                          <Input id="editBusinessName" defaultValue={clientData?.businessName} />
-                        </div>
-                        <div>
-                          <Label htmlFor="editContactPerson">Contact Person</Label>
-                          <Input id="editContactPerson" defaultValue={clientData?.contactPerson} />
-                        </div>
-                        <div>
-                          <Label htmlFor="editEmail">Email</Label>
-                          <Input id="editEmail" defaultValue={clientData?.email} />
-                        </div>
-                        <div>
-                          <Label htmlFor="editPhone">Phone</Label>
-                          <Input id="editPhone" defaultValue={clientData?.phone} />
-                        </div>
-                        <div className="md:col-span-2">
-                          <Label htmlFor="editAddress">Address</Label>
-                          <Input id="editAddress" defaultValue={clientData?.businessAddress} />
-                        </div>
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setIsSettingsModalOpen(false)}>Cancel</Button>
-                        <Button onClick={() => {
-                          toast({ title: 'Business information updated successfully' });
-                          setIsSettingsModalOpen(false);
-                        }}>Save Changes</Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Operating Hours</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                    <div key={day} className="flex items-center justify-between">
-                      <span className="w-20 font-medium">{day}</span>
-                      <div className="flex items-center gap-2">
-                        <Input type="time" defaultValue="09:00" className="w-24" />
-                        <span>to</span>
-                        <Input type="time" defaultValue="17:00" className="w-24" />
-                        <input type="checkbox" defaultChecked={day !== 'Sunday'} className="ml-2" />
-                        <span className="text-sm text-gray-600">Open</span>
-                      </div>
-                    </div>
-                  ))}
-                  <Button className="mt-4">Save Operating Hours</Button>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Plan Status</p>
-                      <p className="text-sm text-gray-600">Current: {clientData?.status}</p>
-                    </div>
-                    <Badge variant="outline">{clientData?.status === 'TRIAL' ? 'TRIAL' : 'ACTIVE'}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Subscription</p>
-                      <p className="text-sm text-gray-600">Manage your billing and plan</p>
-                    </div>
-                    <Button variant="outline" size="sm">Manage Plan</Button>
-                  </div>
-                  <div className="pt-4 border-t">
-                    <Button variant="outline" className="w-full" onClick={handleLogout}>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Sign Out
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-              </div>
-            )}
+            {activeView === "settings" && <SettingsManagement />}
 
             {activeView === "team" && (
               hasPermission('team.view') ? (
