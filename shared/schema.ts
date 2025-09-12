@@ -384,10 +384,6 @@ export const insertTeamMemberSchema = createInsertSchema(teamMembers).pick({
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
 export type TeamMember = typeof teamMembers.$inferSelect;
 
-// Stylist is an alias for TeamMember (industry-specific terminology)
-export const insertStylistSchema = insertTeamMemberSchema;
-export type Stylist = TeamMember;
-
 // Payments table
 export const payments = pgTable("payments", {
   id: text("id").primaryKey(),
