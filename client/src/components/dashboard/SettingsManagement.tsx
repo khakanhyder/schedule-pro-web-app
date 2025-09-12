@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Scissors, Clock, Settings2, Building2, Brain, Zap, Download } from "lucide-react";
+import { Users, Scissors, Clock, Settings2, Building2, Brain, Zap, Download, Globe } from "lucide-react";
 import StaffManagement from "./StaffManagement";
 import ServicesManagement from "./ServicesManagement";
 import BusinessHoursManagement from "./BusinessHoursManagement";
@@ -9,6 +9,7 @@ import AutomationSettings from "./AutomationSettings";
 import BusinessIntelligenceDashboard from "./BusinessIntelligenceDashboard";
 import DataImportManager from "./DataImportManager";
 import BusinessBrandingPreview from "./BusinessBrandingPreview";
+import DomainManagement from "./DomainManagement";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function SettingsManagement() {
@@ -39,7 +40,7 @@ export default function SettingsManagement() {
       </div>
 
       <Tabs defaultValue="import" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7 h-auto">
+        <TabsList className="grid w-full grid-cols-8 h-auto">
           <TabsTrigger value="import" className="flex flex-col items-center gap-1 py-3 px-2">
             <Download className="h-4 w-4" />
             <span className="text-xs">Import Data</span>
@@ -67,6 +68,10 @@ export default function SettingsManagement() {
           <TabsTrigger value="intelligence" className="flex flex-col items-center gap-1 py-3 px-2">
             <Brain className="h-4 w-4" />
             <span className="text-xs">AI Insights</span>
+          </TabsTrigger>
+          <TabsTrigger value="domains" className="flex flex-col items-center gap-1 py-3 px-2">
+            <Globe className="h-4 w-4" />
+            <span className="text-xs">Domains</span>
           </TabsTrigger>
         </TabsList>
 
@@ -97,6 +102,10 @@ export default function SettingsManagement() {
 
         <TabsContent value="import" className="space-y-6">
           <DataImportManager />
+        </TabsContent>
+
+        <TabsContent value="domains" className="space-y-6">
+          <DomainManagement />
         </TabsContent>
       </Tabs>
     </div>
