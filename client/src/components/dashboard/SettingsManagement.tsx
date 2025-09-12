@@ -9,7 +9,7 @@ import AutomationSettings from "./AutomationSettings";
 import BusinessIntelligenceDashboard from "./BusinessIntelligenceDashboard";
 import DataImportManager from "./DataImportManager";
 import BusinessBrandingPreview from "./BusinessBrandingPreview";
-import DomainManagement from "./DomainManagement";
+import DomainConfig from "./DomainConfig";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
 export default function SettingsManagement() {
@@ -105,7 +105,7 @@ export default function SettingsManagement() {
         </TabsContent>
 
         <TabsContent value="domains" className="space-y-6">
-          <DomainManagement />
+          <DomainConfig />
         </TabsContent>
       </Tabs>
     </div>
