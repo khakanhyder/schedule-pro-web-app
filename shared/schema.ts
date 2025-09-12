@@ -545,3 +545,76 @@ export const insertReviewPlatformSchema = createInsertSchema(reviewPlatforms).pi
 
 export type InsertReviewPlatform = z.infer<typeof insertReviewPlatformSchema>;
 export type ReviewPlatform = typeof reviewPlatforms.$inferSelect;
+
+// Domain configurations for client admin and client websites
+export const domainConfigurations = pgTable("domain_configurations", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  domainType: text("domain_type").notNull(), // ADMIN_PORTAL, CLIENT_WEBSITE
+  domain: text("domain").notNull(), // e.g., "admin.mybusiness.com" or "mybusiness.com"
+  subdomain: text("subdomain"), // e.g., "admin" or "www" 
+  isActive: boolean("is_active").default(false),
+  verificationStatus: text("verification_status").default("PENDING"), // PENDING, VERIFIED, FAILED
+  verificationToken: text("verification_token"), // For domain verification
+  verificationMethod: text("verification_method").default("DNS_TXT"), // DNS_TXT, FILE_UPLOAD, CNAME
+  sslStatus: text("ssl_status").default("PENDING"), // PENDING, ACTIVE, FAILED, EXPIRED
+  sslCertificateId: text("ssl_certificate_id"), // External SSL cert reference
+  sslIssuedAt: timestamp("ssl_issued_at"),
+  sslExpiresAt: timestamp("ssl_expires_at"),
+  dnsRecords: text("dns_records"), // JSON string of required DNS records
+  redirectToHttps: boolean("redirect_to_https").default(true),
+  customSettings: text("custom_settings"), // JSON string for additional domain settings
+  lastCheckedAt: timestamp("last_checked_at"),
+  verifiedAt: timestamp("verified_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDomainConfigurationSchema = createInsertSchema(domainConfigurations).pick({
+  clientId: true,
+  domainType: true,
+  domain: true,
+  subdomain: true,
+  isActive: true,
+  verificationStatus: true,
+  verificationToken: true,
+  verificationMethod: true,
+  sslStatus: true,
+  sslCertificateId: true,
+  sslIssuedAt: true,
+  sslExpiresAt: true,
+  dnsRecords: true,
+  redirectToHttps: true,
+  customSettings: true,
+  lastCheckedAt: true,
+  verifiedAt: true,
+});
+
+export type InsertDomainConfiguration = z.infer<typeof insertDomainConfigurationSchema>;
+export type DomainConfiguration = typeof domainConfigurations.$inferSelect;
+
+// Domain verification logs for tracking verification attempts
+export const domainVerificationLogs = pgTable("domain_verification_logs", {
+  id: text("id").primaryKey(),
+  domainConfigId: text("domain_config_id").notNull(),
+  verificationAttempt: integer("verification_attempt").default(1),
+  verificationMethod: text("verification_method").notNull(),
+  status: text("status").notNull(), // SUCCESS, FAILED, TIMEOUT
+  errorMessage: text("error_message"),
+  verificationData: text("verification_data"), // JSON string with verification details
+  responseTime: integer("response_time"), // milliseconds
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertDomainVerificationLogSchema = createInsertSchema(domainVerificationLogs).pick({
+  domainConfigId: true,
+  verificationAttempt: true,
+  verificationMethod: true,
+  status: true,
+  errorMessage: true,
+  verificationData: true,
+  responseTime: true,
+});
+
+export type InsertDomainVerificationLog = z.infer<typeof insertDomainVerificationLogSchema>;
+export type DomainVerificationLog = typeof domainVerificationLogs.$inferSelect;
