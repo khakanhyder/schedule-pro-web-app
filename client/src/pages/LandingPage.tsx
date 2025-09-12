@@ -148,30 +148,35 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 lg:py-24">
+      <section className="py-8 sm:py-12 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left Column - Text */}
-            <div>
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
+            <div className="text-center lg:text-left">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-4 md:mb-6">
                 Grow Your Business Visibility 
                 <span className="block">with Scheduled Pro</span>
               </h1>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              <p className="text-base sm:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
                 Take your business to the next level with our comprehensive scheduling and management platform designed for modern entrepreneurs.
               </p>
-              <Button className="text-white px-8 py-3 text-lg" style={{backgroundColor: '#7CB8EA'}} onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#6BA6E0'} onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#7CB8EA'}>
+              <Button 
+                className="text-white px-6 sm:px-8 py-2.5 sm:py-3 text-base sm:text-lg w-full sm:w-auto" 
+                style={{backgroundColor: '#7CB8EA'}} 
+                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#6BA6E0'} 
+                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#7CB8EA'}
+              >
                 Learn More
               </Button>
             </div>
             
             {/* Right Column - Hero Image */}
-            <div className="relative">
+            <div className="relative order-first lg:order-last">
               <div className="relative">
                 <img 
                   src={heroImage} 
                   alt="Professional with business dashboard" 
-                  className="w-full h-auto rounded-2xl"
+                  className="w-full h-auto rounded-2xl max-w-md mx-auto lg:max-w-full"
                 />
               </div>
             </div>
@@ -180,30 +185,30 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-8 sm:py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <p className="text-lg text-gray-600 mb-6">More than 25,000 teams use Collabs</p>
-            <div className="flex justify-center items-center space-x-12 text-gray-500">
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5" />
-                <span className="text-sm">DASHBOARD</span>
+          <div className="text-center mb-6 sm:mb-8">
+            <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">More than 25,000 teams use Collabs</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:justify-center lg:items-center gap-4 sm:gap-6 lg:gap-12 text-gray-500">
+              <div className="flex items-center justify-center space-x-2">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-sm">DASHBOARD</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5" />
-                <span className="text-sm">PROJECTS</span>
+              <div className="flex items-center justify-center space-x-2">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-sm">PROJECTS</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <MessageCircle className="w-5 h-5" />
-                <span className="text-sm">TEAM CHAT</span>
+              <div className="flex items-center justify-center space-x-2 col-span-2 sm:col-span-1">
+                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-sm">TEAM CHAT</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <BarChart3 className="w-5 h-5" />
-                <span className="text-sm">ANALYTICS</span>
+              <div className="flex items-center justify-center space-x-2">
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-sm">ANALYTICS</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Settings className="w-5 h-5" />
-                <span className="text-sm">INTEGRATIONS</span>
+              <div className="flex items-center justify-center space-x-2">
+                <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-sm">INTEGRATIONS</span>
               </div>
             </div>
           </div>
