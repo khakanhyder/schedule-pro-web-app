@@ -19,6 +19,8 @@ import {
   insertAppointmentSlotSchema,
   insertTeamMemberSchema,
   insertReviewPlatformSchema,
+  insertReviewPlatformConnectionSchema,
+  insertPlatformReviewSchema,
   insertDomainConfigurationSchema,
   insertDomainVerificationLogSchema
 } from "@shared/schema";
@@ -333,6 +335,201 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting review platform:", error);
       res.status(500).json({ error: "Failed to delete review platform" });
+    }
+  });
+
+  // =============================================================================
+  // CLIENT ROUTES - Review Platform Connections (Real Review Data)
+  // =============================================================================
+
+  // Get review platform connections for a client
+  app.get("/api/clients/:clientId/review-connections", requirePermission("MANAGE_REVIEWS"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const connections = await storage.getReviewPlatformConnections(clientId);
+      res.json(connections);
+    } catch (error) {
+      console.error("Error fetching review platform connections:", error);
+      res.status(500).json({ error: "Failed to fetch review platform connections" });
+    }
+  });
+
+  // Create new review platform connection
+  app.post("/api/clients/:clientId/review-connections", requirePermission("MANAGE_REVIEWS"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const connectionData = insertReviewPlatformConnectionSchema.parse({
+        ...req.body,
+        clientId
+      });
+      const connection = await storage.createReviewPlatformConnection(connectionData);
+      res.json(connection);
+    } catch (error) {
+      console.error("Error creating review platform connection:", error);
+      res.status(500).json({ error: "Failed to create review platform connection" });
+    }
+  });
+
+  // Update review platform connection
+  app.put("/api/clients/:clientId/review-connections/:id", requirePermission("MANAGE_REVIEWS"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const connection = await storage.updateReviewPlatformConnection(id, updates);
+      res.json(connection);
+    } catch (error) {
+      console.error("Error updating review platform connection:", error);
+      res.status(500).json({ error: "Failed to update review platform connection" });
+    }
+  });
+
+  // Delete review platform connection
+  app.delete("/api/clients/:clientId/review-connections/:id", requirePermission("MANAGE_REVIEWS"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteReviewPlatformConnection(id);
+      res.json({ message: "Review platform connection deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting review platform connection:", error);
+      res.status(500).json({ error: "Failed to delete review platform connection" });
+    }
+  });
+
+  // Sync review platform data
+  app.post("/api/clients/:clientId/review-connections/:id/sync", requirePermission("MANAGE_REVIEWS"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const connection = await storage.syncReviewPlatformData(id);
+      res.json(connection);
+    } catch (error) {
+      console.error("Error syncing review platform data:", error);
+      res.status(500).json({ error: "Failed to sync review platform data" });
+    }
+  });
+
+  // =============================================================================
+  // CLIENT ROUTES - Platform Reviews (Individual Review Data)
+  // =============================================================================
+
+  // Get platform reviews for a client
+  app.get("/api/clients/:clientId/platform-reviews", requirePermission("VIEW_REVIEWS"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { platform } = req.query;
+      const reviews = await storage.getPlatformReviews(clientId, platform as string);
+      res.json(reviews);
+    } catch (error) {
+      console.error("Error fetching platform reviews:", error);
+      res.status(500).json({ error: "Failed to fetch platform reviews" });
+    }
+  });
+
+  // Create new platform review
+  app.post("/api/clients/:clientId/platform-reviews", requirePermission("MANAGE_REVIEWS"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const reviewData = insertPlatformReviewSchema.parse({
+        ...req.body,
+        clientId
+      });
+      const review = await storage.createPlatformReview(reviewData);
+      res.json(review);
+    } catch (error) {
+      console.error("Error creating platform review:", error);
+      res.status(500).json({ error: "Failed to create platform review" });
+    }
+  });
+
+  // Update platform review (typically for business responses)
+  app.put("/api/clients/:clientId/platform-reviews/:id", requirePermission("MANAGE_REVIEWS"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const review = await storage.updatePlatformReview(id, updates);
+      res.json(review);
+    } catch (error) {
+      console.error("Error updating platform review:", error);
+      res.status(500).json({ error: "Failed to update platform review" });
+    }
+  });
+
+  // Delete platform review
+  app.delete("/api/clients/:clientId/platform-reviews/:id", requirePermission("MANAGE_REVIEWS"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deletePlatformReview(id);
+      res.json({ message: "Platform review deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting platform review:", error);
+      res.status(500).json({ error: "Failed to delete platform review" });
+    }
+  });
+
+  // =============================================================================
+  // SUPER ADMIN ROUTES - Review Analytics & Management
+  // =============================================================================
+
+  // Get all platform reviews across all clients (for super admin analytics)
+  app.get("/api/admin/platform-reviews", async (req, res) => {
+    try {
+      const { platform, clientId } = req.query;
+      
+      if (clientId) {
+        const reviews = await storage.getPlatformReviews(clientId as string, platform as string);
+        res.json(reviews);
+      } else {
+        // Get all reviews across all clients for super admin dashboard
+        const clients = await storage.getClients();
+        const allReviews = [];
+        
+        for (const client of clients) {
+          const clientReviews = await storage.getPlatformReviews(client.id, platform as string);
+          allReviews.push(...clientReviews);
+        }
+        
+        res.json(allReviews);
+      }
+    } catch (error) {
+      console.error("Error fetching admin platform reviews:", error);
+      res.status(500).json({ error: "Failed to fetch platform reviews" });
+    }
+  });
+
+  // Get review analytics summary for super admin
+  app.get("/api/admin/review-analytics", async (req, res) => {
+    try {
+      const clients = await storage.getClients();
+      const analytics = [];
+      
+      for (const client of clients) {
+        const connections = await storage.getReviewPlatformConnections(client.id);
+        const reviews = await storage.getPlatformReviews(client.id);
+        
+        const clientAnalytics = {
+          clientId: client.id,
+          clientName: client.businessName,
+          totalConnections: connections.length,
+          activeConnections: connections.filter(c => c.isActive).length,
+          totalReviews: reviews.length,
+          averageRating: reviews.length > 0 
+            ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+            : 0,
+          platforms: connections.map(conn => ({
+            platform: conn.platform,
+            isActive: conn.isActive,
+            averageRating: conn.averageRating,
+            totalReviews: conn.totalReviews,
+            lastSyncAt: conn.lastSyncAt
+          }))
+        };
+        
+        analytics.push(clientAnalytics);
+      }
+      
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching review analytics:", error);
+      res.status(500).json({ error: "Failed to fetch review analytics" });
     }
   });
 

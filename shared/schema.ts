@@ -641,3 +641,81 @@ export const insertStylistSchema = createInsertSchema(stylists).pick({
 
 export type InsertStylist = z.infer<typeof insertStylistSchema>;
 export type Stylist = typeof stylists.$inferSelect;
+
+// Review platforms configuration for real review data
+export const reviewPlatformConnections = pgTable("review_platform_connections", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  platform: text("platform").notNull(), // GOOGLE, YELP, TRUSTPILOT
+  platformAccountId: text("platform_account_id"), // External account ID
+  apiKey: text("api_key"), // Encrypted API key
+  accessToken: text("access_token"), // OAuth token if needed
+  refreshToken: text("refresh_token"), // OAuth refresh token
+  isActive: boolean("is_active").default(true),
+  lastSyncAt: timestamp("last_sync_at"),
+  averageRating: real("average_rating"),
+  totalReviews: integer("total_reviews").default(0),
+  platformUrl: text("platform_url"), // URL to the business profile on the platform
+  syncFrequency: text("sync_frequency").default("DAILY"), // HOURLY, DAILY, WEEKLY
+  errorMessage: text("error_message"), // Last sync error if any
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertReviewPlatformConnectionSchema = createInsertSchema(reviewPlatformConnections).pick({
+  clientId: true,
+  platform: true,
+  platformAccountId: true,
+  apiKey: true,
+  accessToken: true,
+  refreshToken: true,
+  isActive: true,
+  lastSyncAt: true,
+  averageRating: true,
+  totalReviews: true,
+  platformUrl: true,
+  syncFrequency: true,
+  errorMessage: true,
+});
+
+export type InsertReviewPlatformConnection = z.infer<typeof insertReviewPlatformConnectionSchema>;
+export type ReviewPlatformConnection = typeof reviewPlatformConnections.$inferSelect;
+
+// Individual reviews from platforms
+export const platformReviews = pgTable("platform_reviews", {
+  id: text("id").primaryKey(),
+  connectionId: text("connection_id").notNull(),
+  clientId: text("client_id").notNull(),
+  platform: text("platform").notNull(), // GOOGLE, YELP, TRUSTPILOT
+  externalReviewId: text("external_review_id").notNull(), // Platform's review ID
+  customerName: text("customer_name").notNull(),
+  customerAvatar: text("customer_avatar"), // Profile picture URL
+  rating: integer("rating").notNull(), // 1-5 stars
+  reviewText: text("review_text"),
+  reviewDate: timestamp("review_date").notNull(),
+  businessResponse: text("business_response"), // Business owner reply
+  businessResponseDate: timestamp("business_response_date"),
+  isVerified: boolean("is_verified").default(false), // Platform verification status
+  helpfulCount: integer("helpful_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPlatformReviewSchema = createInsertSchema(platformReviews).pick({
+  connectionId: true,
+  clientId: true,
+  platform: true,
+  externalReviewId: true,
+  customerName: true,
+  customerAvatar: true,
+  rating: true,
+  reviewText: true,
+  reviewDate: true,
+  businessResponse: true,
+  businessResponseDate: true,
+  isVerified: true,
+  helpfulCount: true,
+});
+
+export type InsertPlatformReview = z.infer<typeof insertPlatformReviewSchema>;
+export type PlatformReview = typeof platformReviews.$inferSelect;

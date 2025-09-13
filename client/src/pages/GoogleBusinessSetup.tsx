@@ -183,16 +183,17 @@ export default function GoogleBusinessSetup() {
       case 1: return "completed";
       case 2: return profile.isVerified ? "completed" : profile.googlePlaceId ? "current" : "pending";
       case 3: return profile.businessPhotos && profile.businessPhotos.length > 0 ? "completed" : "pending";
-      case 4: return profile.totalReviews > 0 ? "completed" : "pending";
+      case 4: return (profile.totalReviews || 0) > 0 ? "completed" : "pending";
       default: return "pending";
     }
   };
 
-  const completedSteps = businessProfile ? [
-    businessProfile.businessName ? 1 : 0,
-    businessProfile.isVerified ? 1 : 0,
-    (businessProfile as GoogleBusinessProfile)?.businessPhotos?.length > 0 ? 1 : 0,
-    (businessProfile as GoogleBusinessProfile)?.totalReviews > 0 ? 1 : 0,
+  const profile = businessProfile as GoogleBusinessProfile;
+  const completedSteps = profile ? [
+    profile.businessName ? 1 : 0,
+    profile.isVerified ? 1 : 0,
+    (profile.businessPhotos && profile.businessPhotos.length > 0) ? 1 : 0,
+    ((profile.totalReviews || 0) > 0) ? 1 : 0,
   ].filter(Boolean).length : 0;
 
   const progressPercentage = (completedSteps / 4) * 100;
@@ -506,7 +507,7 @@ export default function GoogleBusinessSetup() {
                 <div className="flex items-center gap-2 text-sm">
                   <Globe className="h-4 w-4 text-gray-500" />
                   <a 
-                    href={(businessProfile as GoogleBusinessProfile).website} 
+                    href={(businessProfile as GoogleBusinessProfile).website || ""} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline flex items-center gap-1"

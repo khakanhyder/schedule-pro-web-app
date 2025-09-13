@@ -15,6 +15,8 @@ import {
   reviewPlatforms, type ReviewPlatform, type InsertReviewPlatform,
   domainConfigurations, type DomainConfiguration, type InsertDomainConfiguration,
   domainVerificationLogs, type DomainVerificationLog, type InsertDomainVerificationLog,
+  reviewPlatformConnections, type ReviewPlatformConnection, type InsertReviewPlatformConnection,
+  platformReviews, type PlatformReview, type InsertPlatformReview,
 } from "@shared/schema";
 import { dnsVerificationService } from "./dns-verification";
 
@@ -106,6 +108,21 @@ export interface IStorage {
   updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform>;
   deleteReviewPlatform(id: string): Promise<void>;
 
+  // Review Platform Connections (for real review data)
+  getReviewPlatformConnections(clientId: string): Promise<ReviewPlatformConnection[]>;
+  getReviewPlatformConnection(id: string): Promise<ReviewPlatformConnection | undefined>;
+  createReviewPlatformConnection(connection: InsertReviewPlatformConnection): Promise<ReviewPlatformConnection>;
+  updateReviewPlatformConnection(id: string, updates: Partial<InsertReviewPlatformConnection>): Promise<ReviewPlatformConnection>;
+  deleteReviewPlatformConnection(id: string): Promise<void>;
+  syncReviewPlatformData(connectionId: string): Promise<ReviewPlatformConnection>;
+
+  // Platform Reviews
+  getPlatformReviews(clientId: string, platform?: string): Promise<PlatformReview[]>;
+  getPlatformReview(id: string): Promise<PlatformReview | undefined>;
+  createPlatformReview(review: InsertPlatformReview): Promise<PlatformReview>;
+  updatePlatformReview(id: string, updates: Partial<InsertPlatformReview>): Promise<PlatformReview>;
+  deletePlatformReview(id: string): Promise<void>;
+
   // Domain Configurations
   getDomainConfigurations(clientId: string): Promise<DomainConfiguration[]>;
   getDomainConfiguration(id: string): Promise<DomainConfiguration | undefined>;
@@ -156,6 +173,8 @@ class MemStorage implements IStorage {
   private appointmentSlots: AppointmentSlot[] = [];
   private teamMembers: TeamMember[] = [];
   private reviewPlatforms: ReviewPlatform[] = [];
+  private reviewPlatformConnections: ReviewPlatformConnection[] = [];
+  private platformReviews: PlatformReview[] = [];
   private domainConfigurations: DomainConfiguration[] = [];
   private domainVerificationLogs: DomainVerificationLog[] = [];
 
@@ -941,6 +960,134 @@ class MemStorage implements IStorage {
     this.reviewPlatforms.splice(index, 1);
   }
 
+  // Review Platform Connections Implementation
+  async getReviewPlatformConnections(clientId: string): Promise<ReviewPlatformConnection[]> {
+    return this.reviewPlatformConnections.filter(c => c.clientId === clientId);
+  }
+
+  async getReviewPlatformConnection(id: string): Promise<ReviewPlatformConnection | undefined> {
+    return this.reviewPlatformConnections.find(c => c.id === id);
+  }
+
+  async createReviewPlatformConnection(connection: InsertReviewPlatformConnection): Promise<ReviewPlatformConnection> {
+    const newConnection: ReviewPlatformConnection = {
+      id: `connection_${this.reviewPlatformConnections.length + 1}`,
+      clientId: connection.clientId,
+      platform: connection.platform,
+      platformAccountId: connection.platformAccountId || null,
+      apiKey: connection.apiKey || null,
+      accessToken: connection.accessToken || null,
+      refreshToken: connection.refreshToken || null,
+      isActive: connection.isActive ?? true,
+      lastSyncAt: connection.lastSyncAt || null,
+      averageRating: connection.averageRating || null,
+      totalReviews: connection.totalReviews || 0,
+      platformUrl: connection.platformUrl || null,
+      syncFrequency: connection.syncFrequency || "DAILY",
+      errorMessage: connection.errorMessage || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.reviewPlatformConnections.push(newConnection);
+    return newConnection;
+  }
+
+  async updateReviewPlatformConnection(id: string, updates: Partial<InsertReviewPlatformConnection>): Promise<ReviewPlatformConnection> {
+    const index = this.reviewPlatformConnections.findIndex(c => c.id === id);
+    if (index === -1) throw new Error("Review platform connection not found");
+    
+    this.reviewPlatformConnections[index] = {
+      ...this.reviewPlatformConnections[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.reviewPlatformConnections[index];
+  }
+
+  async deleteReviewPlatformConnection(id: string): Promise<void> {
+    const index = this.reviewPlatformConnections.findIndex(c => c.id === id);
+    if (index === -1) throw new Error("Review platform connection not found");
+    this.reviewPlatformConnections.splice(index, 1);
+  }
+
+  async syncReviewPlatformData(connectionId: string): Promise<ReviewPlatformConnection> {
+    const connection = await this.getReviewPlatformConnection(connectionId);
+    if (!connection) throw new Error("Review platform connection not found");
+
+    // Mock sync implementation - in real app this would call external APIs
+    const mockReviewData = this.generateMockReviewData(connection.platform);
+    
+    return this.updateReviewPlatformConnection(connectionId, {
+      averageRating: mockReviewData.averageRating,
+      totalReviews: mockReviewData.totalReviews,
+      lastSyncAt: new Date(),
+      errorMessage: null
+    });
+  }
+
+  // Platform Reviews Implementation
+  async getPlatformReviews(clientId: string, platform?: string): Promise<PlatformReview[]> {
+    let reviews = this.platformReviews.filter(r => r.clientId === clientId);
+    if (platform) {
+      reviews = reviews.filter(r => r.platform === platform);
+    }
+    return reviews;
+  }
+
+  async getPlatformReview(id: string): Promise<PlatformReview | undefined> {
+    return this.platformReviews.find(r => r.id === id);
+  }
+
+  async createPlatformReview(review: InsertPlatformReview): Promise<PlatformReview> {
+    const newReview: PlatformReview = {
+      id: `review_${this.platformReviews.length + 1}`,
+      connectionId: review.connectionId,
+      clientId: review.clientId,
+      platform: review.platform,
+      externalReviewId: review.externalReviewId,
+      customerName: review.customerName,
+      customerAvatar: review.customerAvatar || null,
+      rating: review.rating,
+      reviewText: review.reviewText || null,
+      reviewDate: review.reviewDate,
+      businessResponse: review.businessResponse || null,
+      businessResponseDate: review.businessResponseDate || null,
+      isVerified: review.isVerified ?? false,
+      helpfulCount: review.helpfulCount || 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.platformReviews.push(newReview);
+    return newReview;
+  }
+
+  async updatePlatformReview(id: string, updates: Partial<InsertPlatformReview>): Promise<PlatformReview> {
+    const index = this.platformReviews.findIndex(r => r.id === id);
+    if (index === -1) throw new Error("Platform review not found");
+    
+    this.platformReviews[index] = {
+      ...this.platformReviews[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.platformReviews[index];
+  }
+
+  async deletePlatformReview(id: string): Promise<void> {
+    const index = this.platformReviews.findIndex(r => r.id === id);
+    if (index === -1) throw new Error("Platform review not found");
+    this.platformReviews.splice(index, 1);
+  }
+
+  private generateMockReviewData(platform: string) {
+    const mockData = {
+      GOOGLE: { averageRating: 4.8, totalReviews: 127 },
+      YELP: { averageRating: 4.5, totalReviews: 89 },
+      TRUSTPILOT: { averageRating: 4.9, totalReviews: 203 }
+    };
+    return mockData[platform as keyof typeof mockData] || { averageRating: 4.0, totalReviews: 50 };
+  }
+
   // Domain Configuration methods
   async getDomainConfigurations(clientId: string): Promise<DomainConfiguration[]> {
     return this.domainConfigurations.filter(d => d.clientId === clientId);
@@ -1055,7 +1202,7 @@ class MemStorage implements IStorage {
       await this.createDomainVerificationLog({
         domainConfigId: id,
         verificationAttempt: attemptNumber,
-        verificationMethod: domain.verificationMethod,
+        verificationMethod: domain.verificationMethod || "DNS_TXT",
         status: "FAILED",
         errorMessage: `Verification error: ${error.message}`,
         verificationData: JSON.stringify({

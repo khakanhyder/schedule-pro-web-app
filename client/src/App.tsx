@@ -10,6 +10,7 @@ import TeamDashboard from "@/pages/TeamDashboard";
 import AdvancedWebsiteBuilder from "@/pages/AdvancedWebsiteBuilder";
 import CheckoutPage from "@/pages/CheckoutPage";
 import ClientWebsite from "@/pages/ClientWebsite";
+import ReviewPlatformConnections from "@/pages/ReviewPlatformConnections";
 import NotFound from "@/pages/not-found";
 
 function App() {
@@ -35,6 +36,9 @@ function App() {
           {/* Client Login & Dashboard */}
           <Route path="/client-login" component={ClientLogin} />
           <Route path="/client-dashboard" component={ClientDashboard} />
+          
+          {/* Review Platform Management */}
+          <Route path="/review-platforms" component={ReviewPlatformConnections} />
           
           {/* Team Member Login & Dashboard */}
           <Route path="/team-login" component={TeamLogin} />
