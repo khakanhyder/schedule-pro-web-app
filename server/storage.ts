@@ -17,6 +17,7 @@ import {
   domainVerificationLogs, type DomainVerificationLog, type InsertDomainVerificationLog,
   reviewPlatformConnections, type ReviewPlatformConnection, type InsertReviewPlatformConnection,
   platformReviews, type PlatformReview, type InsertPlatformReview,
+  googleBusinessProfiles, type GoogleBusinessProfile, type InsertGoogleBusinessProfile,
 } from "@shared/schema";
 import { dnsVerificationService } from "./dns-verification";
 
@@ -132,6 +133,13 @@ export interface IStorage {
   deleteDomainConfiguration(id: string): Promise<void>;
   verifyDomain(id: string): Promise<DomainConfiguration>;
 
+  // Google Business Profile methods
+  getGoogleBusinessProfile(clientId: string): Promise<GoogleBusinessProfile | undefined>;
+  createGoogleBusinessProfile(profile: InsertGoogleBusinessProfile): Promise<GoogleBusinessProfile>;
+  updateGoogleBusinessProfile(clientId: string, updates: Partial<InsertGoogleBusinessProfile>): Promise<GoogleBusinessProfile>;
+  deleteGoogleBusinessProfile(clientId: string): Promise<void>;
+  syncGoogleBusinessProfile(clientId: string): Promise<GoogleBusinessProfile>;
+
   // Domain Verification Logs
   getDomainVerificationLogs(domainConfigId: string): Promise<DomainVerificationLog[]>;
   createDomainVerificationLog(log: InsertDomainVerificationLog): Promise<DomainVerificationLog>;
@@ -172,6 +180,7 @@ class MemStorage implements IStorage {
   ];
   private appointmentSlots: AppointmentSlot[] = [];
   private teamMembers: TeamMember[] = [];
+  private googleBusinessProfiles: GoogleBusinessProfile[] = [];
   private reviewPlatforms: ReviewPlatform[] = [];
   private reviewPlatformConnections: ReviewPlatformConnection[] = [];
   private platformReviews: PlatformReview[] = [];
@@ -1262,6 +1271,74 @@ class MemStorage implements IStorage {
         ttl: 300
       }
     ]);
+  }
+
+  // Google Business Profile methods
+  async getGoogleBusinessProfile(clientId: string): Promise<GoogleBusinessProfile | undefined> {
+    return this.googleBusinessProfiles.find(profile => profile.clientId === clientId);
+  }
+
+  async createGoogleBusinessProfile(profile: InsertGoogleBusinessProfile): Promise<GoogleBusinessProfile> {
+    const newProfile: GoogleBusinessProfile = {
+      id: `google_business_${this.googleBusinessProfiles.length + 1}`,
+      clientId: profile.clientId,
+      businessName: profile.businessName,
+      googlePlaceId: profile.googlePlaceId || null,
+      isVerified: profile.isVerified || false,
+      averageRating: profile.averageRating || null,
+      totalReviews: profile.totalReviews || 0,
+      businessHours: profile.businessHours || null,
+      businessDescription: profile.businessDescription || null,
+      businessCategories: profile.businessCategories || [],
+      businessPhotos: profile.businessPhotos || [],
+      website: profile.website || null,
+      phoneNumber: profile.phoneNumber || null,
+      address: profile.address || null,
+      postalCode: profile.postalCode || null,
+      city: profile.city || null,
+      state: profile.state || null,
+      country: profile.country || null,
+      latitude: profile.latitude || null,
+      longitude: profile.longitude || null,
+      lastSyncAt: profile.lastSyncAt || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.googleBusinessProfiles.push(newProfile);
+    return newProfile;
+  }
+
+  async updateGoogleBusinessProfile(clientId: string, updates: Partial<InsertGoogleBusinessProfile>): Promise<GoogleBusinessProfile> {
+    const index = this.googleBusinessProfiles.findIndex(profile => profile.clientId === clientId);
+    if (index === -1) throw new Error("Google Business Profile not found");
+    
+    this.googleBusinessProfiles[index] = {
+      ...this.googleBusinessProfiles[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.googleBusinessProfiles[index];
+  }
+
+  async deleteGoogleBusinessProfile(clientId: string): Promise<void> {
+    const index = this.googleBusinessProfiles.findIndex(profile => profile.clientId === clientId);
+    if (index === -1) throw new Error("Google Business Profile not found");
+    this.googleBusinessProfiles.splice(index, 1);
+  }
+
+  async syncGoogleBusinessProfile(clientId: string): Promise<GoogleBusinessProfile> {
+    const profile = await this.getGoogleBusinessProfile(clientId);
+    if (!profile) throw new Error("Google Business Profile not found");
+
+    // Mock sync implementation - in real app this would call Google My Business API
+    const mockSyncData = {
+      averageRating: 4.6 + Math.random() * 0.8, // 4.6 to 5.4
+      totalReviews: Math.floor(50 + Math.random() * 200), // 50 to 250 reviews
+      isVerified: true,
+      lastSyncAt: new Date(),
+    };
+    
+    return this.updateGoogleBusinessProfile(clientId, mockSyncData);
   }
 }
 
