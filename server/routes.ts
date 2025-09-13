@@ -22,7 +22,8 @@ import {
   insertReviewPlatformConnectionSchema,
   insertPlatformReviewSchema,
   insertDomainConfigurationSchema,
-  insertDomainVerificationLogSchema
+  insertDomainVerificationLogSchema,
+  insertGoogleBusinessProfileSchema
 } from "@shared/schema";
 import { 
   validateDomain, 
@@ -2122,6 +2123,140 @@ Email: ${client.email}
       res.json(review);
     } catch (error) {
       res.status(500).json({ error: "Failed to create review" });
+    }
+  });
+
+  // Google Business Profile Management Routes
+  
+  // Get Google Business Profile for a client
+  app.get("/api/clients/:clientId/google-business", requirePermission("google_business.view"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const profile = await storage.getGoogleBusinessProfile(clientId);
+      
+      if (!profile) {
+        return res.json(null); // Return null instead of 404 to indicate no profile exists yet
+      }
+      
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching Google Business Profile:", error);
+      res.status(500).json({ error: "Failed to fetch Google Business Profile" });
+    }
+  });
+
+  // Create Google Business Profile for a client
+  app.post("/api/clients/:clientId/google-business", requirePermission("google_business.create"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      
+      // Check if profile already exists
+      const existingProfile = await storage.getGoogleBusinessProfile(clientId);
+      if (existingProfile) {
+        return res.status(400).json({ error: "Google Business Profile already exists for this client" });
+      }
+      
+      // Validate request body
+      const validatedData = insertGoogleBusinessProfileSchema.parse({
+        ...req.body,
+        clientId
+      });
+      
+      const profile = await storage.createGoogleBusinessProfile(validatedData);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error creating Google Business Profile:", error);
+      
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ 
+          error: "Invalid profile data", 
+          details: error.message 
+        });
+      }
+      
+      res.status(500).json({ error: "Failed to create Google Business Profile" });
+    }
+  });
+
+  // Update Google Business Profile
+  app.put("/api/google-business/:clientId", requirePermission("google_business.edit"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      
+      // Check if profile exists
+      const existingProfile = await storage.getGoogleBusinessProfile(clientId);
+      if (!existingProfile) {
+        return res.status(404).json({ error: "Google Business Profile not found" });
+      }
+      
+      // Validate update data
+      const validatedUpdates = insertGoogleBusinessProfileSchema.partial().parse(req.body);
+      
+      const profile = await storage.updateGoogleBusinessProfile(clientId, validatedUpdates);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error updating Google Business Profile:", error);
+      
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({ 
+          error: "Invalid profile data", 
+          details: error.message 
+        });
+      }
+      
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Google Business Profile not found" });
+      }
+      
+      res.status(500).json({ error: "Failed to update Google Business Profile" });
+    }
+  });
+
+  // Delete Google Business Profile
+  app.delete("/api/google-business/:clientId", requirePermission("google_business.delete"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      
+      // Check if profile exists
+      const existingProfile = await storage.getGoogleBusinessProfile(clientId);
+      if (!existingProfile) {
+        return res.status(404).json({ error: "Google Business Profile not found" });
+      }
+      
+      await storage.deleteGoogleBusinessProfile(clientId);
+      res.json({ message: "Google Business Profile deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting Google Business Profile:", error);
+      
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Google Business Profile not found" });
+      }
+      
+      res.status(500).json({ error: "Failed to delete Google Business Profile" });
+    }
+  });
+
+  // Sync Google Business Profile data
+  app.post("/api/google-business/:clientId/sync", requirePermission("google_business.edit"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      
+      // Check if profile exists
+      const existingProfile = await storage.getGoogleBusinessProfile(clientId);
+      if (!existingProfile) {
+        return res.status(404).json({ error: "Google Business Profile not found" });
+      }
+      
+      const profile = await storage.syncGoogleBusinessProfile(clientId);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error syncing Google Business Profile:", error);
+      
+      if (error instanceof Error && error.message.includes("not found")) {
+        return res.status(404).json({ error: "Google Business Profile not found" });
+      }
+      
+      res.status(500).json({ error: "Failed to sync Google Business Profile" });
     }
   });
 
