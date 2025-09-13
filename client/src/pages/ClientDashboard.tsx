@@ -404,13 +404,10 @@ export default function ClientDashboard() {
   // Mutations for Leads
   const createLeadMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch(`/api/client/${clientData?.id}/leads`, {
+      return apiRequest(`/api/client/${clientData?.id}/leads`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, estimatedValue: data.estimatedValue ? parseFloat(data.estimatedValue) : 0 })
       });
-      if (!response.ok) throw new Error('Failed to create lead');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/leads`] });
@@ -426,13 +423,10 @@ export default function ClientDashboard() {
   
   const updateLeadMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await fetch(`/api/client/${clientData?.id}/leads/${id}`, {
+      return apiRequest(`/api/client/${clientData?.id}/leads/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, estimatedValue: data.estimatedValue ? parseFloat(data.estimatedValue) : 0 })
       });
-      if (!response.ok) throw new Error('Failed to update lead');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/leads`] });
@@ -448,11 +442,9 @@ export default function ClientDashboard() {
   
   const deleteLeadMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/client/${clientData?.id}/leads/${id}`, {
+      return apiRequest(`/api/client/${clientData?.id}/leads/${id}`, {
         method: 'DELETE'
       });
-      if (!response.ok) throw new Error('Failed to delete lead');
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/leads`] });
@@ -1337,6 +1329,72 @@ export default function ClientDashboard() {
                 </DialogContent>
               </Dialog>
             </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Lead Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {leads.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-4">No leads captured yet</p>
+                    <Button onClick={() => openLeadModal()}>Add Your First Lead</Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {leads.map((lead) => (
+                      <div key={lead.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{lead.name}</p>
+                          <p className="text-sm text-gray-600">{lead.email} • {lead.phone}</p>
+                          <p className="text-sm text-gray-600">
+                            Source: {lead.source} • {new Date(lead.createdAt).toLocaleDateString()}
+                          </p>
+                          {lead.notes && (
+                            <p className="text-sm text-gray-500 mt-1">{lead.notes}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={lead.status === 'CONVERTED' ? 'default' : 'secondary'}>
+                            {lead.status}
+                          </Badge>
+                          {lead.estimatedValue > 0 && (
+                            <span className="text-sm">${lead.estimatedValue}</span>
+                          )}
+                          <div className="flex gap-1 ml-2">
+                            <Button variant="outline" size="sm" onClick={() => openLeadModal(lead)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Lead</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete the lead for {lead.name}?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteLeadMutation.mutate(lead.id)}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
               </div>
             )}
 
