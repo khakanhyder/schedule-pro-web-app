@@ -37,12 +37,18 @@ const businessProfileSchema = z.object({
   state: z.string().min(2, "State is required"),
   postalCode: z.string().min(5, "Valid postal code is required"),
   phoneNumber: z.string().min(10, "Valid phone number is required"),
-  website: z.string().url("Please enter a valid website URL").optional(),
+  website: z.preprocess((val) => val === '' ? undefined : val, z.string().url("Please enter a valid website URL").optional()),
   businessCategories: z.array(z.string()).min(1, "Select at least one category"),
   businessHours: z.string().optional(),
 });
 
+const linkProfileSchema = z.object({
+  googlePlaceId: z.string().min(10, "Valid Google Place ID is required"),
+  businessName: z.string().min(2, "Business name is required for verification"),
+});
+
 type BusinessProfileFormData = z.infer<typeof businessProfileSchema>;
+type LinkProfileFormData = z.infer<typeof linkProfileSchema>;
 
 const businessCategories = [
   "Beauty Salon", "Hair Salon", "Nail Salon", "Spa", "Barbershop",
@@ -107,6 +113,8 @@ const seoTips = [
 export default function GoogleBusinessSetup() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [setupMode, setSetupMode] = useState<'choice' | 'create' | 'link'>('choice');
+  const [googlePlaceId, setGooglePlaceId] = useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -126,16 +134,24 @@ export default function GoogleBusinessSetup() {
     },
   });
 
+  const linkForm = useForm<LinkProfileFormData>({
+    resolver: zodResolver(linkProfileSchema),
+    defaultValues: {
+      googlePlaceId: "",
+      businessName: "",
+    },
+  });
+
   const { data: businessProfile, isLoading } = useQuery({
-    queryKey: [`/api/client/${clientId}/google-business`],
+    queryKey: ['/api/clients', clientId, 'google-business'],
   });
 
   const createProfileMutation = useMutation({
     mutationFn: async (data: BusinessProfileFormData) => {
-      return apiRequest(`/api/client/${clientId}/google-business`, "POST", { ...data, clientId });
+      return apiRequest(`/api/clients/${clientId}/google-business`, "POST", { ...data, clientId });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/google-business`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clients', clientId, 'google-business'] });
       toast({
         title: "Business Profile Created",
         description: "Your Google Business profile has been set up successfully.",
@@ -151,12 +167,37 @@ export default function GoogleBusinessSetup() {
     },
   });
 
-  const syncProfileMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest(`/api/client/${clientId}/google-business/sync`, "POST");
+  const linkProfileMutation = useMutation({
+    mutationFn: async (data: LinkProfileFormData) => {
+      return apiRequest(`/api/clients/${clientId}/google-business`, "POST", { 
+        ...data, 
+        clientId,
+        isLinkedProfile: true 
+      });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/google-business`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/clients', clientId, 'google-business'] });
+      toast({
+        title: "Profile Linked Successfully",
+        description: "Your existing Google Business profile has been linked.",
+      });
+      setCurrentStep(2);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to link existing profile. Please check the Place ID and try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const syncProfileMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest(`/api/google-business/${clientId}/sync`, "POST");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/clients', clientId, 'google-business'] });
       toast({
         title: "Profile Synced",
         description: "Your Google Business profile has been updated.",
@@ -165,15 +206,20 @@ export default function GoogleBusinessSetup() {
   });
 
   const handleSubmit = (data: BusinessProfileFormData) => {
-    createProfileMutation.mutate({ ...data, businessCategories: selectedCategories });
+    createProfileMutation.mutate(data);
+  };
+
+  const handleLinkSubmit = (data: LinkProfileFormData) => {
+    linkProfileMutation.mutate(data);
   };
 
   const handleCategoryToggle = (category: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
+    const newCategories = selectedCategories.includes(category)
+      ? selectedCategories.filter(c => c !== category)
+      : [...selectedCategories, category];
+    
+    setSelectedCategories(newCategories);
+    form.setValue('businessCategories', newCategories, { shouldValidate: true });
   };
 
   const getStepStatus = (stepId: number, profile?: GoogleBusinessProfile) => {
@@ -276,17 +322,88 @@ export default function GoogleBusinessSetup() {
       </Card>
 
       {!businessProfile ? (
-        /* Setup Form */
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 1: Business Information</CardTitle>
-            <CardDescription>
-              Enter your business details to create your Google Business profile
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        /* Setup Choice and Forms */
+        <>
+          {setupMode === 'choice' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Google Business Profile Setup</CardTitle>
+                <CardDescription>
+                  Choose how you want to set up your Google Business Profile
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Create New Profile Option */}
+                  <div
+                    onClick={() => setSetupMode('create')}
+                    className="p-6 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition-all duration-200"
+                  >
+                    <div className="text-center space-y-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                        <Upload className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <h3 className="font-semibold text-lg">Create New Profile</h3>
+                      <p className="text-gray-600 text-sm">
+                        Set up a completely new Google Business Profile for your business
+                      </p>
+                      <div className="flex items-center justify-center gap-2 text-sm text-blue-600">
+                        <CheckCircle className="h-4 w-4" />
+                        Best for new businesses
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Link Existing Profile Option */}
+                  <div
+                    onClick={() => setSetupMode('link')}
+                    className="p-6 rounded-lg border-2 border-dashed border-gray-300 hover:border-green-500 hover:bg-green-50 cursor-pointer transition-all duration-200"
+                  >
+                    <div className="text-center space-y-3">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                        <ExternalLink className="h-6 w-6 text-green-600" />
+                      </div>
+                      <h3 className="font-semibold text-lg">Link Existing Profile</h3>
+                      <p className="text-gray-600 text-sm">
+                        Connect your existing Google Business Profile to this platform
+                      </p>
+                      <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                        <CheckCircle className="h-4 w-4" />
+                        Already have a profile
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-center text-xs text-gray-500">
+                  Don't worry, you can change this later if needed
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {setupMode === 'create' && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Step 1: Create New Profile</CardTitle>
+                    <CardDescription>
+                      Enter your business details to create your Google Business profile
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSetupMode('choice')}
+                  >
+                    ← Back to Options
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -409,29 +526,33 @@ export default function GoogleBusinessSetup() {
                   />
                 </div>
 
-                <div>
-                  <FormLabel className="text-base font-medium">Business Categories</FormLabel>
-                  <FormDescription className="mb-3">
-                    Select categories that best describe your business
-                  </FormDescription>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {businessCategories.map((category) => (
-                      <Button
-                        key={category}
-                        type="button"
-                        variant={selectedCategories.includes(category) ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleCategoryToggle(category)}
-                        className="justify-start"
-                      >
-                        {category}
-                      </Button>
-                    ))}
-                  </div>
-                  {selectedCategories.length === 0 && (
-                    <p className="text-sm text-red-600 mt-2">Please select at least one category</p>
+                <FormField
+                  control={form.control}
+                  name="businessCategories"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium">Business Categories</FormLabel>
+                      <FormDescription className="mb-3">
+                        Select categories that best describe your business
+                      </FormDescription>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        {businessCategories.map((category) => (
+                          <Button
+                            key={category}
+                            type="button"
+                            variant={selectedCategories.includes(category) ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleCategoryToggle(category)}
+                            className="justify-start"
+                          >
+                            {category}
+                          </Button>
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
 
                 <FormField
                   control={form.control}
@@ -455,19 +576,118 @@ export default function GoogleBusinessSetup() {
                   )}
                 />
 
-                <div className="flex justify-end">
-                  <Button 
-                    type="submit" 
-                    disabled={createProfileMutation.isPending || selectedCategories.length === 0}
-                    size="lg"
+                    <div className="flex justify-end">
+                      <Button 
+                        type="submit" 
+                        disabled={createProfileMutation.isPending}
+                        size="lg"
+                      >
+                        {createProfileMutation.isPending ? "Creating..." : "Create Business Profile"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          )}
+
+          {setupMode === 'link' && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Step 1: Link Existing Profile</CardTitle>
+                    <CardDescription>
+                      Connect your existing Google Business Profile to this platform
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSetupMode('choice')}
                   >
-                    {createProfileMutation.isPending ? "Creating..." : "Create Business Profile"}
+                    ← Back to Options
                   </Button>
                 </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                <Form {...linkForm}>
+                  <form onSubmit={linkForm.handleSubmit(handleLinkSubmit)} className="space-y-6">
+                    <div className="space-y-4">
+                      <FormField
+                        control={linkForm.control}
+                        name="googlePlaceId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Google Place ID</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="ChIJOwE7_GTtwokRFq0uOwLSE9g"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Find your Google Place ID at{' '}
+                              <a 
+                                href="https://developers.google.com/maps/documentation/places/web-service/place-id" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                Google Place ID Finder
+                              </a>
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={linkForm.control}
+                        name="businessName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Business Name (for verification)</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Your Business Name"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Enter your business name exactly as it appears on Google
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">How to find your Google Place ID:</h4>
+                      <ol className="text-sm text-blue-800 space-y-1">
+                        <li>1. Search for your business on Google Maps</li>
+                        <li>2. Click on your business listing</li>
+                        <li>3. Copy the URL from your browser</li>
+                        <li>4. The Place ID is in the URL after "place/"</li>
+                      </ol>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <Button 
+                        type="submit" 
+                        disabled={linkProfileMutation.isPending}
+                        size="lg"
+                      >
+                        {linkProfileMutation.isPending ? "Linking..." : "Link Existing Profile"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          )}
+        </>
       ) : (
         /* Existing Profile Management */
         <div className="grid gap-6 lg:grid-cols-2">
