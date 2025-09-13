@@ -143,7 +143,7 @@ export default function GoogleBusinessSetup() {
   });
 
   const { data: businessProfile, isLoading } = useQuery({
-    queryKey: ['/api/clients', clientId, 'google-business'],
+    queryKey: [`/api/clients/${clientId}/google-business`],
   });
 
   const createProfileMutation = useMutation({
@@ -151,7 +151,7 @@ export default function GoogleBusinessSetup() {
       return apiRequest(`/api/clients/${clientId}/google-business`, "POST", { ...data, clientId });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clients', clientId, 'google-business'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${clientId}/google-business`] });
       toast({
         title: "Business Profile Created",
         description: "Your Google Business profile has been set up successfully.",
@@ -176,7 +176,7 @@ export default function GoogleBusinessSetup() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clients', clientId, 'google-business'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${clientId}/google-business`] });
       toast({
         title: "Profile Linked Successfully",
         description: "Your existing Google Business profile has been linked.",
@@ -197,7 +197,7 @@ export default function GoogleBusinessSetup() {
       return apiRequest(`/api/google-business/${clientId}/sync`, "POST");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/clients', clientId, 'google-business'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${clientId}/google-business`] });
       toast({
         title: "Profile Synced",
         description: "Your Google Business profile has been updated.",
