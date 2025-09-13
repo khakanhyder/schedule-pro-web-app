@@ -470,7 +470,11 @@ export const googleBusinessProfiles = pgTable("google_business_profiles", {
   clientId: text("client_id").notNull().unique(),
   businessName: text("business_name").notNull(),
   googlePlaceId: text("google_place_id"),
-  isVerified: boolean("is_verified").default(false),
+  googleAccountId: text("google_account_id"), // Google account ID from OAuth
+  locationId: text("location_id"), // Google Business Profile location ID
+  oauthConnected: boolean("oauth_connected").default(false),
+  verificationStatus: text("verification_status").notNull().default("UNLINKED"), // UNLINKED, LINKED_UNVERIFIED, PENDING_VERIFICATION, VERIFIED, FAILED
+  verificationSource: text("verification_source"), // GOOGLE, MANUAL
   averageRating: real("average_rating"),
   totalReviews: integer("total_reviews").default(0),
   businessHours: text("business_hours"), // JSON string
@@ -495,7 +499,11 @@ export const insertGoogleBusinessProfileSchema = createInsertSchema(googleBusine
   clientId: true,
   businessName: true,
   googlePlaceId: true,
-  isVerified: true,
+  googleAccountId: true,
+  locationId: true,
+  oauthConnected: true,
+  verificationStatus: true,
+  verificationSource: true,
   averageRating: true,
   totalReviews: true,
   businessHours: true,
