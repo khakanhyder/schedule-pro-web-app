@@ -79,6 +79,48 @@ export default function DomainConfig() {
     },
   });
 
+  // Verify domain mutation
+  const verifyDomainMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      return await apiRequest(`/api/domains/${domainId}/verify`, 'POST');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${clientId}/domains`] });
+      toast({
+        title: "Verification Started",
+        description: "Domain verification check initiated. This may take a few minutes.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Verification Failed",
+        description: error.message || "Failed to verify domain",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete domain mutation
+  const deleteDomainMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      return await apiRequest(`/api/domains/${domainId}`, 'DELETE');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${clientId}/domains`] });
+      toast({
+        title: "Domain Removed",
+        description: "Domain has been removed successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to remove domain",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: DomainFormData) => {
     createDomainMutation.mutate(data);
   };
@@ -200,7 +242,7 @@ export default function DomainConfig() {
           ) : domains && Array.isArray(domains) && domains.length > 0 ? (
             <div className="space-y-4">
               {domains.map((domain: any) => (
-                <div key={domain.id} className="border rounded-lg p-4 space-y-3" data-testid={`domain-${domain.id}`}>
+                <div key={domain.id} className="border rounded-lg p-4 space-y-4" data-testid={`domain-${domain.id}`}>
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -208,13 +250,146 @@ export default function DomainConfig() {
                           {domain.subdomain ? `${domain.subdomain}.${domain.domain}` : domain.domain}
                         </h3>
                         <Badge variant="outline">{domain.domainType}</Badge>
-                        <Badge variant="secondary">{domain.verificationStatus || 'PENDING'}</Badge>
+                        <Badge variant={domain.verificationStatus === 'VERIFIED' ? 'default' : 'secondary'}>
+                          {domain.verificationStatus || 'PENDING'}
+                        </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">
                         Added on {domain.createdAt ? new Date(domain.createdAt).toLocaleDateString() : 'Unknown'}
                       </p>
                     </div>
+                    <div className="flex items-center gap-2">
+                      {domain.verificationStatus !== 'VERIFIED' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => verifyDomainMutation.mutate(domain.id)}
+                          disabled={verifyDomainMutation.isPending}
+                          data-testid={`button-verify-${domain.id}`}
+                        >
+                          {verifyDomainMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            'Verify'
+                          )}
+                        </Button>
+                      )}
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => deleteDomainMutation.mutate(domain.id)}
+                        disabled={deleteDomainMutation.isPending}
+                        data-testid={`button-delete-${domain.id}`}
+                      >
+                        {deleteDomainMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Delete'
+                        )}
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* DNS Verification Instructions */}
+                  {domain.verificationStatus !== 'VERIFIED' && (
+                    <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-3">
+                        DNS Configuration Required
+                      </h4>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                        Add these DNS records to your domain registrar (GoDaddy, Hostinger, etc.):
+                      </p>
+                      
+                      <div className="space-y-3">
+                        {/* Verification TXT Record */}
+                        <div className="bg-white dark:bg-gray-900 p-3 rounded border">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-mono text-xs text-gray-600 dark:text-gray-400">TXT Record (For Verification)</p>
+                              <p className="font-mono text-sm">
+                                <span className="text-green-600">Name:</span> @ or {domain.domain}
+                              </p>
+                              <p className="font-mono text-sm">
+                                <span className="text-green-600">Value:</span> scheduled-verify-{domain.id}
+                              </p>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => navigator.clipboard.writeText(`scheduled-verify-${domain.id}`)}
+                            >
+                              Copy
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* A Record for pointing */}
+                        <div className="bg-white dark:bg-gray-900 p-3 rounded border">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-mono text-xs text-gray-600 dark:text-gray-400">A Record (For Pointing)</p>
+                              <p className="font-mono text-sm">
+                                <span className="text-green-600">Name:</span> @ or {domain.domain}
+                              </p>
+                              <p className="font-mono text-sm">
+                                <span className="text-green-600">Value:</span> 34.102.136.180
+                              </p>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => navigator.clipboard.writeText('34.102.136.180')}
+                            >
+                              Copy
+                            </Button>
+                          </div>
+                        </div>
+
+                        {domain.subdomain && (
+                          <div className="bg-white dark:bg-gray-900 p-3 rounded border">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-mono text-xs text-gray-600 dark:text-gray-400">CNAME Record (For Subdomain)</p>
+                                <p className="font-mono text-sm">
+                                  <span className="text-green-600">Name:</span> {domain.subdomain}
+                                </p>
+                                <p className="font-mono text-sm">
+                                  <span className="text-green-600">Value:</span> {domain.domain}
+                                </p>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => navigator.clipboard.writeText(domain.domain)}
+                              >
+                                Copy
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-3 text-xs text-blue-600 dark:text-blue-400">
+                        <p>💡 After adding these records:</p>
+                        <ol className="list-decimal list-inside mt-1 space-y-1">
+                          <li>Wait 5-10 minutes for DNS propagation</li>
+                          <li>Click the "Verify" button above</li>
+                          <li>Once verified, your domain will be live!</li>
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Success message for verified domains */}
+                  {domain.verificationStatus === 'VERIFIED' && (
+                    <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                          Domain verified and active! Your website is now live at {domain.subdomain ? `${domain.subdomain}.${domain.domain}` : domain.domain}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

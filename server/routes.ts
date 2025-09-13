@@ -1779,6 +1779,74 @@ Email: ${client.email}
     }
   });
 
+  // Verify domain DNS configuration
+  app.post("/api/domains/:id/verify", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get domain configuration
+      const domain = await storage.getDomainConfiguration(id);
+      if (!domain) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+
+      // Perform DNS verification
+      const { DNSVerificationService } = await import("./dns-verification.js");
+      const dnsService = new DNSVerificationService();
+      const fullDomain = domain.subdomain ? `${domain.subdomain}.${domain.domain}` : domain.domain;
+      
+      const verificationResult = await dnsService.verifyDomainViaDNS(fullDomain, `scheduled-verify-${id}`);
+      
+      if (verificationResult.success) {
+        // Update domain status to verified
+        const updatedDomain = await storage.updateDomainConfiguration(id, {
+          ...domain,
+          verificationStatus: "VERIFIED",
+          verifiedAt: new Date()
+        });
+        
+        res.json({
+          message: "Domain verified successfully",
+          domain: updatedDomain,
+          verificationResult
+        });
+      } else {
+        res.status(400).json({
+          error: "Domain verification failed",
+          details: verificationResult.errorMessage,
+          instructions: "Please ensure you have added the required DNS records and wait 5-10 minutes for propagation"
+        });
+      }
+    } catch (error) {
+      console.error("Error verifying domain:", error);
+      res.status(500).json({ error: "Domain verification failed" });
+    }
+  });
+
+  // Delete domain configuration
+  app.delete("/api/domains/:id", requirePermission("domains.delete"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get domain configuration first to verify it exists
+      const domain = await storage.getDomainConfiguration(id);
+      if (!domain) {
+        return res.status(404).json({ error: "Domain configuration not found" });
+      }
+
+      // Delete the domain configuration
+      await storage.deleteDomainConfiguration(id);
+      
+      res.json({ 
+        message: "Domain configuration removed successfully",
+        removedDomain: domain.domain
+      });
+    } catch (error) {
+      console.error("Error deleting domain configuration:", error);
+      res.status(500).json({ error: "Failed to delete domain configuration" });
+    }
+  });
+
   // Create domain configuration
   app.post("/api/clients/:clientId/domains", requirePermission("domains.create"), async (req, res) => {
     try {
