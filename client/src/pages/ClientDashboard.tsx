@@ -1337,67 +1337,6 @@ export default function ClientDashboard() {
                 </DialogContent>
               </Dialog>
             </div>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Services</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {services.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-4">No services added yet</p>
-                    <Button onClick={() => openServiceModal()}>Add Your First Service</Button>
-                  </div>
-                ) : (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {services.map((service) => (
-                      <div key={service.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-medium">{service.name}</h3>
-                          <Badge variant={service.isActive ? 'default' : 'secondary'}>
-                            {service.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">{service.description}</p>
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <span className="font-medium">${service.price}</span>
-                            <span className="text-sm text-gray-600 ml-2">• {service.durationMinutes}min</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => openServiceModal(service)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Service</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "{service.name}"? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => deleteServiceMutation.mutate(service.id)}>
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
               </div>
             )}
 

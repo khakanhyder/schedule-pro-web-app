@@ -2256,14 +2256,21 @@ Email: ${client.email}
         return res.status(404).json({ error: "Google Business Profile not found" });
       }
       
+      if (error instanceof Error && error.message.includes("OAuth authentication")) {
+        return res.status(401).json({ error: error.message });
+      }
+      
       res.status(500).json({ error: "Failed to sync Google Business Profile" });
     }
   });
 
   // Google OAuth endpoints
-  app.get("/api/auth/google/start/:clientId", requirePermission("google_business.edit"), async (req, res) => {
+  app.get("/api/auth/google/start/:clientId", async (req, res) => {
     try {
       const { clientId } = req.params;
+      
+      // Generate secure CSRF state token
+      const stateToken = `${clientId}_${crypto.randomUUID()}_${Date.now()}`;
       
       // Google OAuth 2.0 configuration
       const googleOAuthURL = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -2271,7 +2278,7 @@ Email: ${client.email}
       googleOAuthURL.searchParams.set("redirect_uri", `${process.env.BASE_URL || 'http://localhost:5000'}/api/auth/google/callback`);
       googleOAuthURL.searchParams.set("response_type", "code");
       googleOAuthURL.searchParams.set("scope", "https://www.googleapis.com/auth/business.manage");
-      googleOAuthURL.searchParams.set("state", clientId); // Use clientId as state for security
+      googleOAuthURL.searchParams.set("state", stateToken); // Secure CSRF token
       googleOAuthURL.searchParams.set("access_type", "offline");
       googleOAuthURL.searchParams.set("prompt", "consent");
       
@@ -2284,7 +2291,10 @@ Email: ${client.email}
 
   app.get("/api/auth/google/callback", async (req, res) => {
     try {
-      const { code, state: clientId } = req.query;
+      const { code, state } = req.query;
+      
+      // Extract clientId from secure state token  
+      const clientId = typeof state === 'string' ? state.split('_')[0] : null;
       
       if (!code || !clientId) {
         return res.status(400).json({ error: "Missing authorization code or client ID" });

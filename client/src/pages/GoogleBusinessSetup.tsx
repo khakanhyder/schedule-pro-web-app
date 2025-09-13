@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   MapPin, Star, Camera, Globe, CheckCircle, AlertCircle, 
@@ -27,7 +27,20 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { GoogleBusinessProfile } from "@shared/schema";
 
-const clientId = "client_1"; // This would come from auth context
+// Get clientId dynamically from localStorage (same as other components)
+const getClientId = () => {
+  const clientData = localStorage.getItem('clientData');
+  if (clientData) {
+    try {
+      return JSON.parse(clientData).id;
+    } catch (e) {
+      console.warn('Failed to parse clientData from localStorage');
+    }
+  }
+  return localStorage.getItem('currentClientId') || 'client_1';
+};
+
+const clientId = getClientId();
 
 const businessProfileSchema = z.object({
   businessName: z.string().min(2, "Business name is required"),
@@ -117,6 +130,38 @@ export default function GoogleBusinessSetup() {
   const [googlePlaceId, setGooglePlaceId] = useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Handle OAuth callback success/failure
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const connected = urlParams.get('connected');
+    const error = urlParams.get('error');
+    
+    if (connected === 'true') {
+      toast({
+        title: "Google Connected Successfully!",
+        description: "Your Google Business Profile has been connected. You can now sync your profile data.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${clientId}/google-business`] });
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (error) {
+      let errorMessage = "Failed to connect with Google. Please try again.";
+      if (error === 'oauth_failed') {
+        errorMessage = "Google authentication failed. Please check your permissions and try again.";
+      } else if (error === 'callback_failed') {
+        errorMessage = "OAuth callback failed. Please try again or contact support.";
+      }
+      
+      toast({
+        title: "Connection Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const form = useForm<BusinessProfileFormData>({
     resolver: zodResolver(businessProfileSchema),
@@ -749,11 +794,8 @@ export default function GoogleBusinessSetup() {
                   <div className="flex flex-col gap-3 pt-4">
                     <Button 
                       onClick={() => {
-                        // TODO: Implement Google OAuth flow
-                        toast({
-                          title: "Google OAuth Required",
-                          description: "Google Business Profile OAuth integration is being set up. This will redirect you to Google for authentication.",
-                        });
+                        // Redirect to Google OAuth flow
+                        window.location.href = `/api/auth/google/start/${clientId}`;
                       }}
                       className="w-full"
                       size="lg"
