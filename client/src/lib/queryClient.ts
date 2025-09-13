@@ -14,9 +14,13 @@ export async function apiRequest(
 ): Promise<Response> {
   const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
 
-  // Add team member session header if available
+  // Add authentication session header for both business owners and team members
   const teamMemberContext = localStorage.getItem("teamMemberContext");
+  const clientData = localStorage.getItem("clientData");
+  const clientUser = localStorage.getItem("clientUser");
+  
   if (teamMemberContext) {
+    // Team member authentication
     try {
       const context = JSON.parse(teamMemberContext);
       const sessionData = {
@@ -27,6 +31,22 @@ export async function apiRequest(
       headers['X-Team-Member-Session'] = JSON.stringify(sessionData);
     } catch (error) {
       console.error("Error parsing team member context for API request:", error);
+    }
+  } else if (clientData && clientUser) {
+    // Business owner authentication
+    try {
+      const client = JSON.parse(clientData);
+      const user = JSON.parse(clientUser);
+      
+      // Business owners get full permissions
+      const sessionData = {
+        teamMemberId: user.id, // Use user ID as team member ID for business owners
+        permissions: ["*"], // Full access for business owners
+        clientId: client.id
+      };
+      headers['X-Team-Member-Session'] = JSON.stringify(sessionData);
+    } catch (error) {
+      console.error("Error parsing business owner context for API request:", error);
     }
   }
 
@@ -49,9 +69,13 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const headers: Record<string, string> = {};
 
-    // Add team member session header if available
+    // Add authentication session header for both business owners and team members
     const teamMemberContext = localStorage.getItem("teamMemberContext");
+    const clientData = localStorage.getItem("clientData");
+    const clientUser = localStorage.getItem("clientUser");
+    
     if (teamMemberContext) {
+      // Team member authentication
       try {
         const context = JSON.parse(teamMemberContext);
         const sessionData = {
@@ -62,6 +86,22 @@ export const getQueryFn: <T>(options: {
         headers['X-Team-Member-Session'] = JSON.stringify(sessionData);
       } catch (error) {
         console.error("Error parsing team member context for API request:", error);
+      }
+    } else if (clientData && clientUser) {
+      // Business owner authentication
+      try {
+        const client = JSON.parse(clientData);
+        const user = JSON.parse(clientUser);
+        
+        // Business owners get full permissions
+        const sessionData = {
+          teamMemberId: user.id, // Use user ID as team member ID for business owners
+          permissions: ["*"], // Full access for business owners
+          clientId: client.id
+        };
+        headers['X-Team-Member-Session'] = JSON.stringify(sessionData);
+      } catch (error) {
+        console.error("Error parsing business owner context for API request:", error);
       }
     }
 

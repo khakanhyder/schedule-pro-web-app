@@ -202,14 +202,14 @@ export default function ClientDashboard() {
     const teamContextData = localStorage.getItem("teamMemberContext");
     const teamSession = localStorage.getItem("teamMemberSession");
     
-    // Only clear team context if explicitly marked as business owner (not just missing team data)
-    if ((userData.role === 'BUSINESS_OWNER' || userData.userType === 'BUSINESS_OWNER') && teamContextData) {
-      // Clear any team member context for business owners only if they have team context
+    // Business owners should never have team member context - they have full access
+    if (userData.role === 'CLIENT' || userData.role === 'BUSINESS_OWNER' || userData.userType === 'BUSINESS_OWNER') {
+      // Clear any team member context for business owners - they should have full client admin access
       localStorage.removeItem("teamMemberContext");
       localStorage.removeItem("teamMemberSession");
       setTeamContext(null);
-      console.log("Business owner login detected, clearing team member context");
-    } else if (teamContextData) {
+      console.log("Business owner/client detected, ensuring full access (no team restrictions)");
+    } else if (teamContextData && (userData.role === 'TEAM_MEMBER' || userData.userType === 'TEAM_MEMBER')) {
       // This is a team member - set team context
       try {
         const context = JSON.parse(teamContextData);

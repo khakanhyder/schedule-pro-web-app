@@ -1,5 +1,5 @@
 // Temporary auth setup for testing domain functionality
-// In production, this would be handled by actual login flow
+// This should NOT be applied to business owners - only for actual team member testing
 
 export function setupTestTeamMemberSession() {
   const teamMemberContext = {
@@ -23,9 +23,9 @@ export function setupTestTeamMemberSession() {
   console.log('Test team member session created:', teamMemberContext);
 }
 
-// Call this function when the app loads for testing
-if (typeof window !== 'undefined' && !localStorage.getItem('teamMemberContext')) {
-  // Set testing flag to prevent team context from being cleared during client login
-  localStorage.setItem('testingDomains', 'true');
-  setupTestTeamMemberSession();
-}
+// DON'T AUTO-SETUP TEAM CONTEXT - This should only be for actual team members
+// Business owners should have full access without team member permissions
+// if (typeof window !== 'undefined' && !localStorage.getItem('teamMemberContext')) {
+//   localStorage.setItem('testingDomains', 'true');
+//   setupTestTeamMemberSession();
+// }

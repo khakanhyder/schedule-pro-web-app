@@ -49,34 +49,40 @@ const requirePermission = (requiredPermission: string) => {
       // Check if request has team member session data
       const teamMemberSession = req.headers['x-team-member-session'];
       
-      if (!teamMemberSession) {
-        // SECURITY FIX: Require authentication for all domain operations
-        return res.status(401).json({ error: "Authentication required: Missing team member session" });
-      }
+      // First check if this is a business owner with full access
+      // Business owners should bypass team member permission checking
+      if (teamMemberSession) {
+        try {
+          const sessionData = JSON.parse(teamMemberSession as string);
+          
+          // If session has full permissions (*), this is a business owner - grant access
+          if (sessionData.permissions && sessionData.permissions.includes('*')) {
+            console.log(`Business owner access granted for ${requiredPermission}`);
+            return next();
+          }
+          
+          // Verify client ID matches for team members
+          const { clientId } = req.params;
+          if (!clientId || sessionData.clientId !== clientId) {
+            return res.status(403).json({ error: "Access denied: Client ID mismatch or missing" });
+          }
 
-      // Parse team member session
-      let sessionData: TeamMemberSession;
-      try {
-        sessionData = JSON.parse(teamMemberSession as string);
-      } catch {
-        return res.status(401).json({ error: "Invalid team member session format" });
-      }
+          // Check if team member has required permission
+          if (!sessionData.permissions.includes(requiredPermission)) {
+            return res.status(403).json({ 
+              error: `Access denied: Missing required permission '${requiredPermission}'` 
+            });
+          }
 
-      // Verify client ID matches
-      const { clientId } = req.params;
-      if (!clientId || sessionData.clientId !== clientId) {
-        return res.status(403).json({ error: "Access denied: Client ID mismatch or missing" });
+          // Permission granted for team member
+          return next();
+        } catch (parseError) {
+          return res.status(401).json({ error: "Invalid team member session format" });
+        }
       }
-
-      // Check if team member has required permission
-      if (!sessionData.permissions.includes(requiredPermission)) {
-        return res.status(403).json({ 
-          error: `Access denied: Missing required permission '${requiredPermission}'` 
-        });
-      }
-
-      // Permission granted
-      next();
+      
+      // No authentication provided
+      return res.status(401).json({ error: "Authentication required: Missing team member session" });
     } catch (error) {
       console.error("Permission check error:", error);
       res.status(500).json({ error: "Permission validation failed" });
