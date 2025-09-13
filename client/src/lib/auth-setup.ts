@@ -25,5 +25,7 @@ export function setupTestTeamMemberSession() {
 
 // Call this function when the app loads for testing
 if (typeof window !== 'undefined' && !localStorage.getItem('teamMemberContext')) {
+  // Set testing flag to prevent team context from being cleared during client login
+  localStorage.setItem('testingDomains', 'true');
   setupTestTeamMemberSession();
 }

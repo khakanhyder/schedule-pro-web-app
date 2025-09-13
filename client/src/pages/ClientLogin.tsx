@@ -29,9 +29,14 @@ export default function ClientLogin() {
       return response.json();
     },
     onSuccess: (data) => {
-      // Clear any team member data when business owner logs in
-      localStorage.removeItem('teamMemberSession');
-      localStorage.removeItem('teamMemberContext');
+      // Only clear team member data in production, not for testing domain functionality
+      const isTestingDomains = localStorage.getItem('testingDomains') === 'true';
+      
+      if (!isTestingDomains) {
+        // Clear any team member data when business owner logs in
+        localStorage.removeItem('teamMemberSession');
+        localStorage.removeItem('teamMemberContext');
+      }
       
       // Store client login info and redirect to client dashboard
       localStorage.setItem('clientUser', JSON.stringify(data.user));
