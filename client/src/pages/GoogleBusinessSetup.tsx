@@ -203,6 +203,13 @@ export default function GoogleBusinessSetup() {
         description: "Your Google Business profile has been updated.",
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Sync Failed",
+        description: error?.message || "Unable to sync profile. Google OAuth authentication required.",
+        variant: "destructive",
+      });
+    },
   });
 
   const handleSubmit = (data: BusinessProfileFormData) => {

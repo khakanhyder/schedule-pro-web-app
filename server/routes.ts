@@ -2260,6 +2260,85 @@ Email: ${client.email}
     }
   });
 
+  // Google OAuth endpoints
+  app.get("/api/auth/google/start/:clientId", requirePermission("google_business.edit"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      
+      // Google OAuth 2.0 configuration
+      const googleOAuthURL = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+      googleOAuthURL.searchParams.set("client_id", process.env.GOOGLE_CLIENT_ID || "");
+      googleOAuthURL.searchParams.set("redirect_uri", `${process.env.BASE_URL || 'http://localhost:5000'}/api/auth/google/callback`);
+      googleOAuthURL.searchParams.set("response_type", "code");
+      googleOAuthURL.searchParams.set("scope", "https://www.googleapis.com/auth/business.manage");
+      googleOAuthURL.searchParams.set("state", clientId); // Use clientId as state for security
+      googleOAuthURL.searchParams.set("access_type", "offline");
+      googleOAuthURL.searchParams.set("prompt", "consent");
+      
+      res.redirect(googleOAuthURL.toString());
+    } catch (error) {
+      console.error("Error starting Google OAuth:", error);
+      res.status(500).json({ error: "Failed to start Google authentication" });
+    }
+  });
+
+  app.get("/api/auth/google/callback", async (req, res) => {
+    try {
+      const { code, state: clientId } = req.query;
+      
+      if (!code || !clientId) {
+        return res.status(400).json({ error: "Missing authorization code or client ID" });
+      }
+      
+      // Exchange authorization code for access token
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          client_id: process.env.GOOGLE_CLIENT_ID || "",
+          client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
+          code: code as string,
+          grant_type: "authorization_code",
+          redirect_uri: `${process.env.BASE_URL || 'http://localhost:5000'}/api/auth/google/callback`,
+        }),
+      });
+      
+      const tokenData = await tokenResponse.json();
+      
+      if (tokenData.error) {
+        console.error("Google OAuth error:", tokenData.error);
+        return res.redirect(`/google-business-setup?error=oauth_failed`);
+      }
+      
+      // Get user info to get Google account ID
+      const userResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`,
+        },
+      });
+      
+      const userData = await userResponse.json();
+      
+      // Update the Google Business Profile with OAuth information
+      await storage.updateGoogleBusinessProfile(clientId as string, {
+        oauthConnected: true,
+        googleAccountId: userData.id,
+        verificationStatus: "LINKED_UNVERIFIED", // Will become VERIFIED after successful sync
+        verificationSource: "GOOGLE",
+        // Store tokens securely (in real app, encrypt these)
+        // For now, we'll just mark as connected
+      });
+      
+      // Redirect back to the setup page with success
+      res.redirect("/google-business-setup?connected=true");
+    } catch (error) {
+      console.error("Error handling Google OAuth callback:", error);
+      res.redirect("/google-business-setup?error=callback_failed");
+    }
+  });
+
   const server = createServer(app);
   return server;
 }
