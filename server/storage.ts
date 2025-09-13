@@ -1284,7 +1284,11 @@ class MemStorage implements IStorage {
       clientId: profile.clientId,
       businessName: profile.businessName,
       googlePlaceId: profile.googlePlaceId || null,
-      isVerified: profile.isVerified || false,
+      googleAccountId: profile.googleAccountId || null,
+      locationId: profile.locationId || null,
+      oauthConnected: profile.oauthConnected || false,
+      verificationStatus: profile.verificationStatus || "UNLINKED",
+      verificationSource: profile.verificationSource || null,
       averageRating: profile.averageRating || null,
       totalReviews: profile.totalReviews || 0,
       businessHours: profile.businessHours || null,
@@ -1330,15 +1334,9 @@ class MemStorage implements IStorage {
     const profile = await this.getGoogleBusinessProfile(clientId);
     if (!profile) throw new Error("Google Business Profile not found");
 
-    // Mock sync implementation - in real app this would call Google My Business API
-    const mockSyncData = {
-      averageRating: 4.6 + Math.random() * 0.8, // 4.6 to 5.4
-      totalReviews: Math.floor(50 + Math.random() * 200), // 50 to 250 reviews
-      isVerified: true,
-      lastSyncAt: new Date(),
-    };
-    
-    return this.updateGoogleBusinessProfile(clientId, mockSyncData);
+    // Real Google My Business API integration required
+    // This endpoint requires actual OAuth authentication and Google My Business API calls
+    throw new Error("Google Business Profile sync requires OAuth authentication. Please connect your Google account first.");
   }
 }
 

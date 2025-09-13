@@ -861,7 +861,22 @@ export default function GoogleBusinessSetup() {
                   <Edit3 className="h-4 w-4 mr-2" />
                   {syncProfileMutation.isPending ? "Syncing..." : "Sync Profile"}
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => {
+                    const profile = businessProfile as GoogleBusinessProfile;
+                    
+                    // Create a Google Maps search URL using business information
+                    const searchQuery = encodeURIComponent(
+                      `${profile.businessName} ${profile.address || ''} ${profile.city || ''} ${profile.state || ''} ${profile.postalCode || ''}`
+                    );
+                    const googleUrl = `https://www.google.com/maps/search/${searchQuery}`;
+                    
+                    window.open(googleUrl, '_blank', 'noopener,noreferrer');
+                  }}
+                >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   View on Google
                 </Button>
