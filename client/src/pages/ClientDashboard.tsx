@@ -202,9 +202,9 @@ export default function ClientDashboard() {
     const teamContextData = localStorage.getItem("teamMemberContext");
     const teamSession = localStorage.getItem("teamMemberSession");
     
-    // If user has role BUSINESS_OWNER or no team context, they are the business owner
-    if (userData.role === 'BUSINESS_OWNER' || userData.userType === 'BUSINESS_OWNER' || !teamContextData || !teamSession) {
-      // Clear any team member context for business owners
+    // Only clear team context if explicitly marked as business owner (not just missing team data)
+    if ((userData.role === 'BUSINESS_OWNER' || userData.userType === 'BUSINESS_OWNER') && teamContextData) {
+      // Clear any team member context for business owners only if they have team context
       localStorage.removeItem("teamMemberContext");
       localStorage.removeItem("teamMemberSession");
       setTeamContext(null);
