@@ -2385,7 +2385,7 @@ export default function AdvancedWebsiteBuilder() {
                   </div>
                 ) : section.type === 'lead-form' ? (
                   <LeadForm
-                    clientId={clientId}
+                    clientId={clientId || ''}
                     title={section.title}
                     description={section.content}
                     buttonText="Get My Quote"

@@ -43,6 +43,18 @@ interface ClientService {
   isActive: boolean;
 }
 
+interface WebsiteData {
+  id?: string;
+  clientId?: string;
+  title?: string;
+  description?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  sections?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // Reviews Carousel Component for Client Website
 function ReviewsCarousel({ reviews, title, style }: { 
   reviews: Array<{
@@ -189,7 +201,7 @@ export default function ClientWebsite() {
     queryKey: [`/api/public/client/${clientId}`]
   });
 
-  const { data: websiteData } = useQuery({
+  const { data: websiteData } = useQuery<WebsiteData>({
     queryKey: [`/api/public/client/${clientId}/website`],
     enabled: !!clientId
   });
@@ -313,7 +325,7 @@ export default function ClientWebsite() {
   };
 
   // Parse website sections
-  let websiteSections = [];
+  let websiteSections: any[] = [];
   if (websiteData?.sections) {
     try {
       websiteSections = JSON.parse(websiteData.sections);
@@ -350,7 +362,7 @@ export default function ClientWebsite() {
         key={section.id}
         className={`${getPaddingClass(section.settings?.padding)} ${getAlignmentClass(section.settings?.alignment)} min-h-[200px]`}
         style={{
-          backgroundColor: section.settings?.backgroundColor || (section.type === 'hero' ? websiteData?.primaryColor || '#3B82F6' : '#FFFFFF'),
+          backgroundColor: section.settings?.backgroundColor || (section.type === 'hero' ? (websiteData?.primaryColor || '#3B82F6') : '#FFFFFF'),
           color: section.settings?.textColor || (section.type === 'hero' ? '#FFFFFF' : '#1F2937')
         }}
       >
@@ -411,7 +423,7 @@ export default function ClientWebsite() {
                         <p className="text-gray-600 mb-4">{service.description}</p>
                         <div className="flex justify-between items-center mb-4">
                           <div>
-                            <span className="text-2xl font-bold" style={{ color: websiteData?.primaryColor || '#3B82F6' }}>
+                            <span className="text-2xl font-bold" style={{ color: (websiteData?.primaryColor || '#3B82F6') }}>
                               ${service.price}
                             </span>
                           </div>
@@ -422,7 +434,7 @@ export default function ClientWebsite() {
                         </div>
                         <Button 
                           className="w-full" 
-                          style={{ backgroundColor: websiteData?.primaryColor || '#3B82F6' }}
+                          style={{ backgroundColor: (websiteData?.primaryColor || '#3B82F6') }}
                           onClick={() => handleBooking(service)}
                         >
                           Book Now
@@ -486,11 +498,11 @@ export default function ClientWebsite() {
             <Card>
               <CardContent className="p-6">
                 <LeadForm
-                  clientId={clientId}
+                  clientId={clientId || ''}
                   title={section.title}
                   description={section.content}
                   buttonText="Get My Quote"
-                  buttonColor={websiteData?.primaryColor || '#10B981'}
+                  buttonColor={(websiteData?.primaryColor || '#10B981')}
                 />
               </CardContent>
             </Card>
@@ -527,7 +539,7 @@ export default function ClientWebsite() {
                   <Button 
                     size="lg" 
                     className="bg-white hover:bg-gray-100" 
-                    style={{ color: websiteData?.primaryColor || '#3B82F6' }}
+                    style={{ color: (websiteData?.primaryColor || '#3B82F6') }}
                     onClick={handleHeroBookingClick}
                   >
                     Book Appointment
