@@ -129,7 +129,7 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
   // Booking form mutation
   const bookingMutation = useMutation({
     mutationFn: async (formData: typeof bookingForm) => {
-      const response = await fetch(`/api/clients/${clientId}/leads`, {
+      const response = await fetch(`/api/public/client/${clientId}/submit-lead`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -185,6 +185,7 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
   const businessName = client?.businessName || 'Graceful Hair';
   const heroTitle = websiteSections.find(s => s.type === 'hero')?.title || 'Transform Your Look with Professional Hair Care';
   const heroContent = websiteSections.find(s => s.type === 'hero')?.content || 'Experience luxury hair services that bring out your natural beauty';
+  const heroImageUrl = websiteSections.find(s => s.type === 'hero')?.settings?.heroImage || websiteData?.heroImage || heroImage;
   const primaryColor = websiteData?.primaryColor || '#a855f7'; // Default purple
   const secondaryColor = websiteData?.secondaryColor || '#ec4899'; // Default pink
 
@@ -269,7 +270,7 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
           </div>
           <div className="relative" data-testid="hero-image">
             <img 
-              src={heroImage} 
+              src={heroImageUrl} 
               alt="Woman with beautiful hair" 
               className="w-full h-auto rounded-lg shadow-2xl"
             />
@@ -564,7 +565,7 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
                 }}
               >
                 <img 
-                  src={heroImage} 
+                  src={heroImageUrl} 
                   alt="Hair styling" 
                   className="w-full h-full object-cover"
                 />
