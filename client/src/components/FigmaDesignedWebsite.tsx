@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -205,6 +205,10 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
       });
       // Invalidate queries to refresh any cached appointment data
       queryClient.invalidateQueries({ queryKey: ['/api/client'] });
+      // Also invalidate the specific slots query to refresh availability
+      queryClient.invalidateQueries({ 
+        queryKey: [`/api/public/client/${clientId}/available-slots`, bookingModalForm.appointmentDate, bookingModalForm.serviceId] 
+      });
     },
     onError: () => {
       toast({ 
@@ -321,35 +325,73 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
 
   const handleBookingModalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (bookingModalForm.customerName && bookingModalForm.customerEmail && bookingModalForm.serviceId) {
+    if (bookingModalForm.customerName && 
+        bookingModalForm.customerEmail && 
+        bookingModalForm.serviceId && 
+        bookingModalForm.appointmentDate && 
+        bookingModalForm.startTime) {
+      
+      // Verify selected time is still available
+      if (!availableSlots.includes(bookingModalForm.startTime)) {
+        toast({
+          title: "Time No Longer Available",
+          description: "The selected time is no longer available. Please choose a different time.",
+          variant: "destructive"
+        });
+        setBookingModalForm(prev => ({ ...prev, startTime: '' }));
+        return;
+      }
+      
       appointmentMutation.mutate(bookingModalForm);
     } else {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields to book your appointment.",
+        description: "Please fill in all required fields including date and time to book your appointment.",
         variant: "destructive"
       });
     }
   };
 
-  // Generate available time slots
-  const generateTimeSlots = () => {
-    const slots = [];
-    for (let hour = 9; hour <= 17; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        const displayTime = new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        });
-        slots.push({ value: timeString, display: displayTime });
-      }
+  // Fetch available time slots based on selected date and service
+  const { data: availableSlots = [] } = useQuery<string[]>({
+    queryKey: [`/api/public/client/${clientId}/available-slots`, bookingModalForm.appointmentDate, bookingModalForm.serviceId],
+    enabled: !!(bookingModalForm.appointmentDate && bookingModalForm.serviceId),
+    queryFn: async () => {
+      if (!bookingModalForm.appointmentDate || !bookingModalForm.serviceId) return [];
+      const params = new URLSearchParams({
+        date: bookingModalForm.appointmentDate,
+        serviceId: bookingModalForm.serviceId
+      });
+      const response = await fetch(`/api/public/client/${clientId}/available-slots?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch available slots');
+      return response.json();
     }
-    return slots;
-  };
+  });
 
-  const timeSlots = generateTimeSlots();
+  // Convert available slots to display format
+  const timeSlots = availableSlots.map((slot: string) => {
+    const displayTime = new Date(`2000-01-01T${slot}:00`).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+    return { value: slot, display: displayTime };
+  });
+
+  // Clear selected time if it's no longer available or if slots become empty
+  React.useEffect(() => {
+    if (bookingModalForm.startTime && (
+      (availableSlots.length > 0 && !availableSlots.includes(bookingModalForm.startTime)) ||
+      (availableSlots.length === 0)
+    )) {
+      setBookingModalForm(prev => ({ ...prev, startTime: '' }));
+      toast({
+        title: "Time No Longer Available",
+        description: "The selected time is no longer available. Please choose a different time.",
+        variant: "destructive"
+      });
+    }
+  }, [availableSlots, bookingModalForm.startTime]);
 
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % displayTestimonials.length);
@@ -845,7 +887,11 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
               <Label htmlFor="modal-service">Service *</Label>
               <Select 
                 value={bookingModalForm.serviceId} 
-                onValueChange={(value) => setBookingModalForm(prev => ({ ...prev, serviceId: value }))}
+                onValueChange={(value) => setBookingModalForm(prev => ({ 
+                  ...prev, 
+                  serviceId: value,
+                  startTime: '' // Reset time when service changes
+                }))}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select a service" />
@@ -866,7 +912,11 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
                 id="modal-date"
                 type="date"
                 value={bookingModalForm.appointmentDate}
-                onChange={(e) => setBookingModalForm(prev => ({ ...prev, appointmentDate: e.target.value }))}
+                onChange={(e) => setBookingModalForm(prev => ({ 
+                  ...prev, 
+                  appointmentDate: e.target.value,
+                  startTime: '' // Reset time when date changes
+                }))}
                 className="mt-1"
                 min={new Date().toISOString().split('T')[0]}
                 required
@@ -878,9 +928,16 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
               <Select 
                 value={bookingModalForm.startTime} 
                 onValueChange={(value) => setBookingModalForm(prev => ({ ...prev, startTime: value }))}
+                disabled={!bookingModalForm.appointmentDate || !bookingModalForm.serviceId}
               >
                 <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select a time" />
+                  <SelectValue placeholder={
+                    !bookingModalForm.appointmentDate || !bookingModalForm.serviceId 
+                      ? "Select date and service first" 
+                      : timeSlots.length === 0 
+                        ? "No available times" 
+                        : "Select a time"
+                  } />
                 </SelectTrigger>
                 <SelectContent>
                   {timeSlots.map((slot) => (
@@ -915,7 +972,12 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
               <Button 
                 type="submit" 
                 className="bg-purple-600 hover:bg-purple-700 text-white"
-                disabled={appointmentMutation.isPending}
+                disabled={appointmentMutation.isPending || 
+                  !bookingModalForm.customerName || 
+                  !bookingModalForm.customerEmail || 
+                  !bookingModalForm.serviceId || 
+                  !bookingModalForm.appointmentDate || 
+                  !bookingModalForm.startTime}
               >
                 {appointmentMutation.isPending ? (
                   <>
