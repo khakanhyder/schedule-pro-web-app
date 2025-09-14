@@ -2471,8 +2471,8 @@ export default function AdvancedWebsiteBuilder() {
           </div>
         </div>
 
-        {/* Website Preview */}
-        <div className="flex-1 p-6 overflow-auto">
+        {/* Website Preview - Hidden to show editable version */}
+        <div className="hidden">
           <div 
             className="mx-auto bg-white rounded-lg shadow-lg overflow-hidden"
             style={{ width: getPreviewWidth(), maxWidth: '100%' }}
@@ -2482,8 +2482,8 @@ export default function AdvancedWebsiteBuilder() {
           </div>
         </div>
 
-        {/* Section Editor Panel - Hide for now to focus on Figma design */}
-        <div className="hidden">
+        {/* Section Editor Panel - Full editing capabilities enabled */}
+        <div className="flex-1 p-6 overflow-auto bg-gray-50">
           <div 
             className="mx-auto bg-white rounded-lg shadow-lg overflow-hidden"
             style={{ width: getPreviewWidth(), maxWidth: '100%' }}
