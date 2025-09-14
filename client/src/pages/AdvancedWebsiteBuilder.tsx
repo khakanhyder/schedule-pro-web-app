@@ -341,7 +341,9 @@ export default function AdvancedWebsiteBuilder() {
     if (existingWebsite && existingWebsite.sections) {
       // Load existing website data
       try {
-        const sections = JSON.parse(existingWebsite.sections);
+        const sections = typeof existingWebsite.sections === 'string' 
+          ? JSON.parse(existingWebsite.sections) 
+          : existingWebsite.sections;
         setWebsiteData({
           title: existingWebsite.title,
           description: existingWebsite.description || "",
@@ -355,202 +357,12 @@ export default function AdvancedWebsiteBuilder() {
         initializeWithCurrentLayout();
       }
     } else if (clientData?.client) {
-      // Initialize with Figma-designed hair salon template
-      setWebsiteData(prev => ({
-        ...prev,
-        title: `${clientData.client.businessName || 'Graceful Hair'} - Professional Hair Salon`,
-        description: `${clientData.client.businessName || 'Graceful Hair'} - Professional hair care and styling services`,
-        primaryColor: "#ec4899", // Pink from Figma
-        secondaryColor: "#a855f7", // Purple from Figma
-        sections: [
-          {
-            id: "header",
-            type: "header",
-            title: "Header",
-            content: "Navigation and business logo",
-            settings: { 
-              backgroundColor: "#FFFFFF", 
-              textColor: "#1F2937", 
-              alignment: "center", 
-              padding: "small",
-              height: "auto"
-            }
-          },
-          {
-            id: "hero",
-            type: "hero",
-            title: `${clientData.client.businessName || 'Graceful Hair'}`,
-            content: "Truly, yours.\nExperience premium hair care with our professional stylists",
-            settings: { 
-              backgroundType: "gradient",
-              gradientType: "linear",
-              gradientDirection: "135deg",
-              gradientColors: ["#ec4899", "#a855f7"],
-              textColor: "#FFFFFF", 
-              alignment: "left", 
-              padding: "large",
-              height: "screen",
-              heroImage: "/assets/Image (3)_1757807495639.png",
-              heroImageAlt: "Woman with beautiful hair"
-            },
-            data: {
-              buttonText: "Book Appointment",
-              buttonLink: "#contact"
-            }
-          },
-          {
-            id: "staff",
-            type: "staff", 
-            title: "Meet With Our Professional Staff",
-            content: "Our experienced team of hair professionals",
-            settings: { 
-              backgroundColor: "#F9FAFB", 
-              textColor: "#1F2937", 
-              alignment: "center", 
-              padding: "large",
-              staffMembers: [
-                {
-                  id: "1",
-                  name: "Mara Olsen",
-                  title: "Senior Stylist", 
-                  experience: "8 years experience",
-                  profileImage: "/assets/Ellipse 54_1757064789129.png"
-                },
-                {
-                  id: "2", 
-                  name: "Jess Nunez",
-                  title: "Hair Specialist",
-                  experience: "6 years experience", 
-                  profileImage: "/assets/Ellipse 55_1757064789130.png"
-                },
-                {
-                  id: "3",
-                  name: "Dana Welch", 
-                  title: "Color Expert",
-                  experience: "5 years experience",
-                  profileImage: "/assets/Ellipse 56_1757064789130.png"
-                }
-              ]
-            }
-          },
-          {
-            id: "pricing",
-            type: "pricing",
-            title: "Summer Hair Hair Offers", 
-            content: "Choose the perfect service for your hair care needs",
-            settings: { 
-              backgroundColor: "#FFFFFF", 
-              textColor: "#1F2937", 
-              alignment: "center", 
-              padding: "large",
-              pricingTiers: [
-                {
-                  id: "1",
-                  name: "Hair Dryer",
-                  price: 30,
-                  features: ["Basic wash", "Blow dry", "Simple styling"],
-                  isPopular: false,
-                  buttonText: "Book Now"
-                },
-                {
-                  id: "2",
-                  name: "Hair Washer", 
-                  price: 40,
-                  features: ["Deep cleanse", "Conditioning", "Scalp massage"],
-                  isPopular: false,
-                  buttonText: "Book Now"
-                },
-                {
-                  id: "3",
-                  name: "Hair Developer",
-                  price: 70, 
-                  features: ["Cut & style", "Deep conditioning", "Hair treatment", "Consultation"],
-                  isPopular: true,
-                  buttonText: "Book Now"
-                },
-                {
-                  id: "4",
-                  name: "Hair Color",
-                  price: 100,
-                  features: ["Full color service", "Premium products", "Expert consultation", "After-care"],
-                  isPopular: false, 
-                  buttonText: "Book Now"
-                }
-              ]
-            }
-          },
-          {
-            id: "testimonials",
-            type: "testimonials",
-            title: "What Our Clients Say",
-            content: "Read testimonials from our satisfied customers",
-            settings: { 
-              backgroundType: "gradient",
-              gradientType: "linear", 
-              gradientDirection: "135deg",
-              gradientColors: ["#1e1b4b", "#581c87"],
-              textColor: "#FFFFFF", 
-              alignment: "center", 
-              padding: "large",
-              testimonials: [
-                {
-                  id: "1",
-                  customerName: "Sarah Johnson",
-                  customerTitle: "Hair Influencer",
-                  testimonialText: "Hair has been my home for hair for years",
-                  customerImage: "/assets/Ellipse 57_1757064789131.png",
-                  rating: 5
-                }
-              ]
-            }
-          },
-          {
-            id: "newsletter", 
-            type: "newsletter",
-            title: "Subscribe to the Hair Newsletter",
-            content: "Get exclusive tips, offers, and updates straight to your inbox",
-            settings: { 
-              backgroundColor: "#F9FAFB", 
-              textColor: "#1F2937", 
-              alignment: "center", 
-              padding: "large"
-            }
-          },
-          {
-            id: "booking",
-            type: "booking",
-            title: "Schedule your hair experience", 
-            content: "Ready to transform your look? Fill out the form and we'll get back to you to schedule your appointment.",
-            settings: { 
-              backgroundColor: "#FFFFFF", 
-              textColor: "#1F2937", 
-              alignment: "left", 
-              padding: "large"
-            }
-          },
-          {
-            id: "footer",
-            type: "footer",
-            title: "Footer",
-            content: "Business information and social links",
-            settings: { 
-              backgroundColor: "#581c87", 
-              textColor: "#FFFFFF", 
-              alignment: "left", 
-              padding: "large"
-            },
-            data: {
-              phone: clientData.client.phone || "(555) 123-4567",
-              email: clientData.client.email || "info@gracefulhair.com", 
-              address: clientData.client.businessAddress || "123 Beauty St, Hair City"
-            }
-          }
-        ]
-      }));
+      // Initialize with complete current layout structure
+      initializeWithCurrentLayout();
     }
   }, [clientData, existingWebsite]);
 
-  // Function to initialize with current layout structure
+  // Function to initialize with complete current layout structure
   const initializeWithCurrentLayout = () => {
     setWebsiteData(prev => ({
       ...prev,
@@ -568,7 +380,7 @@ export default function AdvancedWebsiteBuilder() {
             backgroundType: "gradient",
             gradientType: "linear",
             gradientDirection: "135deg",
-            gradientColors: ["#ec4899", "#a855f7"],
+            gradientColors: ["#667eea", "#764ba2"],
             textColor: "#FFFFFF", 
             alignment: "left", 
             padding: "large",
@@ -590,7 +402,30 @@ export default function AdvancedWebsiteBuilder() {
             backgroundColor: "#F9FAFB", 
             textColor: "#1F2937", 
             alignment: "center", 
-            padding: "large"
+            padding: "large",
+            staffMembers: [
+              {
+                id: "1",
+                name: "Mara Olsen",
+                title: "Senior Consultant", 
+                experience: "8 years experience",
+                profileImage: "/assets/Ellipse 54_1757064789129.png"
+              },
+              {
+                id: "2", 
+                name: "Jess Nunez",
+                title: "Business Specialist",
+                experience: "6 years experience", 
+                profileImage: "/assets/Ellipse 55_1757064789130.png"
+              },
+              {
+                id: "3",
+                name: "Dave Wilson", 
+                title: "Strategic Advisor",
+                experience: "10 years experience",
+                profileImage: "/assets/Ellipse 56_1757064789131.png"
+              }
+            ]
           }
         },
         {
@@ -602,7 +437,33 @@ export default function AdvancedWebsiteBuilder() {
             backgroundColor: "#FFFFFF", 
             textColor: "#1F2937", 
             alignment: "center", 
-            padding: "large"
+            padding: "large",
+            pricingTiers: [
+              {
+                id: "tier_1",
+                name: "Business Consultation",
+                price: 150,
+                features: ["Strategic planning", "Market analysis", "Action plan"],
+                isPopular: false,
+                buttonText: "Book Now"
+              },
+              {
+                id: "tier_2", 
+                name: "Financial Planning",
+                price: 200,
+                features: ["Budget review", "Investment strategy", "Risk assessment", "Financial roadmap"],
+                isPopular: true,
+                buttonText: "Book Now"
+              },
+              {
+                id: "tier_3",
+                name: "Market Analysis", 
+                price: 300,
+                features: ["Competitive analysis", "Market positioning", "Growth opportunities", "Implementation strategy"],
+                isPopular: false,
+                buttonText: "Book Now"
+              }
+            ]
           }
         },
         {
@@ -617,7 +478,17 @@ export default function AdvancedWebsiteBuilder() {
             gradientColors: ["#1e1b4b", "#581c87"],
             textColor: "#FFFFFF", 
             alignment: "center", 
-            padding: "large"
+            padding: "large",
+            testimonials: [
+              {
+                id: "1",
+                customerName: "Sarah Johnson",
+                customerTitle: "CEO, TechStart Inc",
+                testimonialText: "ABC has been our home for business for 10+ years!",
+                customerImage: "/assets/Ellipse 60_1757064789135.png",
+                rating: 5
+              }
+            ]
           }
         },
         {
@@ -642,6 +513,23 @@ export default function AdvancedWebsiteBuilder() {
             textColor: "#1F2937", 
             alignment: "left", 
             padding: "large"
+          }
+        },
+        {
+          id: "footer",
+          type: "footer",
+          title: "Footer",
+          content: "Business information and social links",
+          settings: { 
+            backgroundColor: "#581c87", 
+            textColor: "#FFFFFF", 
+            alignment: "left", 
+            padding: "large"
+          },
+          data: {
+            phone: clientData?.client?.phone || "(555) 123-4567",
+            email: clientData?.client?.email || "info@abcconsulting.com", 
+            address: clientData?.client?.businessAddress || "123 Main St, City, State"
           }
         }
       ]
