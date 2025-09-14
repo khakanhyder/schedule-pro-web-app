@@ -167,6 +167,26 @@ export default function ClientDashboard() {
     notes: '',
     estimatedValue: ''
   });
+
+  // Filter states for leads
+  const [leadFilters, setLeadFilters] = useState({
+    searchText: '',
+    source: 'all',
+    status: 'all'
+  });
+
+  // Filtered leads based on search and filter criteria
+  const filteredLeads = leads.filter(lead => {
+    const matchesSearch = leadFilters.searchText === '' || 
+      lead.name.toLowerCase().includes(leadFilters.searchText.toLowerCase()) ||
+      lead.email.toLowerCase().includes(leadFilters.searchText.toLowerCase()) ||
+      lead.phone.includes(leadFilters.searchText);
+    
+    const matchesSource = leadFilters.source === 'all' || lead.source === leadFilters.source;
+    const matchesStatus = leadFilters.status === 'all' || lead.status === leadFilters.status;
+    
+    return matchesSearch && matchesSource && matchesStatus;
+  });
   
   const [websiteSettings, setWebsiteSettings] = useState({
     title: '',
@@ -1325,20 +1345,66 @@ export default function ClientDashboard() {
               </Dialog>
             </div>
             
+            {/* Filtering Controls */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search leads by name, email, or phone..."
+                  value={leadFilters.searchText}
+                  onChange={(e) => setLeadFilters(prev => ({ ...prev, searchText: e.target.value }))}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Select value={leadFilters.source} onValueChange={(value) => setLeadFilters(prev => ({ ...prev, source: value }))}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Source" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sources</SelectItem>
+                    <SelectItem value="website">Website</SelectItem>
+                    <SelectItem value="referral">Referral</SelectItem>
+                    <SelectItem value="social-media">Social Media</SelectItem>
+                    <SelectItem value="google-search">Google Search</SelectItem>
+                    <SelectItem value="walk-in">Walk-in</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={leadFilters.status} onValueChange={(value) => setLeadFilters(prev => ({ ...prev, status: value }))}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="NEW">New</SelectItem>
+                    <SelectItem value="CONTACTED">Contacted</SelectItem>
+                    <SelectItem value="QUALIFIED">Qualified</SelectItem>
+                    <SelectItem value="CONVERTED">Converted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
             <Card>
               <CardHeader>
                 <CardTitle>Lead Management</CardTitle>
               </CardHeader>
               <CardContent>
-                {leads.length === 0 ? (
+                {filteredLeads.length === 0 ? (leads.length === 0 ? (
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500 mb-4">No leads captured yet</p>
                     <Button onClick={() => openLeadModal()}>Add Your First Lead</Button>
                   </div>
                 ) : (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 mb-4">No leads match your current filters</p>
+                    <Button onClick={() => setLeadFilters({ searchText: '', source: 'all', status: 'all' })}>Clear Filters</Button>
+                  </div>
+                )) : (
                   <div className="space-y-4">
-                    {leads.map((lead) => (
+                    {filteredLeads.map((lead) => (
                       <div key={lead.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <p className="font-medium">{lead.name}</p>

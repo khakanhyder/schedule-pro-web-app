@@ -105,7 +105,8 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
     name: '',
     email: '',
     phone: '',
-    message: ''
+    message: '',
+    source: ''
   });
   const [newsletterEmail, setNewsletterEmail] = useState('');
   
@@ -233,7 +234,7 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
           email: formData.email,
           phone: formData.phone,
           notes: formData.message,
-          source: 'website'
+          source: formData.source || 'website'
         })
       });
       if (!response.ok) throw new Error('Failed to submit booking');
@@ -241,7 +242,7 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
     },
     onSuccess: () => {
       toast({ title: "Success!", description: "Your booking request has been submitted. We'll contact you soon!" });
-      setBookingForm({ name: '', email: '', phone: '', message: '' });
+      setBookingForm({ name: '', email: '', phone: '', message: '', source: '' });
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to submit booking. Please try again.", variant: "destructive" });
@@ -725,6 +726,32 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
                     className="mt-1"
                     data-testid="booking-phone-input"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="source" data-testid="booking-source-label">How did you hear about us?</Label>
+                  <Select value={bookingForm.source} onValueChange={(value) => setBookingForm(prev => ({ ...prev, source: value }))}>
+                    <SelectTrigger className="mt-1" data-testid="booking-source-select">
+                      <SelectValue placeholder="Select how you found us" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clientServices.length > 0 ? (
+                        clientServices.map((service) => (
+                          <SelectItem key={service.id} value={service.name}>
+                            {service.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="google-search">Google Search</SelectItem>
+                          <SelectItem value="social-media">Social Media</SelectItem>
+                          <SelectItem value="referral">Friend/Family Referral</SelectItem>
+                          <SelectItem value="walk-in">Walk-in</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div>
