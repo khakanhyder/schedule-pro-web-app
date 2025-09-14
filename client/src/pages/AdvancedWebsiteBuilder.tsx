@@ -345,14 +345,16 @@ export default function AdvancedWebsiteBuilder() {
         setWebsiteData({
           title: existingWebsite.title,
           description: existingWebsite.description || "",
-          primaryColor: existingWebsite.primaryColor || "#3B82F6",
-          secondaryColor: existingWebsite.secondaryColor || "#F3F4F6",
+          primaryColor: existingWebsite.primaryColor || "#ec4899",
+          secondaryColor: existingWebsite.secondaryColor || "#a855f7",
           sections: sections
         });
       } catch (e) {
         console.error('Error parsing existing website sections:', e);
+        // If parsing fails, initialize with current layout structure
+        initializeWithCurrentLayout();
       }
-    } else if (clientData?.client && !existingWebsite) {
+    } else if (clientData?.client) {
       // Initialize with Figma-designed hair salon template
       setWebsiteData(prev => ({
         ...prev,
@@ -547,6 +549,104 @@ export default function AdvancedWebsiteBuilder() {
       }));
     }
   }, [clientData, existingWebsite]);
+
+  // Function to initialize with current layout structure
+  const initializeWithCurrentLayout = () => {
+    setWebsiteData(prev => ({
+      ...prev,
+      title: `${clientData?.client?.businessName || 'ABC Consulting'} - Professional Services`,
+      description: `${clientData?.client?.businessName || 'ABC Consulting'} - Professional consulting services`,
+      primaryColor: "#ec4899", // Pink from current layout
+      secondaryColor: "#a855f7", // Purple from current layout
+      sections: [
+        {
+          id: "hero",
+          type: "hero",
+          title: `Welcome to ${clientData?.client?.businessName || 'ABC Consulting'}`,
+          content: "Professional consulting services\nfor all your needs.",
+          settings: { 
+            backgroundType: "gradient",
+            gradientType: "linear",
+            gradientDirection: "135deg",
+            gradientColors: ["#ec4899", "#a855f7"],
+            textColor: "#FFFFFF", 
+            alignment: "left", 
+            padding: "large",
+            height: "screen",
+            heroImage: "/assets/Image (3)_1757807495639.png",
+            heroImageAlt: "Professional consulting image"
+          },
+          data: {
+            buttonText: "Book Appointment",
+            buttonLink: "#contact"
+          }
+        },
+        {
+          id: "staff",
+          type: "staff", 
+          title: "Meet With Our Professional Staff",
+          content: "Our experienced team of professionals",
+          settings: { 
+            backgroundColor: "#F9FAFB", 
+            textColor: "#1F2937", 
+            alignment: "center", 
+            padding: "large"
+          }
+        },
+        {
+          id: "pricing",
+          type: "pricing",
+          title: "Summer Hair Hair Offers",
+          content: "Choose the perfect service for your needs", 
+          settings: { 
+            backgroundColor: "#FFFFFF", 
+            textColor: "#1F2937", 
+            alignment: "center", 
+            padding: "large"
+          }
+        },
+        {
+          id: "testimonials",
+          type: "testimonials",
+          title: "What Our Clients Say",
+          content: "Read testimonials from our satisfied customers",
+          settings: { 
+            backgroundType: "gradient",
+            gradientType: "linear", 
+            gradientDirection: "135deg",
+            gradientColors: ["#1e1b4b", "#581c87"],
+            textColor: "#FFFFFF", 
+            alignment: "center", 
+            padding: "large"
+          }
+        },
+        {
+          id: "newsletter", 
+          type: "newsletter",
+          title: "Subscribe to the Hair Newsletter",
+          content: "Get exclusive tips, offers, and updates straight to your inbox",
+          settings: { 
+            backgroundColor: "#F9FAFB", 
+            textColor: "#1F2937", 
+            alignment: "center", 
+            padding: "large"
+          }
+        },
+        {
+          id: "booking",
+          type: "booking",
+          title: "Schedule your hair experience", 
+          content: "Ready to transform your look? Fill out the form and we'll get back to you to schedule your appointment.",
+          settings: { 
+            backgroundColor: "#FFFFFF", 
+            textColor: "#1F2937", 
+            alignment: "left", 
+            padding: "large"
+          }
+        }
+      ]
+    }));
+  };
 
   // Section management functions
   const addSection = (type: WebsiteSection['type']) => {
