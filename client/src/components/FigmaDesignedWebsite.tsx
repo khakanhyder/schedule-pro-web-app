@@ -39,6 +39,11 @@ interface Client {
   industry: string;
 }
 
+interface FigmaDesignedWebsiteProps {
+  clientId: string;
+  isBuilderPreview?: boolean;
+}
+
 interface WebsiteStaff {
   id: string;
   name: string;
@@ -56,6 +61,16 @@ interface ServicePricingTier {
   buttonText: string;
 }
 
+interface ClientService {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  durationMinutes: number;
+  category?: string;
+  isActive: boolean;
+}
+
 interface WebsiteTestimonial {
   id: string;
   customerName: string;
@@ -67,9 +82,10 @@ interface WebsiteTestimonial {
 
 interface FigmaDesignedWebsiteProps {
   clientId: string;
+  isBuilderPreview?: boolean;
 }
 
-export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteProps) {
+export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = false }: FigmaDesignedWebsiteProps) {
   const { toast } = useToast();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [bookingForm, setBookingForm] = useState({
@@ -99,6 +115,11 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
   // Fetch pricing tiers
   const { data: pricingTiers = [] } = useQuery<ServicePricingTier[]>({
     queryKey: [`/api/public/clients/${clientId}/pricing-tiers`]
+  });
+
+  // Fetch client services to display alongside pricing tiers
+  const { data: clientServices = [] } = useQuery<ClientService[]>({
+    queryKey: [`/api/public/client/${clientId}/services`]
   });
 
   // Fetch testimonials
@@ -191,7 +212,21 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
 
   // Use real admin data when available, fallback to assets only for display purposes
   const displayStaff = staff.length > 0 ? staff : defaultStaffWithAssets;
-  const displayPricing = pricingTiers.length > 0 ? pricingTiers : [];
+  
+  // Convert client services to display format similar to pricing tiers
+  const convertedServices = clientServices.map(service => ({
+    id: service.id,
+    name: service.name,
+    price: service.price,
+    features: service.description ? [service.description, `Duration: ${service.durationMinutes} min`] : [`Duration: ${service.durationMinutes} min`],
+    isPopular: false,
+    buttonText: 'Book Now',
+    isFromAdminServices: true // Mark as admin service for priority
+  }));
+  
+  // Prioritize admin services over pricing tiers - if admin services exist, show only those
+  // Otherwise fall back to pricing tiers
+  const allDisplayPricing = clientServices.length > 0 ? convertedServices : pricingTiers;
   const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTestimonialWithAsset;
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
@@ -263,6 +298,15 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
             <Button 
               className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-semibold"
               data-testid="hero-cta-button"
+              onClick={() => {
+                if (isBuilderPreview) {
+                  // In builder preview, just scroll to contact form
+                  document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  // In live site, navigate to booking page
+                  window.location.href = '/booking';
+                }
+              }}
             >
               Book Appointment
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -323,9 +367,9 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
               Choose the perfect service for your hair care needs
             </p>
           </div>
-          {displayPricing.length > 0 ? (
+          {allDisplayPricing.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {displayPricing.map((tier, index) => (
+              {allDisplayPricing.map((tier, index) => (
                 <Card 
                   key={tier.id} 
                   className={`relative ${tier.isPopular ? 'bg-purple-600 text-white scale-105 shadow-xl' : 'bg-white'}`}
@@ -362,6 +406,16 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
                           : 'bg-purple-600 hover:bg-purple-700 text-white'
                       }`}
                       data-testid={`tier-button-${index}`}
+                      onClick={() => {
+                        if (isBuilderPreview) {
+                          // In builder preview, just scroll to contact form
+                          document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                          // In live site, navigate to booking page with service preselected
+                          const serviceParam = (tier as any).isFromAdminServices ? `?service=${tier.id}` : '';
+                          window.location.href = `/booking${serviceParam}`;
+                        }
+                      }}
                     >
                       {tier.buttonText || 'Book Now'}
                     </Button>

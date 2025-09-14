@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Save, Eye, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import LeadForm from "@/components/LeadForm";
+import FigmaDesignedWebsite from "@/components/FigmaDesignedWebsite";
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -2472,6 +2473,17 @@ export default function AdvancedWebsiteBuilder() {
 
         {/* Website Preview */}
         <div className="flex-1 p-6 overflow-auto">
+          <div 
+            className="mx-auto bg-white rounded-lg shadow-lg overflow-hidden"
+            style={{ width: getPreviewWidth(), maxWidth: '100%' }}
+          >
+            {/* Show the actual Figma designed website in the builder preview */}
+            {clientId && <FigmaDesignedWebsite clientId={clientId} isBuilderPreview={true} />}
+          </div>
+        </div>
+
+        {/* Section Editor Panel - Hide for now to focus on Figma design */}
+        <div className="hidden">
           <div 
             className="mx-auto bg-white rounded-lg shadow-lg overflow-hidden"
             style={{ width: getPreviewWidth(), maxWidth: '100%' }}
