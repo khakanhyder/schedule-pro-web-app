@@ -557,7 +557,7 @@ export default function ClientDashboard() {
         source: lead.source,
         status: lead.status,
         notes: lead.notes,
-        estimatedValue: lead.estimatedValue.toString()
+        estimatedValue: lead.estimatedValue?.toString() || ''
       });
     } else {
       setEditingLead(null);
