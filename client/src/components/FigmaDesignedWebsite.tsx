@@ -6,6 +6,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter 
+} from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
   Phone,
   Mail,
   MapPin,
@@ -17,9 +26,12 @@ import {
   Facebook,
   Instagram,
   Twitter,
-  Youtube
+  Youtube,
+  Calendar,
+  Clock
 } from 'lucide-react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 // Import Figma assets
 import heroImage from '@assets/Image (3)_1757807495639.png';
@@ -87,6 +99,7 @@ interface FigmaDesignedWebsiteProps {
 
 export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = false }: FigmaDesignedWebsiteProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [bookingForm, setBookingForm] = useState({
     name: '',
@@ -95,6 +108,19 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
     message: ''
   });
   const [newsletterEmail, setNewsletterEmail] = useState('');
+  
+  // Booking modal state
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingModalForm, setBookingModalForm] = useState({
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    serviceId: '',
+    appointmentDate: '',
+    startTime: '',
+    notes: ''
+  });
+  const [selectedServiceForBooking, setSelectedServiceForBooking] = useState('');
 
   // Fetch client data
   const { data: client } = useQuery<Client>({
@@ -144,6 +170,48 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to subscribe. Please try again.", variant: "destructive" });
+    }
+  });
+
+  // Appointment booking mutation (syncs with client admin)
+  const appointmentMutation = useMutation({
+    mutationFn: async (formData: typeof bookingModalForm) => {
+      const response = await apiRequest('POST', `/api/public/client/${clientId}/book`, {
+        serviceId: formData.serviceId,
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        customerPhone: formData.customerPhone,
+        appointmentDate: formData.appointmentDate,
+        startTime: formData.startTime,
+        notes: formData.notes
+      });
+      if (!response.ok) throw new Error('Failed to book appointment');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ 
+        title: "Appointment Booked!", 
+        description: "Your appointment has been scheduled. We'll send you a confirmation email." 
+      });
+      setIsBookingModalOpen(false);
+      setBookingModalForm({
+        customerName: '',
+        customerEmail: '',
+        customerPhone: '',
+        serviceId: '',
+        appointmentDate: '',
+        startTime: '',
+        notes: ''
+      });
+      // Invalidate queries to refresh any cached appointment data
+      queryClient.invalidateQueries({ queryKey: ['/api/client'] });
+    },
+    onError: () => {
+      toast({ 
+        title: "Booking Failed", 
+        description: "There was an issue booking your appointment. Please try again or contact us directly.", 
+        variant: "destructive" 
+      });
     }
   });
 
@@ -243,6 +311,46 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
     }
   };
 
+  const handleOpenBookingModal = (serviceId?: string) => {
+    if (serviceId) {
+      setSelectedServiceForBooking(serviceId);
+      setBookingModalForm(prev => ({ ...prev, serviceId }));
+    }
+    setIsBookingModalOpen(true);
+  };
+
+  const handleBookingModalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (bookingModalForm.customerName && bookingModalForm.customerEmail && bookingModalForm.serviceId) {
+      appointmentMutation.mutate(bookingModalForm);
+    } else {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields to book your appointment.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Generate available time slots
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 9; hour <= 17; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const displayTime = new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+        slots.push({ value: timeString, display: displayTime });
+      }
+    }
+    return slots;
+  };
+
+  const timeSlots = generateTimeSlots();
+
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % displayTestimonials.length);
   };
@@ -298,15 +406,7 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
             <Button 
               className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-semibold"
               data-testid="hero-cta-button"
-              onClick={() => {
-                if (isBuilderPreview) {
-                  // In builder preview, just scroll to contact form
-                  document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                  // In live site, navigate to booking page
-                  window.location.href = '/booking';
-                }
-              }}
+              onClick={() => handleOpenBookingModal()}
             >
               Book Appointment
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -407,14 +507,9 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
                       }`}
                       data-testid={`tier-button-${index}`}
                       onClick={() => {
-                        if (isBuilderPreview) {
-                          // In builder preview, just scroll to contact form
-                          document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-                        } else {
-                          // In live site, navigate to booking page with service preselected
-                          const serviceParam = (tier as any).isFromAdminServices ? `?service=${tier.id}` : '';
-                          window.location.href = `/booking${serviceParam}`;
-                        }
+                        // Pass service ID if it's from admin services
+                        const serviceId = (tier as any).isFromAdminServices ? tier.id : '';
+                        handleOpenBookingModal(serviceId);
                       }}
                     >
                       {tier.buttonText || 'Book Now'}
@@ -696,6 +791,148 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
           </div>
         </div>
       </footer>
+
+      {/* Booking Modal */}
+      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-purple-600">Book Your Appointment</DialogTitle>
+            <DialogDescription>
+              Fill in your details to schedule your appointment with us
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleBookingModalSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="modal-name">Full Name *</Label>
+              <Input
+                id="modal-name"
+                type="text"
+                value={bookingModalForm.customerName}
+                onChange={(e) => setBookingModalForm(prev => ({ ...prev, customerName: e.target.value }))}
+                className="mt-1"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="modal-email">Email Address *</Label>
+              <Input
+                id="modal-email"
+                type="email"
+                value={bookingModalForm.customerEmail}
+                onChange={(e) => setBookingModalForm(prev => ({ ...prev, customerEmail: e.target.value }))}
+                className="mt-1"
+                placeholder="Enter your email address"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="modal-phone">Phone Number</Label>
+              <Input
+                id="modal-phone"
+                type="tel"
+                value={bookingModalForm.customerPhone}
+                onChange={(e) => setBookingModalForm(prev => ({ ...prev, customerPhone: e.target.value }))}
+                className="mt-1"
+                placeholder="Enter your phone number"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="modal-service">Service *</Label>
+              <Select 
+                value={bookingModalForm.serviceId} 
+                onValueChange={(value) => setBookingModalForm(prev => ({ ...prev, serviceId: value }))}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select a service" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientServices.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} - ${service.price} ({service.durationMinutes} min)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="modal-date">Preferred Date *</Label>
+              <Input
+                id="modal-date"
+                type="date"
+                value={bookingModalForm.appointmentDate}
+                onChange={(e) => setBookingModalForm(prev => ({ ...prev, appointmentDate: e.target.value }))}
+                className="mt-1"
+                min={new Date().toISOString().split('T')[0]}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="modal-time">Preferred Time *</Label>
+              <Select 
+                value={bookingModalForm.startTime} 
+                onValueChange={(value) => setBookingModalForm(prev => ({ ...prev, startTime: value }))}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select a time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeSlots.map((slot) => (
+                    <SelectItem key={slot.value} value={slot.value}>
+                      {slot.display}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="modal-notes">Additional Notes</Label>
+              <Textarea
+                id="modal-notes"
+                value={bookingModalForm.notes}
+                onChange={(e) => setBookingModalForm(prev => ({ ...prev, notes: e.target.value }))}
+                className="mt-1"
+                placeholder="Any special requests or notes..."
+                rows={3}
+              />
+            </div>
+
+            <DialogFooter className="flex gap-3 sm:justify-end">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setIsBookingModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+                disabled={appointmentMutation.isPending}
+              >
+                {appointmentMutation.isPending ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4 animate-spin" />
+                    Booking...
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Book Appointment
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
