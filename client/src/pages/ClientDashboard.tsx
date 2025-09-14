@@ -404,10 +404,8 @@ export default function ClientDashboard() {
   // Mutations for Leads
   const createLeadMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest(`/api/client/${clientData?.id}/leads`, {
-        method: 'POST',
-        body: JSON.stringify({ ...data, estimatedValue: data.estimatedValue ? parseFloat(data.estimatedValue) : 0 })
-      });
+      const response = await apiRequest(`/api/client/${clientData?.id}/leads`, 'POST', { ...data, estimatedValue: data.estimatedValue ? parseFloat(data.estimatedValue) : 0 });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/leads`] });
@@ -423,10 +421,8 @@ export default function ClientDashboard() {
   
   const updateLeadMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return apiRequest(`/api/client/${clientData?.id}/leads/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ ...data, estimatedValue: data.estimatedValue ? parseFloat(data.estimatedValue) : 0 })
-      });
+      const response = await apiRequest(`/api/client/${clientData?.id}/leads/${id}`, 'PUT', { ...data, estimatedValue: data.estimatedValue ? parseFloat(data.estimatedValue) : 0 });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/leads`] });
@@ -442,9 +438,8 @@ export default function ClientDashboard() {
   
   const deleteLeadMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/client/${clientData?.id}/leads/${id}`, {
-        method: 'DELETE'
-      });
+      const response = await apiRequest(`/api/client/${clientData?.id}/leads/${id}`, 'DELETE');
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientData?.id}/leads`] });
