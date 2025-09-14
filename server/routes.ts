@@ -1652,7 +1652,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/public/client/:clientId/book", async (req, res) => {
     try {
       const { clientId } = req.params;
-      const { serviceId, customerName, customerEmail, customerPhone, appointmentDate, startTime, notes } = req.body;
+      const { serviceId, customerName, customerEmail, customerPhone, appointmentDate, startTime, notes, source } = req.body;
       
       const client = await storage.getClient(clientId);
       if (!client) {
@@ -1697,7 +1697,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: customerName,
         email: customerEmail,
         phone: customerPhone || "",
-        source: "website",
+        source: source || "website",
         status: "CONVERTED",
         estimatedValue: selectedService.price,
         convertedToAppointment: true,

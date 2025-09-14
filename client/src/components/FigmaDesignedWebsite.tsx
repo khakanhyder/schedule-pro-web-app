@@ -118,7 +118,8 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
     serviceId: '',
     appointmentDate: '',
     startTime: '',
-    notes: ''
+    notes: '',
+    source: ''
   });
   const [selectedServiceForBooking, setSelectedServiceForBooking] = useState('');
 
@@ -183,7 +184,8 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
         customerPhone: formData.customerPhone,
         appointmentDate: formData.appointmentDate,
         startTime: formData.startTime,
-        notes: formData.notes
+        notes: formData.notes,
+        source: formData.source
       });
       if (!response.ok) throw new Error('Failed to book appointment');
       return response.json();
@@ -201,7 +203,8 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
         serviceId: '',
         appointmentDate: '',
         startTime: '',
-        notes: ''
+        notes: '',
+        source: ''
       });
       // Invalidate queries to refresh any cached appointment data
       queryClient.invalidateQueries({ queryKey: ['/api/client'] });
@@ -881,6 +884,35 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
                 className="mt-1"
                 placeholder="Enter your phone number"
               />
+            </div>
+
+            <div>
+              <Label htmlFor="modal-source">How did you hear about us?</Label>
+              <Select 
+                value={bookingModalForm.source} 
+                onValueChange={(value) => setBookingModalForm(prev => ({ ...prev, source: value }))}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select how you found us" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientServices.length > 0 ? (
+                    clientServices.map((service) => (
+                      <SelectItem key={service.id} value={service.name}>
+                        {service.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <>
+                      <SelectItem value="google-search">Google Search</SelectItem>
+                      <SelectItem value="social-media">Social Media</SelectItem>
+                      <SelectItem value="referral">Friend/Family Referral</SelectItem>
+                      <SelectItem value="walk-in">Walk-in</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
