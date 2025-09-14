@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Eye, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer, ChevronLeft, ChevronRight } from "lucide-react";
+import { Save, Eye, Plus, Trash2, ArrowLeft, ArrowUp, ArrowDown, Smartphone, Monitor, Tablet, Type, Layout, Palette, Settings, Phone, Mail, Star, GripVertical, Image, Columns, Square, MousePointer, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import LeadForm from "@/components/LeadForm";
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -68,7 +68,7 @@ interface WebsiteColumn {
 
 interface WebsiteSection {
   id: string;
-  type: 'hero' | 'about' | 'services' | 'contact-info' | 'contact-form' | 'lead-form' | 'testimonials' | 'gallery' | 'text' | 'image' | 'columns' | 'spacer';
+  type: 'header' | 'hero' | 'about' | 'services' | 'contact-info' | 'contact-form' | 'lead-form' | 'testimonials' | 'gallery' | 'text' | 'image' | 'columns' | 'spacer' | 'staff' | 'pricing' | 'newsletter' | 'booking' | 'footer';
   title?: string;
   content?: string;
   columns?: WebsiteColumn[];
@@ -102,6 +102,31 @@ interface WebsiteSection {
         alignment?: string;
       };
     };
+    heroImage?: string;
+    heroImageAlt?: string;
+    staffMembers?: Array<{
+      id: string;
+      name: string;
+      title: string;
+      experience: string;
+      profileImage: string;
+    }>;
+    pricingTiers?: Array<{
+      id: string;
+      name: string;
+      price: number;
+      features: string[];
+      isPopular: boolean;
+      buttonText: string;
+    }>;
+    testimonials?: Array<{
+      id: string;
+      customerName: string;
+      customerTitle: string;
+      testimonialText: string;
+      customerImage: string;
+      rating: number;
+    }>;
   };
   data?: {
     phone?: string;
@@ -327,55 +352,195 @@ export default function AdvancedWebsiteBuilder() {
         console.error('Error parsing existing website sections:', e);
       }
     } else if (clientData?.client && !existingWebsite) {
-      // Initialize with complete website structure including all sections
+      // Initialize with Figma-designed hair salon template
       setWebsiteData(prev => ({
         ...prev,
-        title: `${clientData.client.businessName} - Professional Services`,
-        description: `${clientData.client.businessName} - ${clientData.client.industry} services`,
+        title: `${clientData.client.businessName || 'Graceful Hair'} - Professional Hair Salon`,
+        description: `${clientData.client.businessName || 'Graceful Hair'} - Professional hair care and styling services`,
+        primaryColor: "#ec4899", // Pink from Figma
+        secondaryColor: "#a855f7", // Purple from Figma
         sections: [
+          {
+            id: "header",
+            type: "header",
+            title: "Header",
+            content: "Navigation and business logo",
+            settings: { 
+              backgroundColor: "#FFFFFF", 
+              textColor: "#1F2937", 
+              alignment: "center", 
+              padding: "small",
+              height: "auto"
+            }
+          },
           {
             id: "hero",
             type: "hero",
-            title: `Welcome to ${clientData.client.businessName}`,
-            content: `Professional ${clientData.client.industry.toLowerCase()} services for all your needs.`,
-            settings: { backgroundColor: "#3B82F6", textColor: "#FFFFFF", alignment: "center", padding: "large" },
+            title: `${clientData.client.businessName || 'Graceful Hair'}`,
+            content: "Truly, yours.\nExperience premium hair care with our professional stylists",
+            settings: { 
+              backgroundType: "gradient",
+              gradientType: "linear",
+              gradientDirection: "135deg",
+              gradientColors: ["#ec4899", "#a855f7"],
+              textColor: "#FFFFFF", 
+              alignment: "left", 
+              padding: "large",
+              height: "screen",
+              heroImage: "/assets/Image (3)_1757807495639.png",
+              heroImageAlt: "Woman with beautiful hair"
+            },
             data: {
               buttonText: "Book Appointment",
-              buttonLink: "/booking"
+              buttonLink: "#contact"
             }
           },
           {
-            id: "contact-info",
-            type: "contact-info",
-            title: "Contact Information",
-            content: "Get in touch with us through multiple channels",
-            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "center", padding: "medium" },
+            id: "staff",
+            type: "staff", 
+            title: "Meet With Our Professional Staff",
+            content: "Our experienced team of hair professionals",
+            settings: { 
+              backgroundColor: "#F9FAFB", 
+              textColor: "#1F2937", 
+              alignment: "center", 
+              padding: "large",
+              staffMembers: [
+                {
+                  id: "1",
+                  name: "Mara Olsen",
+                  title: "Senior Stylist", 
+                  experience: "8 years experience",
+                  profileImage: "/assets/Ellipse 54_1757064789129.png"
+                },
+                {
+                  id: "2", 
+                  name: "Jess Nunez",
+                  title: "Hair Specialist",
+                  experience: "6 years experience", 
+                  profileImage: "/assets/Ellipse 55_1757064789130.png"
+                },
+                {
+                  id: "3",
+                  name: "Dana Welch", 
+                  title: "Color Expert",
+                  experience: "5 years experience",
+                  profileImage: "/assets/Ellipse 56_1757064789130.png"
+                }
+              ]
+            }
+          },
+          {
+            id: "pricing",
+            type: "pricing",
+            title: "Summer Hair Hair Offers", 
+            content: "Choose the perfect service for your hair care needs",
+            settings: { 
+              backgroundColor: "#FFFFFF", 
+              textColor: "#1F2937", 
+              alignment: "center", 
+              padding: "large",
+              pricingTiers: [
+                {
+                  id: "1",
+                  name: "Hair Dryer",
+                  price: 30,
+                  features: ["Basic wash", "Blow dry", "Simple styling"],
+                  isPopular: false,
+                  buttonText: "Book Now"
+                },
+                {
+                  id: "2",
+                  name: "Hair Washer", 
+                  price: 40,
+                  features: ["Deep cleanse", "Conditioning", "Scalp massage"],
+                  isPopular: false,
+                  buttonText: "Book Now"
+                },
+                {
+                  id: "3",
+                  name: "Hair Developer",
+                  price: 70, 
+                  features: ["Cut & style", "Deep conditioning", "Hair treatment", "Consultation"],
+                  isPopular: true,
+                  buttonText: "Book Now"
+                },
+                {
+                  id: "4",
+                  name: "Hair Color",
+                  price: 100,
+                  features: ["Full color service", "Premium products", "Expert consultation", "After-care"],
+                  isPopular: false, 
+                  buttonText: "Book Now"
+                }
+              ]
+            }
+          },
+          {
+            id: "testimonials",
+            type: "testimonials",
+            title: "What Our Clients Say",
+            content: "Read testimonials from our satisfied customers",
+            settings: { 
+              backgroundType: "gradient",
+              gradientType: "linear", 
+              gradientDirection: "135deg",
+              gradientColors: ["#1e1b4b", "#581c87"],
+              textColor: "#FFFFFF", 
+              alignment: "center", 
+              padding: "large",
+              testimonials: [
+                {
+                  id: "1",
+                  customerName: "Sarah Johnson",
+                  customerTitle: "Hair Influencer",
+                  testimonialText: "Hair has been my home for hair for years",
+                  customerImage: "/assets/Ellipse 57_1757064789131.png",
+                  rating: 5
+                }
+              ]
+            }
+          },
+          {
+            id: "newsletter", 
+            type: "newsletter",
+            title: "Subscribe to the Hair Newsletter",
+            content: "Get exclusive tips, offers, and updates straight to your inbox",
+            settings: { 
+              backgroundColor: "#F9FAFB", 
+              textColor: "#1F2937", 
+              alignment: "center", 
+              padding: "large"
+            }
+          },
+          {
+            id: "booking",
+            type: "booking",
+            title: "Schedule your hair experience", 
+            content: "Ready to transform your look? Fill out the form and we'll get back to you to schedule your appointment.",
+            settings: { 
+              backgroundColor: "#FFFFFF", 
+              textColor: "#1F2937", 
+              alignment: "left", 
+              padding: "large"
+            }
+          },
+          {
+            id: "footer",
+            type: "footer",
+            title: "Footer",
+            content: "Business information and social links",
+            settings: { 
+              backgroundColor: "#581c87", 
+              textColor: "#FFFFFF", 
+              alignment: "left", 
+              padding: "large"
+            },
             data: {
-              phone: clientData.client.phone || "555-0101",
-              email: clientData.client.email || "info@business.com",
-              address: clientData.client.businessAddress || "Business Address"
+              phone: clientData.client.phone || "(555) 123-4567",
+              email: clientData.client.email || "info@gracefulhair.com", 
+              address: clientData.client.businessAddress || "123 Beauty St, Hair City"
             }
-          },
-          {
-            id: "services",
-            type: "services",
-            title: "Our Services",
-            content: "Choose from our professional services",
-            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "center", padding: "medium" }
-          },
-          {
-            id: "about",
-            type: "about",
-            title: `About ${clientData.client.businessName}`,
-            content: `Welcome to ${clientData.client.businessName}, your trusted partner for professional ${clientData.client.industry.toLowerCase()} services. Led by ${clientData.client.contactPerson}, we are committed to providing exceptional service and ensuring your complete satisfaction.`,
-            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "left", padding: "medium" }
-          },
-          {
-            id: "contact-form",
-            type: "contact-form",
-            title: "Get In Touch",
-            content: "Send us a message and we'll get back to you soon",
-            settings: { backgroundColor: "#FFFFFF", textColor: "#1F2937", alignment: "left", padding: "medium" }
           }
         ]
       }));
@@ -385,13 +550,19 @@ export default function AdvancedWebsiteBuilder() {
   // Section management functions
   const addSection = (type: WebsiteSection['type']) => {
     const sectionTemplates = {
-      hero: { title: "Hero Section", content: "Welcome to our amazing business!" },
+      header: { title: "Header", content: "Navigation and business logo" },
+      hero: { title: "Hero Section", content: "Graceful Hair\nTruly, yours." },
       about: { title: "About Us", content: "Learn more about our story and mission." },
       services: { title: "Our Services", content: "Discover what we can do for you." },
+      staff: { title: "Meet With Our Professional Staff", content: "Professional team members" },
+      pricing: { title: "Summer Hair Hair Offers", content: "Choose the perfect service for your hair care needs" },
       'contact-info': { title: "Contact Information", content: "Get in touch with us through multiple channels." },
       'contact-form': { title: "Contact Form", content: "Send us a message and we'll get back to you soon." },
       'lead-form': { title: "Get a Quote", content: "Tell us about your needs and we'll contact you with a personalized quote." },
       testimonials: { title: "What Our Clients Say", content: "Read testimonials from our satisfied customers." },
+      newsletter: { title: "Subscribe to the Hair Newsletter", content: "Get exclusive tips, offers, and updates straight to your inbox" },
+      booking: { title: "Schedule your hair experience", content: "Ready to transform your look? Fill out the form and we'll get back to you to schedule your appointment." },
+      footer: { title: "Footer", content: "Business information and social links" },
       gallery: { title: "Gallery", content: "View our portfolio and past work." },
       text: { title: "Text Section", content: "Add your custom text content here." },
       image: { title: "Image Section", content: "Add an image with caption." },
@@ -2392,25 +2563,257 @@ export default function AdvancedWebsiteBuilder() {
                     buttonColor={websiteData.primaryColor}
                   />
                 ) : section.type === 'testimonials' ? (
-                  <div>
-                    <h2 className={`font-bold mb-4 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                  <div className="text-center">
+                    <h2 className={`font-bold mb-8 text-2xl ${getFontSizeClass(section.settings?.fontSize)}`}>
                       {section.title}
                     </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="p-4 bg-white bg-opacity-10 rounded">
-                        <div className="flex mb-2">
-                          {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
+                    {section.settings?.testimonials && section.settings.testimonials.length > 0 ? (
+                      <div className="max-w-4xl mx-auto">
+                        <div className="bg-white bg-opacity-20 rounded-xl p-8 text-center">
+                          <div className="flex justify-center mb-6">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} className="h-6 w-6 text-yellow-400 fill-yellow-400" />
+                            ))}
+                          </div>
+                          <blockquote className="text-xl text-white mb-6 italic leading-relaxed">
+                            "{section.settings.testimonials[0].testimonialText}"
+                          </blockquote>
+                          <div className="flex items-center justify-center">
+                            <img 
+                              src={section.settings.testimonials[0].customerImage} 
+                              alt={section.settings.testimonials[0].customerName}
+                              className="w-16 h-16 rounded-full mr-4"
+                            />
+                            <div className="text-left">
+                              <p className="font-bold text-white">{section.settings.testimonials[0].customerName}</p>
+                              <p className="text-pink-300">{section.settings.testimonials[0].customerTitle}</p>
+                            </div>
+                          </div>
                         </div>
-                        <p className="italic">"Great service and professional team!"</p>
-                        <p className="font-semibold mt-2">- Client Name</p>
                       </div>
-                      <div className="p-4 bg-white bg-opacity-10 rounded">
-                        <div className="flex mb-2">
-                          {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
+                    ) : (
+                      <div className="text-center py-8 bg-white bg-opacity-10 rounded">
+                        <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-sm opacity-75">Customer testimonials will display here</p>
+                        <p className="text-xs opacity-50 mt-2">Add testimonials in the admin panel</p>
+                      </div>
+                    )}
+                  </div>
+                ) : section.type === 'header' ? (
+                  <div className="bg-white shadow-sm">
+                    <div className="max-w-7xl mx-auto px-4 py-4">
+                      <div className="flex justify-between items-center">
+                        <h1 className="text-2xl font-bold text-gray-900">
+                          {clientData?.client?.businessName || 'Graceful Hair'}
+                        </h1>
+                        <nav className="hidden md:flex space-x-8">
+                          <a href="#home" className="text-gray-700 hover:text-gray-900">Home</a>
+                          <a href="#staff" className="text-gray-700 hover:text-gray-900">Staff</a>
+                          <a href="#pricing" className="text-gray-700 hover:text-gray-900">Pricing</a>
+                          <a href="#contact" className="text-gray-700 hover:text-gray-900">Contact</a>
+                        </nav>
+                        <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full">
+                          Contact Us
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : section.type === 'staff' ? (
+                  <div>
+                    <h2 className={`font-bold mb-8 text-4xl text-center ${getFontSizeClass(section.settings?.fontSize)}`}>
+                      {section.title}
+                    </h2>
+                    {section.settings?.staffMembers && section.settings.staffMembers.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {section.settings.staffMembers.map((member, index) => (
+                          <div key={member.id} className="text-center">
+                            <div className="relative w-48 h-48 mx-auto mb-6">
+                              <img 
+                                src={member.profileImage} 
+                                alt={member.name}
+                                className="w-full h-full rounded-full object-cover shadow-lg"
+                              />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">{member.name}</h3>
+                            <p className="text-gray-600 mb-1">{member.title}</p>
+                            <p className="text-sm text-gray-500">{member.experience}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 bg-white bg-opacity-10 rounded">
+                        <p className="text-sm opacity-75">Staff members will display here</p>
+                        <p className="text-xs opacity-50 mt-2">Add staff in the admin panel</p>
+                      </div>
+                    )}
+                  </div>
+                ) : section.type === 'pricing' ? (
+                  <div>
+                    <h2 className={`font-bold mb-4 text-4xl text-center ${getFontSizeClass(section.settings?.fontSize)}`}>
+                      {section.title}
+                    </h2>
+                    <p className="text-gray-600 text-center mb-16">{section.content}</p>
+                    {section.settings?.pricingTiers && section.settings.pricingTiers.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {section.settings.pricingTiers.map((tier, index) => (
+                          <div 
+                            key={tier.id} 
+                            className={`relative p-6 text-center rounded-lg ${
+                              tier.isPopular 
+                                ? 'bg-purple-600 text-white scale-105 shadow-xl' 
+                                : 'bg-white border'
+                            }`}
+                          >
+                            {tier.isPopular && (
+                              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                                <span className="bg-pink-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                                  Most Popular
+                                </span>
+                              </div>
+                            )}
+                            <h3 className={`text-xl font-bold mb-4 ${tier.isPopular ? 'text-white' : 'text-gray-900'}`}>
+                              {tier.name}
+                            </h3>
+                            <div className="mb-6">
+                              <span className={`text-4xl font-bold ${tier.isPopular ? 'text-white' : 'text-gray-900'}`}>
+                                ${tier.price}
+                              </span>
+                            </div>
+                            <ul className="space-y-3 mb-8">
+                              {tier.features.map((feature, featureIndex) => (
+                                <li key={featureIndex} className="flex items-center">
+                                  <CheckCircle className={`h-5 w-5 mr-3 ${tier.isPopular ? 'text-pink-300' : 'text-green-500'}`} />
+                                  <span className={tier.isPopular ? 'text-white' : 'text-gray-600'}>{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            <button 
+                              className={`w-full py-3 rounded-lg font-semibold ${
+                                tier.isPopular 
+                                  ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                                  : 'bg-purple-600 hover:bg-purple-700 text-white'
+                              }`}
+                            >
+                              {tier.buttonText}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 bg-white bg-opacity-10 rounded">
+                        <p className="text-sm opacity-75">Pricing tiers will display here</p>
+                        <p className="text-xs opacity-50 mt-2">Add pricing in the admin panel</p>
+                      </div>
+                    )}
+                  </div>
+                ) : section.type === 'newsletter' ? (
+                  <div className="bg-white rounded-lg shadow-lg p-8 text-center max-w-4xl mx-auto">
+                    <div className="w-20 h-20 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-6">
+                      <span className="text-white text-2xl font-bold">HS</span>
+                    </div>
+                    <h2 className={`font-bold mb-4 text-3xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                      {section.title}
+                    </h2>
+                    <p className="text-gray-600 mb-8">{section.content}</p>
+                    <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                      <input
+                        type="email"
+                        placeholder="Enter your email"
+                        className="flex-1 p-3 border rounded-lg"
+                      />
+                      <button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg">
+                        Subscribe
+                      </button>
+                    </div>
+                  </div>
+                ) : section.type === 'booking' ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                      <h2 className={`font-bold mb-6 text-4xl ${getFontSizeClass(section.settings?.fontSize)}`}>
+                        {section.title}
+                      </h2>
+                      <p className="text-gray-600 mb-8">{section.content}</p>
+                      <div className="space-y-6">
+                        <input className="w-full p-3 border rounded-lg" placeholder="Full Name" />
+                        <input className="w-full p-3 border rounded-lg" placeholder="Email" />
+                        <input className="w-full p-3 border rounded-lg" placeholder="Phone Number" />
+                        <textarea className="w-full p-3 border rounded-lg" rows={4} placeholder="Tell us about your hair goals..."></textarea>
+                        <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold">
+                          Request Booking
+                        </button>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <div 
+                        className="rounded-full w-96 h-96 mx-auto overflow-hidden"
+                        style={{
+                          background: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)'
+                        }}
+                      >
+                        {section.settings?.heroImage ? (
+                          <img 
+                            src={section.settings.heroImage} 
+                            alt="Hair styling" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white text-xl">
+                            Hair Image
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : section.type === 'footer' ? (
+                  <div className="text-white py-16">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                      <div>
+                        <h3 className="text-xl font-bold mb-4">
+                          {clientData?.client?.businessName || 'Graceful Hair'}
+                        </h3>
+                        <p className="text-purple-200 mb-4">
+                          Your trusted partner for beautiful, healthy hair
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Phone className="h-4 w-4 mr-2" />
+                            <span>{section.data?.phone || clientData?.client?.phone || '(555) 123-4567'}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Mail className="h-4 w-4 mr-2" />
+                            <span>{section.data?.email || clientData?.client?.email || 'info@gracefulhair.com'}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Layout className="h-4 w-4 mr-2" />
+                            <span>{section.data?.address || clientData?.client?.businessAddress || '123 Beauty St, Hair City'}</span>
+                          </div>
                         </div>
-                        <p className="italic">"Highly recommend their services!"</p>
-                        <p className="font-semibold mt-2">- Another Client</p>
                       </div>
+                      <div>
+                        <h4 className="text-lg font-semibold mb-4">Services</h4>
+                        <ul className="space-y-2 text-purple-200">
+                          <li>Hair Cutting</li>
+                          <li>Hair Coloring</li>
+                          <li>Hair Styling</li>
+                          <li>Hair Treatments</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold mb-4">Follow Us</h4>
+                        <div className="flex space-x-4">
+                          <div className="text-purple-200 hover:text-white cursor-pointer">Facebook</div>
+                          <div className="text-purple-200 hover:text-white cursor-pointer">Instagram</div>
+                          <div className="text-purple-200 hover:text-white cursor-pointer">Twitter</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border-t border-purple-800 mt-12 pt-8 text-center">
+                      <p className="text-purple-200">
+                        © 2024 {clientData?.client?.businessName || 'Graceful Hair'}. All rights reserved.
+                      </p>
                     </div>
                   </div>
                 ) : section.type === 'columns' ? (

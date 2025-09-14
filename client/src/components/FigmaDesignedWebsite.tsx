@@ -85,6 +85,12 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
     queryKey: [`/api/public/client/${clientId}`]
   });
 
+  // Fetch website data from the same source as the builder
+  const { data: websiteData } = useQuery<any>({
+    queryKey: [`/api/public/client/${clientId}/website`],
+    enabled: !!clientId
+  });
+
   // Fetch staff data
   const { data: staff = [] } = useQuery<WebsiteStaff[]>({
     queryKey: [`/api/public/clients/${clientId}/website-staff`]
@@ -146,49 +152,14 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
     }
   });
 
-  // Default data for demonstration
-  const defaultStaff = [
+  // Fallback to imported assets only if no admin data is available
+  const defaultStaffWithAssets = [
     { id: '1', name: 'Mara Olsen', title: 'Senior Stylist', experience: '8 years experience', profileImage: staffMember1 },
     { id: '2', name: 'Jess Nunez', title: 'Hair Specialist', experience: '6 years experience', profileImage: staffMember2 },
     { id: '3', name: 'Dana Welch', title: 'Color Expert', experience: '5 years experience', profileImage: staffMember3 },
   ];
 
-  const defaultPricingTiers = [
-    {
-      id: '1',
-      name: 'Hair Dryer',
-      price: 30,
-      features: ['Basic wash', 'Blow dry', 'Simple styling'],
-      isPopular: false,
-      buttonText: 'Book Now'
-    },
-    {
-      id: '2', 
-      name: 'Hair Washer',
-      price: 40,
-      features: ['Deep cleanse', 'Conditioning', 'Scalp massage'],
-      isPopular: false,
-      buttonText: 'Book Now'
-    },
-    {
-      id: '3',
-      name: 'Hair Developer',
-      price: 70,
-      features: ['Cut & style', 'Deep conditioning', 'Hair treatment', 'Consultation'],
-      isPopular: true,
-      buttonText: 'Book Now'
-    },
-    {
-      id: '4',
-      name: 'Hair Color',
-      price: 100,
-      features: ['Full color service', 'Premium products', 'Expert consultation', 'After-care'],
-      isPopular: false,
-      buttonText: 'Book Now'
-    }
-  ];
-
-  const defaultTestimonials = [
+  const defaultTestimonialWithAsset = [
     {
       id: '1',
       customerName: 'Sarah Johnson',
@@ -199,9 +170,28 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
     }
   ];
 
-  const displayStaff = staff.length > 0 ? staff : defaultStaff;
-  const displayPricing = pricingTiers.length > 0 ? pricingTiers : defaultPricingTiers;
-  const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTestimonials;
+  // Parse website sections from builder data
+  let websiteSections: any[] = [];
+  if (websiteData?.sections) {
+    try {
+      websiteSections = JSON.parse(websiteData.sections);
+    } catch (e) {
+      console.error('Error parsing website sections:', e);
+      websiteSections = [];
+    }
+  }
+
+  // Use website data for configuration when available
+  const businessName = client?.businessName || 'Graceful Hair';
+  const heroTitle = websiteSections.find(s => s.type === 'hero')?.title || 'Transform Your Look with Professional Hair Care';
+  const heroContent = websiteSections.find(s => s.type === 'hero')?.content || 'Experience luxury hair services that bring out your natural beauty';
+  const primaryColor = websiteData?.primaryColor || '#a855f7'; // Default purple
+  const secondaryColor = websiteData?.secondaryColor || '#ec4899'; // Default pink
+
+  // Use real admin data when available, fallback to assets only for display purposes
+  const displayStaff = staff.length > 0 ? staff : defaultStaffWithAssets;
+  const displayPricing = pricingTiers.length > 0 ? pricingTiers : [];
+  const displayTestimonials = testimonials.length > 0 ? testimonials : defaultTestimonialWithAsset;
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,18 +247,17 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
         id="home" 
         className="relative min-h-screen flex items-center"
         style={{
-          background: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)'
+          background: `linear-gradient(135deg, ${secondaryColor} 0%, ${primaryColor} 100%)`
         }}
         data-testid="hero-section"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="text-white">
             <h1 className="text-5xl lg:text-7xl font-bold mb-6" data-testid="hero-title">
-              Graceful Hair<br />
-              Truly, yours.
+              {heroTitle}
             </h1>
             <p className="text-xl mb-8 opacity-90" data-testid="hero-description">
-              Experience premium hair care with our professional stylists
+              {heroContent}
             </p>
             <Button 
               className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-semibold"
@@ -333,51 +322,58 @@ export default function FigmaDesignedWebsite({ clientId }: FigmaDesignedWebsiteP
               Choose the perfect service for your hair care needs
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {displayPricing.map((tier, index) => (
-              <Card 
-                key={tier.id} 
-                className={`relative ${tier.isPopular ? 'bg-purple-600 text-white scale-105 shadow-xl' : 'bg-white'}`}
-                data-testid={`pricing-tier-${index}`}
-              >
-                {tier.isPopular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-pink-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <CardContent className="p-6 text-center">
-                  <h3 className={`text-xl font-bold mb-4 ${tier.isPopular ? 'text-white' : 'text-gray-900'}`} data-testid={`tier-name-${index}`}>
-                    {tier.name}
-                  </h3>
-                  <div className="mb-6">
-                    <span className={`text-4xl font-bold ${tier.isPopular ? 'text-white' : 'text-gray-900'}`} data-testid={`tier-price-${index}`}>
-                      ${tier.price}
-                    </span>
-                  </div>
-                  <ul className="space-y-3 mb-8">
-                    {tier.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center" data-testid={`tier-feature-${index}-${featureIndex}`}>
-                        <CheckCircle className={`h-5 w-5 mr-3 ${tier.isPopular ? 'text-pink-300' : 'text-green-500'}`} />
-                        <span className={tier.isPopular ? 'text-white' : 'text-gray-600'}>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    className={`w-full ${
-                      tier.isPopular 
-                        ? 'bg-pink-500 hover:bg-pink-600 text-white' 
-                        : 'bg-purple-600 hover:bg-purple-700 text-white'
-                    }`}
-                    data-testid={`tier-button-${index}`}
-                  >
-                    {tier.buttonText}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {displayPricing.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {displayPricing.map((tier, index) => (
+                <Card 
+                  key={tier.id} 
+                  className={`relative ${tier.isPopular ? 'bg-purple-600 text-white scale-105 shadow-xl' : 'bg-white'}`}
+                  data-testid={`pricing-tier-${index}`}
+                >
+                  {tier.isPopular && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-pink-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                        Most Popular
+                      </span>
+                    </div>
+                  )}
+                  <CardContent className="p-6 text-center">
+                    <h3 className={`text-xl font-bold mb-4 ${tier.isPopular ? 'text-white' : 'text-gray-900'}`} data-testid={`tier-name-${index}`}>
+                      {tier.name}
+                    </h3>
+                    <div className="mb-6">
+                      <span className={`text-4xl font-bold ${tier.isPopular ? 'text-white' : 'text-gray-900'}`} data-testid={`tier-price-${index}`}>
+                        ${tier.price}
+                      </span>
+                    </div>
+                    <ul className="space-y-3 mb-8">
+                      {tier.features?.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-center" data-testid={`tier-feature-${index}-${featureIndex}`}>
+                          <CheckCircle className={`h-5 w-5 mr-3 ${tier.isPopular ? 'text-pink-300' : 'text-green-500'}`} />
+                          <span className={tier.isPopular ? 'text-white' : 'text-gray-600'}>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button 
+                      className={`w-full ${
+                        tier.isPopular 
+                          ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                          : 'bg-purple-600 hover:bg-purple-700 text-white'
+                      }`}
+                      data-testid={`tier-button-${index}`}
+                    >
+                      {tier.buttonText || 'Book Now'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <h3 className="text-lg font-medium text-gray-600 mb-2">No Pricing Tiers Available</h3>
+              <p className="text-sm text-gray-500">Add pricing tiers in your admin dashboard to display services here</p>
+            </div>
+          )}
         </div>
       </section>
 
