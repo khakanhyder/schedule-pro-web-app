@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import { 
   Calendar,
   Users,
@@ -174,19 +175,6 @@ export default function ClientDashboard() {
     source: 'all',
     status: 'all'
   });
-
-  // Filtered leads based on search and filter criteria
-  const filteredLeads = leads.filter(lead => {
-    const matchesSearch = leadFilters.searchText === '' || 
-      lead.name.toLowerCase().includes(leadFilters.searchText.toLowerCase()) ||
-      lead.email.toLowerCase().includes(leadFilters.searchText.toLowerCase()) ||
-      lead.phone.includes(leadFilters.searchText);
-    
-    const matchesSource = leadFilters.source === 'all' || lead.source === leadFilters.source;
-    const matchesStatus = leadFilters.status === 'all' || lead.status === leadFilters.status;
-    
-    return matchesSearch && matchesSource && matchesStatus;
-  });
   
   const [websiteSettings, setWebsiteSettings] = useState({
     title: '',
@@ -266,6 +254,19 @@ export default function ClientDashboard() {
   const { data: leads = [] } = useQuery<Lead[]>({
     queryKey: [`/api/client/${clientData?.id}/leads`],
     enabled: !!clientData?.id
+  });
+
+  // Filtered leads based on search and filter criteria - must be after leads is defined
+  const filteredLeads = leads.filter(lead => {
+    const matchesSearch = leadFilters.searchText === '' || 
+      lead.name.toLowerCase().includes(leadFilters.searchText.toLowerCase()) ||
+      lead.email.toLowerCase().includes(leadFilters.searchText.toLowerCase()) ||
+      lead.phone.includes(leadFilters.searchText);
+    
+    const matchesSource = leadFilters.source === 'all' || lead.source === leadFilters.source;
+    const matchesStatus = leadFilters.status === 'all' || lead.status === leadFilters.status;
+    
+    return matchesSearch && matchesSource && matchesStatus;
   });
   
   const { data: appointmentSlots = [] } = useQuery<any[]>({

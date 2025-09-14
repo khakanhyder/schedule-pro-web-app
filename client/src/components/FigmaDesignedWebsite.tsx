@@ -735,21 +735,12 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
                       <SelectValue placeholder="Select how you found us" />
                     </SelectTrigger>
                     <SelectContent>
-                      {clientServices.length > 0 ? (
-                        clientServices.map((service) => (
-                          <SelectItem key={service.id} value={service.name}>
-                            {service.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <>
-                          <SelectItem value="google-search">Google Search</SelectItem>
-                          <SelectItem value="social-media">Social Media</SelectItem>
-                          <SelectItem value="referral">Friend/Family Referral</SelectItem>
-                          <SelectItem value="walk-in">Walk-in</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </>
-                      )}
+                      <SelectItem value="website">Website</SelectItem>
+                      <SelectItem value="google-search">Google Search</SelectItem>
+                      <SelectItem value="social-media">Social Media</SelectItem>
+                      <SelectItem value="referral">Friend/Family Referral</SelectItem>
+                      <SelectItem value="walk-in">Walk-in</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -923,21 +914,12 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
                   <SelectValue placeholder="Select how you found us" />
                 </SelectTrigger>
                 <SelectContent>
-                  {clientServices.length > 0 ? (
-                    clientServices.map((service) => (
-                      <SelectItem key={service.id} value={service.name}>
-                        {service.name}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <>
-                      <SelectItem value="google-search">Google Search</SelectItem>
-                      <SelectItem value="social-media">Social Media</SelectItem>
-                      <SelectItem value="referral">Friend/Family Referral</SelectItem>
-                      <SelectItem value="walk-in">Walk-in</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </>
-                  )}
+                  <SelectItem value="website">Website</SelectItem>
+                  <SelectItem value="google-search">Google Search</SelectItem>
+                  <SelectItem value="social-media">Social Media</SelectItem>
+                  <SelectItem value="referral">Friend/Family Referral</SelectItem>
+                  <SelectItem value="walk-in">Walk-in</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
