@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 interface LeadFormProps {
   clientId: string;
@@ -13,6 +14,14 @@ interface LeadFormProps {
   buttonText?: string;
   buttonColor?: string;
   className?: string;
+}
+
+interface ClientService {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  durationMinutes: number;
 }
 
 export default function LeadForm({ 
@@ -25,6 +34,16 @@ export default function LeadForm({
 }: LeadFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch client services for the source dropdown
+  const { data: clientServices = [], isLoading: servicesLoading } = useQuery({
+    queryKey: [`/api/public/client/${clientId}/services`],
+    queryFn: async () => {
+      const response = await fetch(`/api/public/client/${clientId}/services`);
+      if (!response.ok) throw new Error('Failed to fetch services');
+      return response.json();
+    }
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -143,16 +162,33 @@ export default function LeadForm({
         
         <div>
           <Label htmlFor="lead-service">Service Interest</Label>
-          <Select onValueChange={(value) => handleInputChange('serviceInterest', value)}>
+          <Select 
+            value={formData.serviceInterest || ''} 
+            onValueChange={(value) => handleInputChange('serviceInterest', value)}
+          >
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select a service (optional)" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="consultation">Consultation</SelectItem>
-              <SelectItem value="full-service">Full Service</SelectItem>
-              <SelectItem value="custom-project">Custom Project</SelectItem>
-              <SelectItem value="maintenance">Maintenance</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              {servicesLoading ? (
+                <SelectItem value="loading" disabled>
+                  Loading services...
+                </SelectItem>
+              ) : clientServices.length > 0 ? (
+                clientServices.map((service: ClientService) => (
+                  <SelectItem key={service.id} value={service.id}>
+                    {service.name} - {service.price}
+                  </SelectItem>
+                ))
+              ) : (
+                <>
+                  <SelectItem value="consultation">Consultation</SelectItem>
+                  <SelectItem value="full-service">Full Service</SelectItem>
+                  <SelectItem value="custom-project">Custom Project</SelectItem>
+                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -171,7 +207,10 @@ export default function LeadForm({
         
         <div>
           <Label htmlFor="lead-contact">Preferred Contact Method</Label>
-          <Select onValueChange={(value) => handleInputChange('contactMethod', value)}>
+          <Select 
+            value={formData.contactMethod || ''} 
+            onValueChange={(value) => handleInputChange('contactMethod', value)}
+          >
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="How should we contact you?" />
             </SelectTrigger>

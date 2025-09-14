@@ -1593,16 +1593,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Resolve service interest to service name for source field
+      let sourceField = "website-lead-form";
+      let interestedServicesArray: string[] = [];
+      
+      if (serviceInterest) {
+        // Check if serviceInterest is a UUID (service ID) vs static option
+        const isServiceId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serviceInterest);
+        
+        if (isServiceId) {
+          try {
+            // Try to fetch the service to get its name
+            const services = await storage.getClientServices(clientId);
+            const service = services.find(s => s.id === serviceInterest);
+            if (service) {
+              sourceField = service.name;
+              interestedServicesArray = [serviceInterest]; // Store the service ID
+            } else {
+              sourceField = "Unknown Service";
+              interestedServicesArray = [serviceInterest];
+            }
+          } catch (error) {
+            console.error("Error resolving service ID:", error);
+            sourceField = "Service ID: " + serviceInterest;
+            interestedServicesArray = [serviceInterest];
+          }
+        } else {
+          // It's a static option, use it directly
+          sourceField = serviceInterest;
+          interestedServicesArray = [serviceInterest];
+        }
+      }
+      
       // Create lead from lead form
       const lead = await storage.createLead({
         clientId,
         name,
         email,
         phone: phone || "",
-        source: "website-lead-form",
+        source: sourceField,
         status: "NEW",
         notes: notes || `Contact preference: ${contactMethod || 'Not specified'}`,
-        interestedServices: serviceInterest ? [serviceInterest] : [],
+        interestedServices: interestedServicesArray,
         estimatedValue,
         followUpDate: null,
         convertedToAppointment: false,
