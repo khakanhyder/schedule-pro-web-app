@@ -234,7 +234,7 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
           email: formData.email,
           phone: formData.phone,
           notes: formData.message,
-          source: formData.source || 'website'
+          serviceInterest: formData.source || 'website'
         })
       });
       if (!response.ok) throw new Error('Failed to submit booking');
