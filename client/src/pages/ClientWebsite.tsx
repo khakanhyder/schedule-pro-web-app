@@ -22,6 +22,7 @@ import {
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useParams } from 'wouter';
 import LeadForm from '@/components/LeadForm';
+import FigmaDesignedWebsite from '@/components/FigmaDesignedWebsite';
 
 interface Client {
   id: string;
@@ -183,6 +184,13 @@ function ReviewsCarousel({ reviews, title, style }: {
 
 export default function ClientWebsite() {
   const { clientId } = useParams();
+  
+  // For demo purposes, use the Figma designed website if clientId is client_1
+  if (clientId === 'client_1') {
+    return <FigmaDesignedWebsite clientId={clientId} />;
+  }
+
+  // Fallback to original website for other clients
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<ClientService | null>(null);
   const [bookingForm, setBookingForm] = useState({

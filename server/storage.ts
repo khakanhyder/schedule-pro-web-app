@@ -18,6 +18,10 @@ import {
   reviewPlatformConnections, type ReviewPlatformConnection, type InsertReviewPlatformConnection,
   platformReviews, type PlatformReview, type InsertPlatformReview,
   googleBusinessProfiles, type GoogleBusinessProfile, type InsertGoogleBusinessProfile,
+  newsletterSubscriptions, type NewsletterSubscription, type InsertNewsletterSubscription,
+  websiteStaff, type WebsiteStaff, type InsertWebsiteStaff,
+  servicePricingTiers, type ServicePricingTier, type InsertServicePricingTier,
+  websiteTestimonials, type WebsiteTestimonial, type InsertWebsiteTestimonial,
 } from "@shared/schema";
 import { dnsVerificationService } from "./dns-verification";
 
@@ -143,6 +147,34 @@ export interface IStorage {
   // Domain Verification Logs
   getDomainVerificationLogs(domainConfigId: string): Promise<DomainVerificationLog[]>;
   createDomainVerificationLog(log: InsertDomainVerificationLog): Promise<DomainVerificationLog>;
+
+  // Newsletter Subscriptions
+  getNewsletterSubscriptions(clientId: string): Promise<NewsletterSubscription[]>;
+  getNewsletterSubscription(id: string): Promise<NewsletterSubscription | undefined>;
+  createNewsletterSubscription(subscription: InsertNewsletterSubscription): Promise<NewsletterSubscription>;
+  updateNewsletterSubscription(id: string, updates: Partial<InsertNewsletterSubscription>): Promise<NewsletterSubscription>;
+  deleteNewsletterSubscription(id: string): Promise<void>;
+
+  // Website Staff Members
+  getWebsiteStaff(clientId: string): Promise<WebsiteStaff[]>;
+  getWebsiteStaffMember(id: string): Promise<WebsiteStaff | undefined>;
+  createWebsiteStaff(staff: InsertWebsiteStaff): Promise<WebsiteStaff>;
+  updateWebsiteStaff(id: string, updates: Partial<InsertWebsiteStaff>): Promise<WebsiteStaff>;
+  deleteWebsiteStaff(id: string): Promise<void>;
+
+  // Service Pricing Tiers
+  getServicePricingTiers(clientId: string): Promise<ServicePricingTier[]>;
+  getServicePricingTier(id: string): Promise<ServicePricingTier | undefined>;
+  createServicePricingTier(tier: InsertServicePricingTier): Promise<ServicePricingTier>;
+  updateServicePricingTier(id: string, updates: Partial<InsertServicePricingTier>): Promise<ServicePricingTier>;
+  deleteServicePricingTier(id: string): Promise<void>;
+
+  // Website Testimonials
+  getWebsiteTestimonials(clientId: string): Promise<WebsiteTestimonial[]>;
+  getWebsiteTestimonial(id: string): Promise<WebsiteTestimonial | undefined>;
+  createWebsiteTestimonial(testimonial: InsertWebsiteTestimonial): Promise<WebsiteTestimonial>;
+  updateWebsiteTestimonial(id: string, updates: Partial<InsertWebsiteTestimonial>): Promise<WebsiteTestimonial>;
+  deleteWebsiteTestimonial(id: string): Promise<void>;
 }
 
 // In-memory storage implementation
@@ -186,6 +218,10 @@ class MemStorage implements IStorage {
   private platformReviews: PlatformReview[] = [];
   private domainConfigurations: DomainConfiguration[] = [];
   private domainVerificationLogs: DomainVerificationLog[] = [];
+  private newsletterSubscriptions: NewsletterSubscription[] = [];
+  private websiteStaff: WebsiteStaff[] = [];
+  private servicePricingTiers: ServicePricingTier[] = [];
+  private websiteTestimonials: WebsiteTestimonial[] = [];
 
   constructor() {
     this.initializeData();
@@ -361,6 +397,125 @@ class MemStorage implements IStorage {
       password: "password123",
       permissions: ["overview.view", "appointments.view", "appointments.create", "appointments.edit", "services.view", "team.view"],
       isActive: true
+    });
+
+    // Add sample website staff for client_1 (Hair Salon)
+    await this.createWebsiteStaff({
+      clientId: "client_1",
+      name: "Mara Olsen",
+      title: "Senior Stylist",
+      bio: "Specialized in modern cuts and styling with over 8 years of experience.",
+      profileImage: "/src/assets/Ellipse 54_1757064789129.png",
+      experience: "8 years experience",
+      specialties: ["Hair Cutting", "Styling", "Color"],
+      displayOrder: 1,
+      isActive: true
+    });
+
+    await this.createWebsiteStaff({
+      clientId: "client_1",
+      name: "Jess Nunez",
+      title: "Hair Specialist",
+      bio: "Expert in hair treatments and restoration with a passion for healthy hair.",
+      profileImage: "/src/assets/Ellipse 55_1757064789130.png",
+      experience: "6 years experience",
+      specialties: ["Hair Treatment", "Restoration", "Conditioning"],
+      displayOrder: 2,
+      isActive: true
+    });
+
+    await this.createWebsiteStaff({
+      clientId: "client_1",
+      name: "Dana Welch",
+      title: "Color Expert",
+      bio: "Creative colorist specializing in bold and natural color transformations.",
+      profileImage: "/src/assets/Ellipse 56_1757064789130.png",
+      experience: "5 years experience",
+      specialties: ["Hair Coloring", "Highlights", "Color Correction"],
+      displayOrder: 3,
+      isActive: true
+    });
+
+    // Add sample pricing tiers for client_1 (Hair Salon)
+    await this.createServicePricingTier({
+      clientId: "client_1",
+      name: "Hair Dryer",
+      price: 30,
+      currency: "USD",
+      duration: "30 min",
+      features: ["Basic wash", "Blow dry", "Simple styling"],
+      isPopular: false,
+      displayOrder: 1,
+      isActive: true,
+      buttonText: "Book Now",
+      description: "Quick wash and dry service"
+    });
+
+    await this.createServicePricingTier({
+      clientId: "client_1",
+      name: "Hair Washer",
+      price: 40,
+      currency: "USD",
+      duration: "45 min",
+      features: ["Deep cleanse", "Conditioning treatment", "Scalp massage", "Basic styling"],
+      isPopular: false,
+      displayOrder: 2,
+      isActive: true,
+      buttonText: "Book Now",
+      description: "Premium wash and conditioning service"
+    });
+
+    await this.createServicePricingTier({
+      clientId: "client_1",
+      name: "Hair Developer",
+      price: 70,
+      currency: "USD",
+      duration: "90 min",
+      features: ["Professional cut & style", "Deep conditioning", "Hair treatment", "Styling consultation", "Product recommendations"],
+      isPopular: true,
+      displayOrder: 3,
+      isActive: true,
+      buttonText: "Book Now",
+      description: "Complete hair transformation package"
+    });
+
+    await this.createServicePricingTier({
+      clientId: "client_1",
+      name: "Hair Color",
+      price: 100,
+      currency: "USD",
+      duration: "120 min",
+      features: ["Full color service", "Premium color products", "Expert color consultation", "After-care treatment", "Color protection"],
+      isPopular: false,
+      displayOrder: 4,
+      isActive: true,
+      buttonText: "Book Now",
+      description: "Professional color transformation"
+    });
+
+    // Add sample testimonials for client_1 (Hair Salon)
+    await this.createWebsiteTestimonial({
+      clientId: "client_1",
+      customerName: "Sarah Johnson",
+      customerTitle: "Hair Influencer",
+      testimonialText: "Hair has been my home for hair for years",
+      customerImage: "/src/assets/Ellipse 57_1757064789131.png",
+      rating: 5,
+      isActive: true,
+      displayOrder: 1,
+      source: "WEBSITE"
+    });
+
+    await this.createWebsiteTestimonial({
+      clientId: "client_1",
+      customerName: "Emily Rodriguez",
+      customerTitle: "Beauty Blogger",
+      testimonialText: "The team at Graceful Hair transformed my look completely. I've never felt more confident!",
+      customerImage: "/src/assets/Ellipse 57_1757064789131.png",
+      rating: 5,
+      isActive: true,
+      displayOrder: 2,
+      source: "WEBSITE"
     });
 
     console.log("✅ Sample data initialized for SaaS platform");
@@ -1346,6 +1501,196 @@ class MemStorage implements IStorage {
       verificationStatus: "VERIFIED",
       lastSyncAt: new Date(),
     });
+  }
+
+  // Newsletter Subscriptions methods
+  async getNewsletterSubscriptions(clientId: string): Promise<NewsletterSubscription[]> {
+    return this.newsletterSubscriptions.filter(sub => sub.clientId === clientId);
+  }
+
+  async getNewsletterSubscription(id: string): Promise<NewsletterSubscription | undefined> {
+    return this.newsletterSubscriptions.find(sub => sub.id === id);
+  }
+
+  async createNewsletterSubscription(subscription: InsertNewsletterSubscription): Promise<NewsletterSubscription> {
+    const newSubscription: NewsletterSubscription = {
+      id: `newsletter_${this.newsletterSubscriptions.length + 1}`,
+      clientId: subscription.clientId,
+      email: subscription.email,
+      name: subscription.name || null,
+      status: subscription.status || "ACTIVE",
+      source: subscription.source || "WEBSITE",
+      metadata: subscription.metadata || null,
+      subscribedAt: subscription.subscribedAt || new Date(),
+      unsubscribedAt: subscription.unsubscribedAt || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.newsletterSubscriptions.push(newSubscription);
+    return newSubscription;
+  }
+
+  async updateNewsletterSubscription(id: string, updates: Partial<InsertNewsletterSubscription>): Promise<NewsletterSubscription> {
+    const index = this.newsletterSubscriptions.findIndex(sub => sub.id === id);
+    if (index === -1) throw new Error("Newsletter subscription not found");
+    
+    this.newsletterSubscriptions[index] = {
+      ...this.newsletterSubscriptions[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.newsletterSubscriptions[index];
+  }
+
+  async deleteNewsletterSubscription(id: string): Promise<void> {
+    const index = this.newsletterSubscriptions.findIndex(sub => sub.id === id);
+    if (index === -1) throw new Error("Newsletter subscription not found");
+    this.newsletterSubscriptions.splice(index, 1);
+  }
+
+  // Website Staff methods
+  async getWebsiteStaff(clientId: string): Promise<WebsiteStaff[]> {
+    return this.websiteStaff.filter(staff => staff.clientId === clientId && staff.isActive)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  async getWebsiteStaffMember(id: string): Promise<WebsiteStaff | undefined> {
+    return this.websiteStaff.find(staff => staff.id === id);
+  }
+
+  async createWebsiteStaff(staff: InsertWebsiteStaff): Promise<WebsiteStaff> {
+    const newStaff: WebsiteStaff = {
+      id: `staff_${this.websiteStaff.length + 1}`,
+      clientId: staff.clientId,
+      name: staff.name,
+      title: staff.title,
+      bio: staff.bio || null,
+      profileImage: staff.profileImage || null,
+      experience: staff.experience || null,
+      specialties: staff.specialties || [],
+      displayOrder: staff.displayOrder || 0,
+      isActive: staff.isActive !== undefined ? staff.isActive : true,
+      teamMemberId: staff.teamMemberId || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.websiteStaff.push(newStaff);
+    return newStaff;
+  }
+
+  async updateWebsiteStaff(id: string, updates: Partial<InsertWebsiteStaff>): Promise<WebsiteStaff> {
+    const index = this.websiteStaff.findIndex(staff => staff.id === id);
+    if (index === -1) throw new Error("Website staff member not found");
+    
+    this.websiteStaff[index] = {
+      ...this.websiteStaff[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.websiteStaff[index];
+  }
+
+  async deleteWebsiteStaff(id: string): Promise<void> {
+    const index = this.websiteStaff.findIndex(staff => staff.id === id);
+    if (index === -1) throw new Error("Website staff member not found");
+    this.websiteStaff.splice(index, 1);
+  }
+
+  // Service Pricing Tiers methods
+  async getServicePricingTiers(clientId: string): Promise<ServicePricingTier[]> {
+    return this.servicePricingTiers.filter(tier => tier.clientId === clientId && tier.isActive)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  async getServicePricingTier(id: string): Promise<ServicePricingTier | undefined> {
+    return this.servicePricingTiers.find(tier => tier.id === id);
+  }
+
+  async createServicePricingTier(tier: InsertServicePricingTier): Promise<ServicePricingTier> {
+    const newTier: ServicePricingTier = {
+      id: `tier_${this.servicePricingTiers.length + 1}`,
+      clientId: tier.clientId,
+      name: tier.name,
+      price: tier.price,
+      currency: tier.currency || "USD",
+      duration: tier.duration || null,
+      features: tier.features || [],
+      isPopular: tier.isPopular || false,
+      displayOrder: tier.displayOrder || 0,
+      isActive: tier.isActive !== undefined ? tier.isActive : true,
+      buttonText: tier.buttonText || "Book Now",
+      description: tier.description || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.servicePricingTiers.push(newTier);
+    return newTier;
+  }
+
+  async updateServicePricingTier(id: string, updates: Partial<InsertServicePricingTier>): Promise<ServicePricingTier> {
+    const index = this.servicePricingTiers.findIndex(tier => tier.id === id);
+    if (index === -1) throw new Error("Service pricing tier not found");
+    
+    this.servicePricingTiers[index] = {
+      ...this.servicePricingTiers[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.servicePricingTiers[index];
+  }
+
+  async deleteServicePricingTier(id: string): Promise<void> {
+    const index = this.servicePricingTiers.findIndex(tier => tier.id === id);
+    if (index === -1) throw new Error("Service pricing tier not found");
+    this.servicePricingTiers.splice(index, 1);
+  }
+
+  // Website Testimonials methods
+  async getWebsiteTestimonials(clientId: string): Promise<WebsiteTestimonial[]> {
+    return this.websiteTestimonials.filter(testimonial => testimonial.clientId === clientId && testimonial.isActive)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  async getWebsiteTestimonial(id: string): Promise<WebsiteTestimonial | undefined> {
+    return this.websiteTestimonials.find(testimonial => testimonial.id === id);
+  }
+
+  async createWebsiteTestimonial(testimonial: InsertWebsiteTestimonial): Promise<WebsiteTestimonial> {
+    const newTestimonial: WebsiteTestimonial = {
+      id: `testimonial_${this.websiteTestimonials.length + 1}`,
+      clientId: testimonial.clientId,
+      customerName: testimonial.customerName,
+      customerTitle: testimonial.customerTitle || null,
+      testimonialText: testimonial.testimonialText,
+      customerImage: testimonial.customerImage || null,
+      rating: testimonial.rating || 5,
+      isActive: testimonial.isActive !== undefined ? testimonial.isActive : true,
+      displayOrder: testimonial.displayOrder || 0,
+      source: testimonial.source || "WEBSITE",
+      reviewId: testimonial.reviewId || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.websiteTestimonials.push(newTestimonial);
+    return newTestimonial;
+  }
+
+  async updateWebsiteTestimonial(id: string, updates: Partial<InsertWebsiteTestimonial>): Promise<WebsiteTestimonial> {
+    const index = this.websiteTestimonials.findIndex(testimonial => testimonial.id === id);
+    if (index === -1) throw new Error("Website testimonial not found");
+    
+    this.websiteTestimonials[index] = {
+      ...this.websiteTestimonials[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.websiteTestimonials[index];
+  }
+
+  async deleteWebsiteTestimonial(id: string): Promise<void> {
+    const index = this.websiteTestimonials.findIndex(testimonial => testimonial.id === id);
+    if (index === -1) throw new Error("Website testimonial not found");
+    this.websiteTestimonials.splice(index, 1);
   }
 }
 

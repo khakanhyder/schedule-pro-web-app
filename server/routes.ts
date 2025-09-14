@@ -23,7 +23,11 @@ import {
   insertPlatformReviewSchema,
   insertDomainConfigurationSchema,
   insertDomainVerificationLogSchema,
-  insertGoogleBusinessProfileSchema
+  insertGoogleBusinessProfileSchema,
+  insertNewsletterSubscriptionSchema,
+  insertWebsiteStaffSchema,
+  insertServicePricingTierSchema,
+  insertWebsiteTestimonialSchema
 } from "@shared/schema";
 import { 
   validateDomain, 
@@ -2346,6 +2350,278 @@ Email: ${client.email}
     } catch (error) {
       console.error("Error handling Google OAuth callback:", error);
       res.redirect("/google-business-setup?error=callback_failed");
+    }
+  });
+
+  // =============================================================================
+  // NEWSLETTER SUBSCRIPTIONS ROUTES
+  // =============================================================================
+
+  // Get newsletter subscriptions for a client (admin access)
+  app.get("/api/clients/:clientId/newsletter-subscriptions", requirePermission("view_marketing"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const subscriptions = await storage.getNewsletterSubscriptions(clientId);
+      res.json(subscriptions);
+    } catch (error) {
+      console.error("Error fetching newsletter subscriptions:", error);
+      res.status(500).json({ error: "Failed to fetch newsletter subscriptions" });
+    }
+  });
+
+  // Create newsletter subscription (public access for website)
+  app.post("/api/public/clients/:clientId/newsletter-subscribe", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const data = insertNewsletterSubscriptionSchema.parse({
+        ...req.body,
+        clientId
+      });
+      
+      const subscription = await storage.createNewsletterSubscription(data);
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error creating newsletter subscription:", error);
+      res.status(500).json({ error: "Failed to subscribe to newsletter" });
+    }
+  });
+
+  // Update newsletter subscription (admin access)
+  app.put("/api/clients/:clientId/newsletter-subscriptions/:id", requirePermission("manage_marketing"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = insertNewsletterSubscriptionSchema.partial().parse(req.body);
+      
+      const subscription = await storage.updateNewsletterSubscription(id, data);
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error updating newsletter subscription:", error);
+      res.status(500).json({ error: "Failed to update newsletter subscription" });
+    }
+  });
+
+  // Delete newsletter subscription (admin access)
+  app.delete("/api/clients/:clientId/newsletter-subscriptions/:id", requirePermission("manage_marketing"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteNewsletterSubscription(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting newsletter subscription:", error);
+      res.status(500).json({ error: "Failed to delete newsletter subscription" });
+    }
+  });
+
+  // =============================================================================
+  // WEBSITE STAFF ROUTES
+  // =============================================================================
+
+  // Get website staff for a client (admin access)
+  app.get("/api/clients/:clientId/website-staff", requirePermission("view_staff"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const staff = await storage.getWebsiteStaff(clientId);
+      res.json(staff);
+    } catch (error) {
+      console.error("Error fetching website staff:", error);
+      res.status(500).json({ error: "Failed to fetch website staff" });
+    }
+  });
+
+  // Get website staff for public display
+  app.get("/api/public/clients/:clientId/website-staff", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const staff = await storage.getWebsiteStaff(clientId);
+      res.json(staff);
+    } catch (error) {
+      console.error("Error fetching public website staff:", error);
+      res.status(500).json({ error: "Failed to fetch website staff" });
+    }
+  });
+
+  // Create website staff member (admin access)
+  app.post("/api/clients/:clientId/website-staff", requirePermission("manage_staff"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const data = insertWebsiteStaffSchema.parse({
+        ...req.body,
+        clientId
+      });
+      
+      const staff = await storage.createWebsiteStaff(data);
+      res.json(staff);
+    } catch (error) {
+      console.error("Error creating website staff:", error);
+      res.status(500).json({ error: "Failed to create website staff member" });
+    }
+  });
+
+  // Update website staff member (admin access)
+  app.put("/api/clients/:clientId/website-staff/:id", requirePermission("manage_staff"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = insertWebsiteStaffSchema.partial().parse(req.body);
+      
+      const staff = await storage.updateWebsiteStaff(id, data);
+      res.json(staff);
+    } catch (error) {
+      console.error("Error updating website staff:", error);
+      res.status(500).json({ error: "Failed to update website staff member" });
+    }
+  });
+
+  // Delete website staff member (admin access)
+  app.delete("/api/clients/:clientId/website-staff/:id", requirePermission("manage_staff"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteWebsiteStaff(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting website staff:", error);
+      res.status(500).json({ error: "Failed to delete website staff member" });
+    }
+  });
+
+  // =============================================================================
+  // SERVICE PRICING TIERS ROUTES
+  // =============================================================================
+
+  // Get service pricing tiers for a client (admin access)
+  app.get("/api/clients/:clientId/pricing-tiers", requirePermission("view_services"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const tiers = await storage.getServicePricingTiers(clientId);
+      res.json(tiers);
+    } catch (error) {
+      console.error("Error fetching pricing tiers:", error);
+      res.status(500).json({ error: "Failed to fetch pricing tiers" });
+    }
+  });
+
+  // Get pricing tiers for public display
+  app.get("/api/public/clients/:clientId/pricing-tiers", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const tiers = await storage.getServicePricingTiers(clientId);
+      res.json(tiers);
+    } catch (error) {
+      console.error("Error fetching public pricing tiers:", error);
+      res.status(500).json({ error: "Failed to fetch pricing tiers" });
+    }
+  });
+
+  // Create pricing tier (admin access)
+  app.post("/api/clients/:clientId/pricing-tiers", requirePermission("manage_services"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const data = insertServicePricingTierSchema.parse({
+        ...req.body,
+        clientId
+      });
+      
+      const tier = await storage.createServicePricingTier(data);
+      res.json(tier);
+    } catch (error) {
+      console.error("Error creating pricing tier:", error);
+      res.status(500).json({ error: "Failed to create pricing tier" });
+    }
+  });
+
+  // Update pricing tier (admin access)
+  app.put("/api/clients/:clientId/pricing-tiers/:id", requirePermission("manage_services"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = insertServicePricingTierSchema.partial().parse(req.body);
+      
+      const tier = await storage.updateServicePricingTier(id, data);
+      res.json(tier);
+    } catch (error) {
+      console.error("Error updating pricing tier:", error);
+      res.status(500).json({ error: "Failed to update pricing tier" });
+    }
+  });
+
+  // Delete pricing tier (admin access)
+  app.delete("/api/clients/:clientId/pricing-tiers/:id", requirePermission("manage_services"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteServicePricingTier(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting pricing tier:", error);
+      res.status(500).json({ error: "Failed to delete pricing tier" });
+    }
+  });
+
+  // =============================================================================
+  // WEBSITE TESTIMONIALS ROUTES
+  // =============================================================================
+
+  // Get website testimonials for a client (admin access)
+  app.get("/api/clients/:clientId/website-testimonials", requirePermission("view_reviews"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const testimonials = await storage.getWebsiteTestimonials(clientId);
+      res.json(testimonials);
+    } catch (error) {
+      console.error("Error fetching website testimonials:", error);
+      res.status(500).json({ error: "Failed to fetch website testimonials" });
+    }
+  });
+
+  // Get testimonials for public display
+  app.get("/api/public/clients/:clientId/website-testimonials", async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const testimonials = await storage.getWebsiteTestimonials(clientId);
+      res.json(testimonials);
+    } catch (error) {
+      console.error("Error fetching public testimonials:", error);
+      res.status(500).json({ error: "Failed to fetch testimonials" });
+    }
+  });
+
+  // Create website testimonial (admin access)
+  app.post("/api/clients/:clientId/website-testimonials", requirePermission("manage_reviews"), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const data = insertWebsiteTestimonialSchema.parse({
+        ...req.body,
+        clientId
+      });
+      
+      const testimonial = await storage.createWebsiteTestimonial(data);
+      res.json(testimonial);
+    } catch (error) {
+      console.error("Error creating website testimonial:", error);
+      res.status(500).json({ error: "Failed to create website testimonial" });
+    }
+  });
+
+  // Update website testimonial (admin access)
+  app.put("/api/clients/:clientId/website-testimonials/:id", requirePermission("manage_reviews"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const data = insertWebsiteTestimonialSchema.partial().parse(req.body);
+      
+      const testimonial = await storage.updateWebsiteTestimonial(id, data);
+      res.json(testimonial);
+    } catch (error) {
+      console.error("Error updating website testimonial:", error);
+      res.status(500).json({ error: "Failed to update website testimonial" });
+    }
+  });
+
+  // Delete website testimonial (admin access)
+  app.delete("/api/clients/:clientId/website-testimonials/:id", requirePermission("manage_reviews"), async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteWebsiteTestimonial(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting website testimonial:", error);
+      res.status(500).json({ error: "Failed to delete website testimonial" });
     }
   });
 

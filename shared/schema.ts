@@ -627,6 +627,136 @@ export const insertDomainVerificationLogSchema = createInsertSchema(domainVerifi
 export type InsertDomainVerificationLog = z.infer<typeof insertDomainVerificationLogSchema>;
 export type DomainVerificationLog = typeof domainVerificationLogs.$inferSelect;
 
+// Newsletter Subscriptions table for client websites
+export const newsletterSubscriptions = pgTable("newsletter_subscriptions", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  email: text("email").notNull(),
+  name: text("name"),
+  status: text("status").notNull().default("ACTIVE"), // ACTIVE, UNSUBSCRIBED, BOUNCED
+  source: text("source").default("WEBSITE"), // WEBSITE, ADMIN, IMPORT
+  metadata: text("metadata"), // JSON string for additional data
+  subscribedAt: timestamp("subscribed_at").defaultNow(),
+  unsubscribedAt: timestamp("unsubscribed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertNewsletterSubscriptionSchema = createInsertSchema(newsletterSubscriptions).pick({
+  clientId: true,
+  email: true,
+  name: true,
+  status: true,
+  source: true,
+  metadata: true,
+  subscribedAt: true,
+  unsubscribedAt: true,
+});
+
+export type InsertNewsletterSubscription = z.infer<typeof insertNewsletterSubscriptionSchema>;
+export type NewsletterSubscription = typeof newsletterSubscriptions.$inferSelect;
+
+// Website Staff Members (extends team members for public display)
+export const websiteStaff = pgTable("website_staff", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  name: text("name").notNull(),
+  title: text("title").notNull(),
+  bio: text("bio"),
+  profileImage: text("profile_image"), // URL to profile image
+  experience: text("experience"), // e.g., "8 years experience"
+  specialties: text("specialties").array().default([]),
+  displayOrder: integer("display_order").default(0),
+  isActive: boolean("is_active").default(true),
+  teamMemberId: text("team_member_id"), // Link to team members table if applicable
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertWebsiteStaffSchema = createInsertSchema(websiteStaff).pick({
+  clientId: true,
+  name: true,
+  title: true,
+  bio: true,
+  profileImage: true,
+  experience: true,
+  specialties: true,
+  displayOrder: true,
+  isActive: true,
+  teamMemberId: true,
+});
+
+export type InsertWebsiteStaff = z.infer<typeof insertWebsiteStaffSchema>;
+export type WebsiteStaff = typeof websiteStaff.$inferSelect;
+
+// Service Pricing Tiers for client websites
+export const servicePricingTiers = pgTable("service_pricing_tiers", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  name: text("name").notNull(), // e.g., "Hair Dryer", "Hair Washer"
+  price: real("price").notNull(),
+  currency: text("currency").default("USD"),
+  duration: text("duration"), // e.g., "30 min", "1 hour"
+  features: text("features").array().default([]), // Array of included features
+  isPopular: boolean("is_popular").default(false), // Highlight this tier
+  displayOrder: integer("display_order").default(0),
+  isActive: boolean("is_active").default(true),
+  buttonText: text("button_text").default("Book Now"),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertServicePricingTierSchema = createInsertSchema(servicePricingTiers).pick({
+  clientId: true,
+  name: true,
+  price: true,
+  currency: true,
+  duration: true,
+  features: true,
+  isPopular: true,
+  displayOrder: true,
+  isActive: true,
+  buttonText: true,
+  description: true,
+});
+
+export type InsertServicePricingTier = z.infer<typeof insertServicePricingTierSchema>;
+export type ServicePricingTier = typeof servicePricingTiers.$inferSelect;
+
+// Website Testimonials (extends reviews for public display)
+export const websiteTestimonials = pgTable("website_testimonials", {
+  id: text("id").primaryKey(),
+  clientId: text("client_id").notNull(),
+  customerName: text("customer_name").notNull(),
+  customerTitle: text("customer_title"), // e.g., "Hair Influencer"
+  testimonialText: text("testimonial_text").notNull(),
+  customerImage: text("customer_image"), // URL to customer photo
+  rating: integer("rating").default(5),
+  isActive: boolean("is_active").default(true),
+  displayOrder: integer("display_order").default(0),
+  source: text("source").default("WEBSITE"), // WEBSITE, GOOGLE, YELP, MANUAL
+  reviewId: text("review_id"), // Link to reviews table if applicable
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertWebsiteTestimonialSchema = createInsertSchema(websiteTestimonials).pick({
+  clientId: true,
+  customerName: true,
+  customerTitle: true,
+  testimonialText: true,
+  customerImage: true,
+  rating: true,
+  isActive: true,
+  displayOrder: true,
+  source: true,
+  reviewId: true,
+});
+
+export type InsertWebsiteTestimonial = z.infer<typeof insertWebsiteTestimonialSchema>;
+export type WebsiteTestimonial = typeof websiteTestimonials.$inferSelect;
+
 // Stylist schema (for beauty industry specific features)
 export const stylists = pgTable("stylists", {
   id: text("id").primaryKey(),
