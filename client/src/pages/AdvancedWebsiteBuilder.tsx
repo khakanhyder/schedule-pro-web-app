@@ -366,27 +366,27 @@ export default function AdvancedWebsiteBuilder() {
   const initializeWithCurrentLayout = () => {
     setWebsiteData(prev => ({
       ...prev,
-      title: `${clientData?.client?.businessName || 'ABC Consulting'} - Professional Services`,
-      description: `${clientData?.client?.businessName || 'ABC Consulting'} - Professional consulting services`,
+      title: `${clientData?.client?.businessName || 'Graceful Hair'} - Professional Hair Salon`,
+      description: `${clientData?.client?.businessName || 'Graceful Hair'} - Professional hair care and styling services`,
       primaryColor: "#ec4899", // Pink from current layout
       secondaryColor: "#a855f7", // Purple from current layout
       sections: [
         {
           id: "hero",
           type: "hero",
-          title: `Welcome to ${clientData?.client?.businessName || 'ABC Consulting'}`,
-          content: "Professional consulting services\nfor all your needs.",
+          title: `${clientData?.client?.businessName || 'Graceful Hair'}`,
+          content: "Truly, yours.\nExperience premium hair care with our professional stylists",
           settings: { 
             backgroundType: "gradient",
             gradientType: "linear",
             gradientDirection: "135deg",
-            gradientColors: ["#667eea", "#764ba2"],
+            gradientColors: ["#ec4899", "#a855f7"],
             textColor: "#FFFFFF", 
             alignment: "left", 
             padding: "large",
             height: "screen",
             heroImage: "/assets/Image (3)_1757807495639.png",
-            heroImageAlt: "Professional consulting image"
+            heroImageAlt: "Woman with beautiful hair"
           },
           data: {
             buttonText: "Book Appointment",
@@ -397,7 +397,7 @@ export default function AdvancedWebsiteBuilder() {
           id: "staff",
           type: "staff", 
           title: "Meet With Our Professional Staff",
-          content: "Our experienced team of professionals",
+          content: "Our experienced team of hair professionals",
           settings: { 
             backgroundColor: "#F9FAFB", 
             textColor: "#1F2937", 
@@ -407,22 +407,22 @@ export default function AdvancedWebsiteBuilder() {
               {
                 id: "1",
                 name: "Mara Olsen",
-                title: "Senior Consultant", 
+                title: "Senior Stylist", 
                 experience: "8 years experience",
                 profileImage: "/assets/Ellipse 54_1757064789129.png"
               },
               {
                 id: "2", 
                 name: "Jess Nunez",
-                title: "Business Specialist",
+                title: "Hair Specialist",
                 experience: "6 years experience", 
                 profileImage: "/assets/Ellipse 55_1757064789130.png"
               },
               {
                 id: "3",
-                name: "Dave Wilson", 
-                title: "Strategic Advisor",
-                experience: "10 years experience",
+                name: "Dana Welch", 
+                title: "Color Expert",
+                experience: "5 years experience",
                 profileImage: "/assets/Ellipse 56_1757064789131.png"
               }
             ]
@@ -432,7 +432,7 @@ export default function AdvancedWebsiteBuilder() {
           id: "pricing",
           type: "pricing",
           title: "Summer Hair Hair Offers",
-          content: "Choose the perfect service for your needs", 
+          content: "Choose the perfect service for your hair care needs", 
           settings: { 
             backgroundColor: "#FFFFFF", 
             textColor: "#1F2937", 
@@ -440,27 +440,35 @@ export default function AdvancedWebsiteBuilder() {
             padding: "large",
             pricingTiers: [
               {
-                id: "tier_1",
-                name: "Business Consultation",
-                price: 150,
-                features: ["Strategic planning", "Market analysis", "Action plan"],
+                id: "1",
+                name: "Hair Dryer",
+                price: 30,
+                features: ["Basic wash", "Blow dry", "Simple styling"],
                 isPopular: false,
                 buttonText: "Book Now"
               },
               {
-                id: "tier_2", 
-                name: "Financial Planning",
-                price: 200,
-                features: ["Budget review", "Investment strategy", "Risk assessment", "Financial roadmap"],
+                id: "2", 
+                name: "Hair Washer", 
+                price: 40,
+                features: ["Deep cleanse", "Conditioning", "Scalp massage"],
                 isPopular: true,
                 buttonText: "Book Now"
               },
               {
-                id: "tier_3",
-                name: "Market Analysis", 
-                price: 300,
-                features: ["Competitive analysis", "Market positioning", "Growth opportunities", "Implementation strategy"],
-                isPopular: false,
+                id: "3",
+                name: "Hair Developer",
+                price: 70, 
+                features: ["Cut & style", "Deep conditioning", "Hair treatment", "Consultation"],
+                isPopular: true,
+                buttonText: "Book Now"
+              },
+              {
+                id: "4",
+                name: "Hair Color",
+                price: 100,
+                features: ["Full color service", "Premium products", "Expert consultation", "After-care"],
+                isPopular: false, 
                 buttonText: "Book Now"
               }
             ]
@@ -483,9 +491,9 @@ export default function AdvancedWebsiteBuilder() {
               {
                 id: "1",
                 customerName: "Sarah Johnson",
-                customerTitle: "CEO, TechStart Inc",
-                testimonialText: "ABC has been our home for business for 10+ years!",
-                customerImage: "/assets/Ellipse 60_1757064789135.png",
+                customerTitle: "Hair Influencer",
+                testimonialText: "Graceful Hair has been my go-to salon for years. The stylists are incredible!",
+                customerImage: "/assets/Ellipse 57_1757064789131.png",
                 rating: 5
               }
             ]
@@ -528,8 +536,8 @@ export default function AdvancedWebsiteBuilder() {
           },
           data: {
             phone: clientData?.client?.phone || "(555) 123-4567",
-            email: clientData?.client?.email || "info@abcconsulting.com", 
-            address: clientData?.client?.businessAddress || "123 Main St, City, State"
+            email: clientData?.client?.email || "info@gracefulhair.com", 
+            address: clientData?.client?.businessAddress || "123 Beauty St, Hair City"
           }
         }
       ]
