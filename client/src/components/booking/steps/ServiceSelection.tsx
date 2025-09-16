@@ -32,11 +32,17 @@ export default function ServiceSelection({
     : services.filter(service => service.category === selectedCategory);
 
   const handleServiceSelect = (serviceId: string) => {
-    updateBookingData({ 
-      serviceId,
-      // Reset stylist when service changes
-      stylistId: null
-    });
+    const updates: Partial<BookingData> = { serviceId };
+    
+    // If no stylists available, auto-set to "any" to allow progression
+    if (stylists.length === 0) {
+      updates.stylistId = "any";
+    } else {
+      // Reset stylist when service changes if stylists are available
+      updates.stylistId = null;
+    }
+    
+    updateBookingData(updates);
   };
 
   const handleStylistSelect = (stylistId: string) => {
@@ -64,7 +70,9 @@ export default function ServiceSelection({
     <div className="p-8">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Your Service</h2>
-        <p className="text-gray-600">Choose the service you'd like to book and your preferred stylist</p>
+        <p className="text-gray-600">
+          Choose the service you'd like to book{stylists.length > 0 ? " and your preferred stylist" : ""}
+        </p>
       </div>
 
       {/* Category Filter */}
@@ -134,10 +142,10 @@ export default function ServiceSelection({
         </div>
       </div>
 
-      {/* Stylist Selection */}
-      {bookingData.serviceId && (
+      {/* Stylist Selection - Only show if stylists exist */}
+      {bookingData.serviceId && stylists.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Stylist</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Stylist (Optional)</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {stylists.map((stylist) => (
               <Card
@@ -227,17 +235,19 @@ export default function ServiceSelection({
       )}
 
       {/* Selection Summary */}
-      {bookingData.serviceId && bookingData.stylistId && (
+      {bookingData.serviceId && (stylists.length === 0 || bookingData.stylistId) && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle className="w-5 h-5 text-green-600" />
             <h4 className="font-semibold text-green-800">Selection Complete</h4>
           </div>
           <p className="text-green-700 text-sm">
-            You've selected "{services.find(s => s.id === bookingData.serviceId)?.name}" 
-            {bookingData.stylistId === "any" 
-              ? " with any available stylist" 
-              : ` with ${stylists.find(s => s.id === bookingData.stylistId)?.name}`
+            You've selected "{services.find(s => s.id === bookingData.serviceId)?.name}"
+            {stylists.length === 0 
+              ? "" 
+              : bookingData.stylistId === "any" 
+                ? " with any available stylist" 
+                : ` with ${stylists.find(s => s.id === bookingData.stylistId)?.name}`
             }. Click "Next" to continue.
           </p>
         </div>

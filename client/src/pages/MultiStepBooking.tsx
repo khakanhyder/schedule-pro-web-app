@@ -22,9 +22,9 @@ const stepConfig = [
   {
     id: 1,
     title: "Service Selection",
-    description: "Choose your service and stylist",
+    description: "Choose your service",
     icon: User,
-    required: ["serviceId", "stylistId"]
+    required: ["serviceId"]
   },
   {
     id: 2,
