@@ -118,6 +118,11 @@ export const insertClientSchema = createInsertSchema(clients).pick({
   status: true,
   userId: true,
   onboardingSessionId: true,
+  stripeCustomerId: true,
+  stripeSubscriptionId: true,
+  stripePublicKey: true,
+  stripeSecretKey: true,
+  stripeAccountId: true,
 });
 
 export type InsertClient = z.infer<typeof insertClientSchema>;
@@ -177,6 +182,9 @@ export const clientServices = pgTable("client_services", {
   durationMinutes: integer("duration_minutes").notNull(),
   category: text("category"),
   isActive: boolean("is_active").default(true),
+  stripeProductId: text("stripe_product_id"), // Stripe Product ID for this service
+  stripePriceId: text("stripe_price_id"), // Stripe Price ID for this service
+  enableOnlinePayments: boolean("enable_online_payments").default(false), // Whether online payments are enabled
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -189,6 +197,9 @@ export const insertClientServiceSchema = createInsertSchema(clientServices).pick
   durationMinutes: true,
   category: true,
   isActive: true,
+  stripeProductId: true,
+  stripePriceId: true,
+  enableOnlinePayments: true,
 });
 
 // Add Stripe price ID to services for custom pricing

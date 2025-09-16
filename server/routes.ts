@@ -1356,7 +1356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 try {
                   await clientStripe.prices.update(stripePriceId, { active: false });
                 } catch (e) {
-                  console.warn("Failed to deactivate old price:", e.message);
+                  console.warn("Failed to deactivate old price:", (e as Error).message);
                 }
               }
             }
@@ -1463,7 +1463,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedClient = await storage.updateClient(clientId, {
         stripePublicKey,
         stripeSecretKey, // In production, encrypt this before storing
-        updatedAt: new Date()
       });
 
       res.json({ 
@@ -1501,7 +1500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Stripe connection test failed:", error);
       res.status(400).json({ 
         error: "Failed to connect to Stripe",
-        details: error.message 
+        details: (error as Error).message 
       });
     }
   });
@@ -3212,7 +3211,6 @@ Email: ${client.email}
 
       // Store payment record
       await storage.createPayment({
-        id: `payment_${Date.now()}`,
         clientId: appointmentData.clientId,
         appointmentId: appointment.id,
         paymentMethod: 'STRIPE',
@@ -3226,7 +3224,7 @@ Email: ${client.email}
         description: `Payment for appointment`,
         processingFee: 0, // Could calculate Stripe fees here
         netAmount: paymentIntent.amount / 100,
-        paidAt: new Date().toISOString(),
+        paidAt: new Date(),
       });
 
       res.json({ 
@@ -3294,12 +3292,83 @@ Email: ${client.email}
 
       res.json({
         subscriptionId: subscription.id,
-        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+        clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
       });
     } catch (error: any) {
       console.error('Subscription creation error:', error);
       res.status(500).json({ 
         message: "Error creating subscription: " + error.message 
+      });
+    }
+  });
+
+  // Super Admin: Generate new Stripe product and price for plans
+  app.post("/api/admin/generate-stripe-product", requireAdmin, async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe not configured" });
+      }
+
+      const { name, price, billing, features } = req.body;
+
+      if (!name || !price || !billing) {
+        return res.status(400).json({ 
+          message: "Missing required fields: name, price, billing" 
+        });
+      }
+
+      console.log(`Admin generating Stripe product: ${name} - $${price} ${billing}`);
+
+      // Create Stripe product
+      const product = await stripe.products.create({
+        name: name,
+        description: features ? features.join(', ') : `${name} subscription plan`,
+        metadata: {
+          plan_name: name,
+          billing_cycle: billing,
+          created_by: 'admin_dashboard',
+          created_at: new Date().toISOString()
+        }
+      });
+
+      console.log(`Stripe product created: ${product.id}`);
+
+      // Create Stripe price
+      const stripePrice = await stripe.prices.create({
+        product: product.id,
+        unit_amount: Math.round(price * 100), // Convert to cents
+        currency: 'usd',
+        recurring: {
+          interval: billing.toLowerCase() === 'yearly' ? 'year' : 'month'
+        },
+        metadata: {
+          plan_name: name,
+          billing_cycle: billing,
+          created_by: 'admin_dashboard'
+        }
+      });
+
+      console.log(`Stripe price created: ${stripePrice.id}`);
+
+      // Return the created Stripe product and price IDs
+      res.json({
+        success: true,
+        productId: product.id,
+        priceId: stripePrice.id,
+        message: `Stripe product "${name}" created successfully`,
+        details: {
+          productName: product.name,
+          priceAmount: price,
+          currency: 'USD',
+          interval: billing.toLowerCase() === 'yearly' ? 'year' : 'month'
+        }
+      });
+
+    } catch (error: any) {
+      console.error('Error generating Stripe product:', error);
+      res.status(500).json({ 
+        message: "Failed to generate Stripe product",
+        error: error.message || 'Unknown error'
       });
     }
   });
@@ -3352,8 +3421,8 @@ Email: ${client.email}
           console.log(`Invoice payment succeeded: ${invoice.id}`);
           
           // Update subscription/client status
-          if (invoice.subscription) {
-            const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+          if ((invoice as any).subscription) {
+            const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription as string);
             // Find client by Stripe customer ID and update status
             const clients = await storage.getClients();
             const client = clients.find(c => c.stripeCustomerId === subscription.customer);
@@ -3369,8 +3438,8 @@ Email: ${client.email}
           console.log(`Invoice payment failed: ${failedInvoice.id}`);
           
           // Update client status to PAYMENT_FAILED or SUSPENDED
-          if (failedInvoice.subscription) {
-            const subscription = await stripe.subscriptions.retrieve(failedInvoice.subscription as string);
+          if ((failedInvoice as any).subscription) {
+            const subscription = await stripe.subscriptions.retrieve((failedInvoice as any).subscription as string);
             const clients = await storage.getClients();
             const client = clients.find(c => c.stripeCustomerId === subscription.customer);
             if (client) {

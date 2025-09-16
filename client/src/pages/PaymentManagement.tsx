@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   CreditCard, DollarSign, Plus, Filter, Download, 
   CheckCircle, Clock, XCircle, RefreshCw, ExternalLink,
-  Smartphone, Building2, Banknote, Wallet
+  Banknote
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,15 +55,8 @@ const clientId = "client_1"; // This would come from auth context
 // SECURE: No secret keys on frontend - only public keys allowed
 const paymentMethodSchema = z.object({
   stripeEnabled: z.boolean().default(false),
-  paypalEnabled: z.boolean().default(false),
-  venmoEnabled: z.boolean().default(false),
-  zelleEnabled: z.boolean().default(false),
   cashEnabled: z.boolean().default(true),
   stripePublicKey: z.string().optional(),
-  // NEVER include secret keys in frontend schemas
-  paypalClientId: z.string().optional(),
-  venmoBusinessProfile: z.string().optional(),
-  zelleEmail: z.string().email().optional(),
   processingFeePercentage: z.number().min(0).max(10).default(2.9),
   enableTipping: z.boolean().default(true),
   defaultTipPercentages: z.array(z.number()).default([15, 18, 20, 25]),
@@ -80,33 +73,6 @@ const paymentMethods = [
     fees: "2.9% + $0.30 per transaction",
     color: "text-purple-600",
     bgColor: "bg-purple-50",
-  },
-  {
-    id: "paypal",
-    name: "PayPal",
-    icon: Wallet,
-    description: "Popular digital payment platform",
-    fees: "2.9% + $0.30 per transaction",
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
-  },
-  {
-    id: "venmo",
-    name: "Venmo",
-    icon: Smartphone,
-    description: "Social payment app popular with younger customers",
-    fees: "1.9% per transaction",
-    color: "text-sky-600",
-    bgColor: "bg-sky-50",
-  },
-  {
-    id: "zelle",
-    name: "Zelle",
-    icon: Building2,
-    description: "Bank-to-bank transfers",
-    fees: "No fees (bank dependent)",
-    color: "text-green-600",
-    bgColor: "bg-green-50",
   },
   {
     id: "cash",
@@ -132,9 +98,6 @@ export default function PaymentManagement() {
     resolver: zodResolver(paymentMethodSchema),
     defaultValues: {
       stripeEnabled: false,
-      paypalEnabled: false,
-      venmoEnabled: false,
-      zelleEnabled: false,
       cashEnabled: true,
       processingFeePercentage: 2.9,
       enableTipping: true,
@@ -143,7 +106,7 @@ export default function PaymentManagement() {
   });
 
   // SECURE: Connect to real backend payments (no mock fallback)
-  const { data: payments = [], isLoading: paymentsLoading } = useQuery({
+  const { data: payments = [], isLoading: paymentsLoading } = useQuery<Payment[]>({
     queryKey: [`/api/client/${clientId}/payments`],
   });
 
@@ -353,76 +316,6 @@ export default function PaymentManagement() {
                         </CardContent>
                       )}
 
-                      {method.id === "paypal" && (
-                        <CardContent className="pt-0">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="paypalClientId"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Client ID</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="Your PayPal Client ID" {...field} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="paypalClientSecret"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Client Secret</FormLabel>
-                                  <FormControl>
-                                    <Input type="password" placeholder="Your PayPal Client Secret" {...field} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </CardContent>
-                      )}
-
-                      {method.id === "venmo" && (
-                        <CardContent className="pt-0">
-                          <FormField
-                            control={form.control}
-                            name="venmoBusinessProfile"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Venmo Business Profile</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="@your-business-name" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  Your Venmo business username (include @)
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                        </CardContent>
-                      )}
-
-                      {method.id === "zelle" && (
-                        <CardContent className="pt-0">
-                          <FormField
-                            control={form.control}
-                            name="zelleEmail"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Zelle Email</FormLabel>
-                                <FormControl>
-                                  <Input type="email" placeholder="business@example.com" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                  Email address linked to your Zelle account
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                        </CardContent>
-                      )}
                     </Card>
                   ))}
                 </div>
@@ -566,9 +459,6 @@ export default function PaymentManagement() {
                 <SelectContent>
                   <SelectItem value="all">All Methods</SelectItem>
                   <SelectItem value="stripe">Stripe</SelectItem>
-                  <SelectItem value="paypal">PayPal</SelectItem>
-                  <SelectItem value="venmo">Venmo</SelectItem>
-                  <SelectItem value="zelle">Zelle</SelectItem>
                   <SelectItem value="cash">Cash</SelectItem>
                 </SelectContent>
               </Select>
@@ -635,7 +525,7 @@ export default function PaymentManagement() {
                           ${payment.netAmount?.toFixed(2) || payment.amount.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-gray-600">
-                          {payment.createdAt.toLocaleDateString()}
+                          {payment.createdAt ? payment.createdAt.toLocaleDateString() : 'N/A'}
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">

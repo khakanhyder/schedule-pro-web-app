@@ -28,7 +28,9 @@ import {
   Home,
   Globe,
   Star,
-  ExternalLink
+  ExternalLink,
+  Link,
+  Wand2
 } from "lucide-react";
 
 interface Client {
@@ -52,6 +54,8 @@ interface Plan {
   features: string[];
   maxUsers: number;
   storageGB: number;
+  stripePriceId?: string;
+  stripeProductId?: string;
 }
 
 interface Analytics {
@@ -89,7 +93,10 @@ export default function SuperAdminDashboard() {
     billing: 'MONTHLY',
     features: [] as string[],
     maxUsers: 1,
-    storageGB: 10
+    storageGB: 10,
+    stripeIntegration: 'none' as 'none' | 'link_existing' | 'generate_new',
+    stripePriceId: '',
+    stripeProductId: ''
   });
   const [newFeature, setNewFeature] = useState('');
   
@@ -221,7 +228,10 @@ export default function SuperAdminDashboard() {
         billing: 'MONTHLY',
         features: [],
         maxUsers: 1,
-        storageGB: 10
+        storageGB: 10,
+        stripeIntegration: 'none',
+        stripePriceId: '',
+        stripeProductId: ''
       });
     }
   });
@@ -252,6 +262,34 @@ export default function SuperAdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/plans'] });
+    }
+  });
+
+  // Stripe product generation mutation
+  const generateStripeProductMutation = useMutation({
+    mutationFn: async (planData: typeof planForm) => {
+      const response = await fetch('/api/admin/generate-stripe-product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: planData.name,
+          price: planData.price,
+          billing: planData.billing,
+          features: planData.features
+        }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to generate Stripe product');
+      }
+      
+      return response.json();
+    },
+    onError: (error: any) => {
+      alert(`❌ Error generating Stripe product: ${error.message}`);
     }
   });
 
@@ -1168,13 +1206,114 @@ export default function SuperAdminDashboard() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Stripe Integration Section */}
+                    <div className="border-t pt-4">
+                      <Label>Stripe Integration</Label>
+                      <div className="space-y-3 mt-2">
+                        <div className="grid grid-cols-1 gap-2">
+                          <label className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              name="stripeIntegration"
+                              value="none"
+                              checked={planForm.stripeIntegration === 'none'}
+                              onChange={(e) => setPlanForm({ ...planForm, stripeIntegration: e.target.value as any })}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">No Stripe Integration</span>
+                          </label>
+                          <label className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              name="stripeIntegration"
+                              value="link_existing"
+                              checked={planForm.stripeIntegration === 'link_existing'}
+                              onChange={(e) => setPlanForm({ ...planForm, stripeIntegration: e.target.value as any })}
+                              className="w-4 h-4"
+                            />
+                            <Link className="w-4 h-4" />
+                            <span className="text-sm">Link Existing Stripe Product</span>
+                          </label>
+                          <label className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              name="stripeIntegration"
+                              value="generate_new"
+                              checked={planForm.stripeIntegration === 'generate_new'}
+                              onChange={(e) => setPlanForm({ ...planForm, stripeIntegration: e.target.value as any })}
+                              className="w-4 h-4"
+                            />
+                            <Wand2 className="w-4 h-4" />
+                            <span className="text-sm">Generate New Stripe Product</span>
+                          </label>
+                        </div>
+
+                        {planForm.stripeIntegration === 'link_existing' && (
+                          <div className="space-y-3 pl-6 border-l-2 border-blue-200 bg-blue-50/50 p-3 rounded">
+                            <div>
+                              <Label htmlFor="stripePriceId">Stripe Price ID *</Label>
+                              <Input
+                                id="stripePriceId"
+                                value={planForm.stripePriceId}
+                                onChange={(e) => setPlanForm({ ...planForm, stripePriceId: e.target.value })}
+                                placeholder="price_1234..."
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="stripeProductId">Stripe Product ID *</Label>
+                              <Input
+                                id="stripeProductId"
+                                value={planForm.stripeProductId}
+                                onChange={(e) => setPlanForm({ ...planForm, stripeProductId: e.target.value })}
+                                placeholder="prod_1234..."
+                                className="mt-1"
+                              />
+                            </div>
+                            <p className="text-xs text-blue-600">
+                              Enter the Stripe Price ID and Product ID from your Stripe dashboard
+                            </p>
+                          </div>
+                        )}
+
+                        {planForm.stripeIntegration === 'generate_new' && (
+                          <div className="pl-6 border-l-2 border-green-200 bg-green-50/50 p-3 rounded">
+                            <div className="flex items-center space-x-2 text-green-700">
+                              <Wand2 className="w-4 h-4" />
+                              <span className="text-sm font-medium">Auto-Generate Stripe Product</span>
+                            </div>
+                            <p className="text-xs text-green-600 mt-1">
+                              A new Stripe product and price will be automatically created based on your plan details
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button 
-                      onClick={() => createPlanMutation.mutate(planForm)}
-                      disabled={createPlanMutation.isPending || !planForm.name || planForm.price <= 0}
+                      onClick={async () => {
+                        if (planForm.stripeIntegration === 'generate_new') {
+                          try {
+                            const stripeProduct = await generateStripeProductMutation.mutateAsync(planForm);
+                            const planWithStripe = {
+                              ...planForm,
+                              stripePriceId: stripeProduct.priceId,
+                              stripeProductId: stripeProduct.productId
+                            };
+                            createPlanMutation.mutate(planWithStripe);
+                          } catch (error) {
+                            // Error already handled in mutation
+                          }
+                        } else {
+                          createPlanMutation.mutate(planForm);
+                        }
+                      }}
+                      disabled={createPlanMutation.isPending || generateStripeProductMutation.isPending || !planForm.name || planForm.price <= 0}
                     >
-                      {createPlanMutation.isPending ? "Creating..." : "Create Plan"}
+                      {generateStripeProductMutation.isPending ? "Generating..." : 
+                       createPlanMutation.isPending ? "Creating..." : "Create Plan"}
                     </Button>
                     <Button variant="outline" onClick={() => setIsAddingPlan(false)}>
                       Cancel
@@ -1217,7 +1356,10 @@ export default function SuperAdminDashboard() {
                                 billing: plan.billing,
                                 features: [...plan.features],
                                 maxUsers: plan.maxUsers,
-                                storageGB: plan.storageGB
+                                storageGB: plan.storageGB,
+                                stripeIntegration: plan.stripePriceId ? 'link_existing' : 'none',
+                                stripePriceId: plan.stripePriceId || '',
+                                stripeProductId: plan.stripeProductId || ''
                               });
                             }}>
                               <Edit className="w-4 h-4" />
@@ -1318,15 +1460,119 @@ export default function SuperAdminDashboard() {
                                     </div>
                                   </div>
                                 </div>
+
+                                {/* Stripe Integration Section - Edit */}
+                                <div className="border-t pt-4">
+                                  <Label>Stripe Integration</Label>
+                                  <div className="space-y-3 mt-2">
+                                    <div className="grid grid-cols-1 gap-2">
+                                      <label className="flex items-center space-x-2">
+                                        <input
+                                          type="radio"
+                                          name="editStripeIntegration"
+                                          value="none"
+                                          checked={planForm.stripeIntegration === 'none'}
+                                          onChange={(e) => setPlanForm({ ...planForm, stripeIntegration: e.target.value as any })}
+                                          className="w-4 h-4"
+                                        />
+                                        <span className="text-sm">No Stripe Integration</span>
+                                      </label>
+                                      <label className="flex items-center space-x-2">
+                                        <input
+                                          type="radio"
+                                          name="editStripeIntegration"
+                                          value="link_existing"
+                                          checked={planForm.stripeIntegration === 'link_existing'}
+                                          onChange={(e) => setPlanForm({ ...planForm, stripeIntegration: e.target.value as any })}
+                                          className="w-4 h-4"
+                                        />
+                                        <Link className="w-4 h-4" />
+                                        <span className="text-sm">Link Existing Stripe Product</span>
+                                      </label>
+                                      <label className="flex items-center space-x-2">
+                                        <input
+                                          type="radio"
+                                          name="editStripeIntegration"
+                                          value="generate_new"
+                                          checked={planForm.stripeIntegration === 'generate_new'}
+                                          onChange={(e) => setPlanForm({ ...planForm, stripeIntegration: e.target.value as any })}
+                                          className="w-4 h-4"
+                                        />
+                                        <Wand2 className="w-4 h-4" />
+                                        <span className="text-sm">Generate New Stripe Product</span>
+                                      </label>
+                                    </div>
+
+                                    {planForm.stripeIntegration === 'link_existing' && (
+                                      <div className="space-y-3 pl-6 border-l-2 border-blue-200 bg-blue-50/50 p-3 rounded">
+                                        <div>
+                                          <Label htmlFor="editStripePriceId">Stripe Price ID *</Label>
+                                          <Input
+                                            id="editStripePriceId"
+                                            value={planForm.stripePriceId}
+                                            onChange={(e) => setPlanForm({ ...planForm, stripePriceId: e.target.value })}
+                                            placeholder="price_1234..."
+                                            className="mt-1"
+                                          />
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="editStripeProductId">Stripe Product ID *</Label>
+                                          <Input
+                                            id="editStripeProductId"
+                                            value={planForm.stripeProductId}
+                                            onChange={(e) => setPlanForm({ ...planForm, stripeProductId: e.target.value })}
+                                            placeholder="prod_1234..."
+                                            className="mt-1"
+                                          />
+                                        </div>
+                                        <p className="text-xs text-blue-600">
+                                          Enter the Stripe Price ID and Product ID from your Stripe dashboard
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    {planForm.stripeIntegration === 'generate_new' && (
+                                      <div className="pl-6 border-l-2 border-green-200 bg-green-50/50 p-3 rounded">
+                                        <div className="flex items-center space-x-2 text-green-700">
+                                          <Wand2 className="w-4 h-4" />
+                                          <span className="text-sm font-medium">Auto-Generate Stripe Product</span>
+                                        </div>
+                                        <p className="text-xs text-green-600 mt-1">
+                                          A new Stripe product and price will be automatically created based on your plan details
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                                 <div className="flex gap-2">
                                   <Button 
-                                    onClick={() => updatePlanMutation.mutate({
-                                      id: selectedPlan.id,
-                                      updates: planForm
-                                    })}
-                                    disabled={updatePlanMutation.isPending}
+                                    onClick={async () => {
+                                      if (planForm.stripeIntegration === 'generate_new') {
+                                        try {
+                                          const stripeProduct = await generateStripeProductMutation.mutateAsync(planForm);
+                                          const planWithStripe = {
+                                            ...planForm,
+                                            stripePriceId: stripeProduct.priceId,
+                                            stripeProductId: stripeProduct.productId
+                                          };
+                                          updatePlanMutation.mutate({
+                                            id: selectedPlan.id,
+                                            updates: planWithStripe
+                                          });
+                                        } catch (error) {
+                                          // Error already handled in mutation
+                                        }
+                                      } else {
+                                        updatePlanMutation.mutate({
+                                          id: selectedPlan.id,
+                                          updates: planForm
+                                        });
+                                      }
+                                    }}
+                                    disabled={updatePlanMutation.isPending || generateStripeProductMutation.isPending}
                                   >
-                                    {updatePlanMutation.isPending ? "Updating..." : "Update Plan"}
+                                    {generateStripeProductMutation.isPending ? "Generating..." : 
+                                     updatePlanMutation.isPending ? "Updating..." : "Update Plan"}
                                   </Button>
                                   <Button variant="outline" onClick={() => setSelectedPlan(null)}>
                                     Cancel
