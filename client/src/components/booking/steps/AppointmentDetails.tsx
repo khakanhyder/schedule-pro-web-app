@@ -220,18 +220,26 @@ export default function AppointmentDetails({
                           </div>
                         ) : (
                           <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                            {availableSlots.map((time) => (
-                              <Button
-                                key={time}
-                                type="button"
-                                variant={field.value === time ? "default" : "outline"}
-                                className="text-sm h-12"
-                                onClick={() => field.onChange(time)}
-                                data-testid={`time-slot-${time.replace(/[^a-zA-Z0-9]/g, '')}`}
-                              >
-                                {time}
-                              </Button>
-                            ))}
+                            {availableSlots.map((time) => {
+                              // Convert 24-hour format to 12-hour format for display
+                              const [hours, minutes] = time.split(":").map(Number);
+                              const period = hours >= 12 ? "PM" : "AM";
+                              const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+                              const displayTime = `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+                              
+                              return (
+                                <Button
+                                  key={time}
+                                  type="button"
+                                  variant={field.value === time ? "default" : "outline"}
+                                  className="text-sm h-12"
+                                  onClick={() => field.onChange(time)}
+                                  data-testid={`time-slot-${time.replace(/[^a-zA-Z0-9]/g, '')}`}
+                                >
+                                  {displayTime}
+                                </Button>
+                              );
+                            })}
                           </div>
                         )}
                         <FormMessage />

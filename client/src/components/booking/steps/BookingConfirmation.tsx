@@ -27,41 +27,44 @@ export default function BookingConfirmation({
   const createAppointmentMutation = useMutation({
     mutationFn: async () => {
       // For cash payments, create the appointment directly
-      const servicePrice = selectedService?.price || 0;
+      // Parse service price properly - handle both number and string formats
+      const servicePriceStr = selectedService?.price?.toString() || "0";
+      const servicePrice = parseFloat(servicePriceStr.replace(/[^\d.]/g, "")) || 0;
 
       const calculateEndTime = (startTime: string, durationMinutes: number): string => {
-        const [time, period] = startTime.split(" ");
-        const [hours, minutes] = time.split(":").map(Number);
+        // Handle both 24-hour format ("09:30") and 12-hour format ("09:30 AM")
+        let hours: number, minutes: number;
         
-        let totalMinutes = (hours % 12) * 60 + minutes;
-        if (period === "PM" && hours !== 12) totalMinutes += 12 * 60;
-        if (period === "AM" && hours === 12) totalMinutes = minutes;
+        if (startTime.includes(" ")) {
+          // 12-hour format like "09:30 AM"
+          const [time, period] = startTime.split(" ");
+          [hours, minutes] = time.split(":").map(Number);
+          
+          if (period === "PM" && hours !== 12) hours += 12;
+          if (period === "AM" && hours === 12) hours = 0;
+        } else {
+          // 24-hour format like "09:30"
+          [hours, minutes] = startTime.split(":").map(Number);
+        }
         
-        totalMinutes += durationMinutes;
-        
+        const totalMinutes = hours * 60 + minutes + durationMinutes;
         const endHours = Math.floor(totalMinutes / 60) % 24;
         const endMins = totalMinutes % 60;
-        const endPeriod = endHours >= 12 ? "PM" : "AM";
-        const displayHours = endHours === 0 ? 12 : endHours > 12 ? endHours - 12 : endHours;
         
-        return `${displayHours}:${endMins.toString().padStart(2, "0")} ${endPeriod}`;
+        // Return in 24-hour format to match the API expectation
+        return `${endHours.toString().padStart(2, "0")}:${endMins.toString().padStart(2, "0")}`;
       };
 
-      return apiRequest("POST", "/api/client/client_1/appointments", {
+      // Use public booking endpoint - no authentication required
+      return apiRequest("POST", "/api/public/client/client_1/book", {
+        serviceId: bookingData.serviceId,
         customerName: bookingData.clientName,
         customerEmail: bookingData.clientEmail,
         customerPhone: bookingData.clientPhone,
-        serviceId: bookingData.serviceId,
-        appointmentDate: bookingData.appointmentDate,
+        appointmentDate: bookingData.appointmentDate?.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
         startTime: bookingData.timeSlot,
-        endTime: calculateEndTime(bookingData.timeSlot!, selectedService?.durationMinutes || 60),
-        notes: bookingData.specialRequests,
-        totalPrice: servicePrice,
-        paymentMethod: bookingData.paymentMethod,
-        paymentStatus: bookingData.paymentMethod === "CASH" ? "PENDING" : "PAID",
-        emailConfirmation: bookingData.emailConfirmation,
-        smsConfirmation: bookingData.smsConfirmation,
-        status: "SCHEDULED"
+        notes: bookingData.specialRequests || "",
+        source: "website-booking"
       });
     },
     onSuccess: async (response) => {
@@ -78,8 +81,9 @@ export default function BookingConfirmation({
       });
     },
     onError: (error) => {
+      console.error("Appointment creation failed:", error);
       toast({
-        title: "Booking Failed",
+        title: "Booking Failed", 
         description: "There was an error creating your appointment. Please contact us directly.",
         variant: "destructive",
       });
@@ -94,6 +98,21 @@ export default function BookingConfirmation({
     }
   }, [bookingData.paymentMethod, bookingData.paymentStatus, bookingData.appointmentId]);
 
+  // Helper to convert 24-hour to 12-hour format for display
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return "";
+    
+    // If already in 12-hour format, return as-is
+    if (timeStr.includes(" ")) return timeStr;
+    
+    // Convert 24-hour format to 12-hour format
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    const period = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    
+    return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+  };
+
   const formatDateTime = () => {
     if (!bookingData.appointmentDate || !bookingData.timeSlot) return "";
     
@@ -104,7 +123,7 @@ export default function BookingConfirmation({
       day: 'numeric' 
     });
     
-    return `${dateStr} at ${bookingData.timeSlot}`;
+    return `${dateStr} at ${formatTime(bookingData.timeSlot)}`;
   };
 
   const getPaymentStatusBadge = () => {
