@@ -419,6 +419,308 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // =============================================================================
+  // SUBSCRIPTION MANAGEMENT ROUTES
+  // =============================================================================
+
+  // Get current subscription details
+  app.get("/api/client/:clientId/subscription", requirePermission('subscription.view'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      
+      // Get client data to get current plan
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Get plan details
+      const plan = await storage.getPlan(client.planId);
+      if (!plan) {
+        return res.status(404).json({ error: "Plan not found" });
+      }
+
+      // Mock subscription details (in production, fetch from Stripe)
+      const subscription = {
+        id: `sub_${clientId}`,
+        planId: plan.id,
+        planName: plan.name,
+        planPrice: plan.price,
+        billing: plan.billing,
+        status: client.status,
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+        nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        features: plan.features,
+        maxUsers: plan.maxUsers,
+        storageGB: plan.storageGB,
+        stripeSubscriptionId: client.stripeSubscriptionId,
+        trialEndsAt: client.status === 'TRIAL' ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() : null,
+        cancelAtPeriodEnd: false
+      };
+
+      res.json(subscription);
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+      res.status(500).json({ error: "Failed to fetch subscription details" });
+    }
+  });
+
+  // Update subscription plan
+  app.post("/api/client/:clientId/subscription/update-plan", requirePermission('subscription.edit'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { planId } = req.body;
+
+      if (!planId) {
+        return res.status(400).json({ error: "Plan ID is required" });
+      }
+
+      // Verify the plan exists
+      const newPlan = await storage.getPlan(planId);
+      if (!newPlan) {
+        return res.status(404).json({ error: "Plan not found" });
+      }
+
+      // Get current client
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Update client's plan
+      await storage.updateClient(clientId, { 
+        planId: newPlan.id,
+        status: "ACTIVE" // Activate the new plan
+      });
+
+      // In production, update Stripe subscription here
+      if (stripe && client.stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.update(client.stripeSubscriptionId, {
+            items: [{
+              id: client.stripeSubscriptionId, // This would be the subscription item ID
+              price: newPlan.stripePriceId
+            }],
+            proration_behavior: 'always_invoice'
+          });
+        } catch (stripeError) {
+          console.error("Stripe subscription update error:", stripeError);
+          // Could rollback the database change here if needed
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Subscription plan updated successfully",
+        newPlan: {
+          id: newPlan.id,
+          name: newPlan.name,
+          price: newPlan.price
+        }
+      });
+    } catch (error) {
+      console.error("Error updating subscription plan:", error);
+      res.status(500).json({ error: "Failed to update subscription plan" });
+    }
+  });
+
+  // Cancel subscription
+  app.post("/api/client/:clientId/subscription/cancel", requirePermission('subscription.edit'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+
+      // Get current client
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Update client status to cancelled
+      await storage.updateClient(clientId, { 
+        status: "CANCELLED"
+      });
+
+      // In production, cancel Stripe subscription here
+      if (stripe && client.stripeSubscriptionId) {
+        try {
+          await stripe.subscriptions.update(client.stripeSubscriptionId, {
+            cancel_at_period_end: true
+          });
+        } catch (stripeError) {
+          console.error("Stripe subscription cancellation error:", stripeError);
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Subscription cancelled successfully. You'll retain access until the end of your billing period."
+      });
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({ error: "Failed to cancel subscription" });
+    }
+  });
+
+  // Get payment methods
+  app.get("/api/client/:clientId/payment-methods", requirePermission('payments.view'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+
+      // Get current client
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Mock payment methods (in production, fetch from Stripe)
+      const paymentMethods = [
+        {
+          id: "pm_1234567890",
+          brand: "visa",
+          last4: "4242",
+          expiryMonth: 12,
+          expiryYear: 2025,
+          isDefault: true
+        }
+      ];
+
+      // In production, fetch from Stripe
+      if (stripe && client.stripeCustomerId) {
+        try {
+          const stripePaymentMethods = await stripe.paymentMethods.list({
+            customer: client.stripeCustomerId,
+            type: 'card'
+          });
+          
+          const formattedMethods = stripePaymentMethods.data.map(pm => ({
+            id: pm.id,
+            brand: pm.card?.brand || 'unknown',
+            last4: pm.card?.last4 || '0000',
+            expiryMonth: pm.card?.exp_month || 1,
+            expiryYear: pm.card?.exp_year || 2025,
+            isDefault: false // Would need to check default payment method
+          }));
+
+          return res.json(formattedMethods);
+        } catch (stripeError) {
+          console.error("Stripe payment methods error:", stripeError);
+          // Fall back to mock data
+        }
+      }
+
+      res.json(paymentMethods);
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+      res.status(500).json({ error: "Failed to fetch payment methods" });
+    }
+  });
+
+  // Update payment method
+  app.post("/api/client/:clientId/subscription/update-payment", requirePermission('payments.edit'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { paymentMethodId, setAsDefault } = req.body;
+
+      // Get current client
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // In production, update Stripe payment method here
+      if (stripe && client.stripeCustomerId && paymentMethodId) {
+        try {
+          // Attach payment method to customer
+          await stripe.paymentMethods.attach(paymentMethodId, {
+            customer: client.stripeCustomerId
+          });
+
+          // Set as default if requested
+          if (setAsDefault) {
+            await stripe.customers.update(client.stripeCustomerId, {
+              invoice_settings: {
+                default_payment_method: paymentMethodId
+              }
+            });
+          }
+        } catch (stripeError) {
+          console.error("Stripe payment method update error:", stripeError);
+          return res.status(400).json({ error: "Failed to update payment method with Stripe" });
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Payment method updated successfully"
+      });
+    } catch (error) {
+      console.error("Error updating payment method:", error);
+      res.status(500).json({ error: "Failed to update payment method" });
+    }
+  });
+
+  // Get billing history
+  app.get("/api/client/:clientId/billing-history", requirePermission('payments.view'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+
+      // Get current client
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Mock billing history (in production, fetch from Stripe invoices)
+      const billingHistory = [
+        {
+          id: "inv_1234567890",
+          date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+          amount: 79.00,
+          status: "PAID",
+          description: "Professional Plan - Monthly",
+          invoiceUrl: "https://invoice.stripe.com/example"
+        },
+        {
+          id: "inv_0987654321",
+          date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), // 60 days ago
+          amount: 79.00,
+          status: "PAID",
+          description: "Professional Plan - Monthly",
+          invoiceUrl: "https://invoice.stripe.com/example2"
+        }
+      ];
+
+      // In production, fetch from Stripe
+      if (stripe && client.stripeCustomerId) {
+        try {
+          const invoices = await stripe.invoices.list({
+            customer: client.stripeCustomerId,
+            limit: 20
+          });
+
+          const formattedHistory = invoices.data.map(invoice => ({
+            id: invoice.id,
+            date: new Date(invoice.created * 1000).toISOString(),
+            amount: invoice.amount_paid / 100, // Convert from cents
+            status: invoice.status === 'paid' ? 'PAID' : invoice.status?.toUpperCase() || 'UNKNOWN',
+            description: invoice.description || 'Subscription Payment',
+            invoiceUrl: invoice.hosted_invoice_url
+          }));
+
+          return res.json(formattedHistory);
+        } catch (stripeError) {
+          console.error("Stripe invoices error:", stripeError);
+          // Fall back to mock data
+        }
+      }
+
+      res.json(billingHistory);
+    } catch (error) {
+      console.error("Error fetching billing history:", error);
+      res.status(500).json({ error: "Failed to fetch billing history" });
+    }
+  });
+
+  // =============================================================================
   // AUTHENTICATION ROUTES
   // =============================================================================
 

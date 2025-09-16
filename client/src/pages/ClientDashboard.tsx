@@ -43,6 +43,7 @@ import GoogleBusinessSetup from './GoogleBusinessSetup';
 import ServicesManagement from '../components/dashboard/ServicesManagement';
 import DomainConfig from '../components/dashboard/DomainConfig';
 import StripeConfiguration from '../components/dashboard/StripeConfiguration';
+import SubscriptionManagement from '../components/dashboard/SubscriptionManagement';
 
 interface Client {
   id: string;
@@ -138,6 +139,7 @@ export default function ClientDashboard() {
   const [isWebsiteModalOpen, setIsWebsiteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isSlotModalOpen, setIsSlotModalOpen] = useState(false);
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   
   // Edit states
@@ -1805,7 +1807,14 @@ export default function ClientDashboard() {
                       <p className="font-medium">Subscription</p>
                       <p className="text-sm text-gray-600">Manage your billing and plan</p>
                     </div>
-                    <Button variant="outline" size="sm">Manage Plan</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setIsSubscriptionModalOpen(true)}
+                      data-testid="button-manage-plan"
+                    >
+                      Manage Plan
+                    </Button>
                   </div>
                   <div className="pt-4 border-t">
                     <Button variant="outline" className="w-full" onClick={handleLogout}>
@@ -1847,6 +1856,13 @@ export default function ClientDashboard() {
           </div>
         </main>
       </div>
+
+      {/* Subscription Management Modal */}
+      <SubscriptionManagement
+        clientId={clientData?.id || "client_1"}
+        isOpen={isSubscriptionModalOpen}
+        onClose={() => setIsSubscriptionModalOpen(false)}
+      />
     </div>
   );
 }
