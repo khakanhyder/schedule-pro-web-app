@@ -86,6 +86,7 @@ interface ServicesManagementProps {
 
 export default function ServicesManagement({ hasPermission, clientId = "client_1" }: ServicesManagementProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [isGeneratingStripe, setIsGeneratingStripe] = useState(false);
@@ -123,8 +124,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
       apiRequest(`/api/client/${clientId}/services`, "POST", data).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/services`] });
-      setIsAddDialogOpen(false);
-      form.reset();
+      closeAddDialog();
       toast({
         title: "Service Added",
         description: "Successfully added new service"
@@ -144,8 +144,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
       apiRequest(`/api/client/${clientId}/services/${id}`, "PUT", data).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/services`] });
-      setEditingService(null);
-      form.reset();
+      closeEditDialog();
       toast({
         title: "Service Updated",
         description: "Successfully updated service"
@@ -202,12 +201,6 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
           return;
         }
         
-        // Show generating state
-        toast({
-          title: "Generating Stripe Product",
-          description: "Creating Stripe product and price automatically..."
-        });
-        
         try {
           // Auto-generate Stripe product and price
           const generated = await generateStripeMutation.mutateAsync({
@@ -220,18 +213,39 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
           transformedData.stripeProductId = generated.productId;
           transformedData.stripePriceId = generated.priceId;
           
-        } catch (generateError: any) {
           toast({
-            title: "Auto-Generation Failed",
-            description: generateError.message || "Failed to auto-generate Stripe product",
-            variant: "destructive"
+            title: "Stripe Product Created",
+            description: "Successfully created Stripe product for online payments"
           });
-          return; // Stop submission if auto-generation fails
+          
+        } catch (generateError: any) {
+          console.error("Stripe auto-generation error:", generateError);
+          
+          // Check if it's a Stripe configuration error
+          const errorMessage = generateError.message || "Failed to auto-generate Stripe product";
+          
+          if (errorMessage.includes("Stripe not configured") || errorMessage.includes("Stripe secret key")) {
+            // Allow service creation without Stripe but disable online payments
+            transformedData.enableOnlinePayments = false;
+            toast({
+              title: "Service will be created without online payments",
+              description: "Stripe is not configured. You can enable online payments later in Settings.",
+              variant: "default"
+            });
+          } else {
+            toast({
+              title: "Stripe Setup Issue",
+              description: `${errorMessage}. Service will be created without online payments.`,
+              variant: "default"
+            });
+            // Continue without Stripe but disable online payments
+            transformedData.enableOnlinePayments = false;
+          }
         }
       }
       
-      // Proceed with service creation/update
-      if (editingService) {
+      // Proceed with service creation/update based on which dialog is open
+      if (isEditDialogOpen && editingService) {
         updateMutation.mutate({ id: editingService.id, data: transformedData });
       } else {
         createMutation.mutate(transformedData);
@@ -248,6 +262,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
 
   const handleEdit = (service: Service) => {
     setEditingService(service);
+    setIsEditDialogOpen(true);
     form.reset({
       name: service.name,
       description: service.description,
@@ -316,8 +331,13 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
     return id.startsWith(prefix) && id.length > prefix.length;
   };
 
-  const closeDialog = () => {
+  const closeAddDialog = () => {
     setIsAddDialogOpen(false);
+    form.reset();
+  };
+  
+  const closeEditDialog = () => {
+    setIsEditDialogOpen(false);
     setEditingService(null);
     form.reset();
   };
@@ -347,9 +367,9 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
           </p>
         </div>
         {canPerform('services.create') && (
-          <Dialog open={isAddDialogOpen || !!editingService} onOpenChange={closeDialog}>
+          <Dialog open={isAddDialogOpen} onOpenChange={closeAddDialog}>
             <DialogTrigger asChild>
-              <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Button onClick={() => setIsAddDialogOpen(true)} data-testid="button-add-service">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Service
               </Button>
@@ -357,10 +377,10 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>
-                {editingService ? 'Edit Service' : 'Add New Service'}
+                Add New Service
               </DialogTitle>
               <DialogDescription>
-                {editingService ? 'Update service information' : 'Add a new service to your business'}
+                Add a new service to your business
               </DialogDescription>
             </DialogHeader>
             
@@ -665,19 +685,151 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
                 </div>
 
                 <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={closeDialog}>
+                  <Button type="button" variant="outline" onClick={closeAddDialog}>
                     Cancel
                   </Button>
                   <Button 
                     type="submit" 
                     disabled={createMutation.isPending || updateMutation.isPending}
+                    data-testid="button-submit-add-service"
                   >
-                    {editingService ? 'Update' : 'Add'} Service
+                    Add Service
                   </Button>
                 </div>
               </form>
             </Form>
           </DialogContent>
+          </Dialog>
+        )}
+        
+        {/* Separate Edit Dialog */}
+        {canPerform('services.edit') && (
+          <Dialog open={isEditDialogOpen} onOpenChange={closeEditDialog}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>
+                  Edit Service
+                </DialogTitle>
+                <DialogDescription>
+                  Update service information
+                </DialogDescription>
+              </DialogHeader>
+              
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Service Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter service name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Hair, Nails, Massage" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe what this service includes..."
+                            className="min-h-[80px]"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Price</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                placeholder="50" 
+                                className="pl-10"
+                                {...field} 
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="durationMinutes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Duration</FormLabel>
+                          <Select 
+                            value={field.value?.toString()} 
+                            onValueChange={(value) => field.onChange(parseInt(value))}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select duration" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {DURATION_OPTIONS.map((option) => (
+                                <SelectItem key={option.value} value={option.value.toString()}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button type="button" variant="outline" onClick={closeEditDialog}>
+                      Cancel
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={createMutation.isPending || updateMutation.isPending}
+                    >
+                      Update Service
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
           </Dialog>
         )}
       </div>
