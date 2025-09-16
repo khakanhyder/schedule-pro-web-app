@@ -720,6 +720,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create SetupIntent for secure payment method updates (PCI COMPLIANT)
+  app.post("/api/client/:clientId/setup-intent", requirePermission('payments.edit'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+
+      if (!stripe) {
+        return res.status(500).json({ error: "Stripe not configured" });
+      }
+
+      // Get current client
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Create or get Stripe customer
+      let customerId = client.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: client.email,
+          name: client.contactPerson,
+          metadata: {
+            clientId: client.id,
+            businessName: client.businessName
+          }
+        });
+        customerId = customer.id;
+        
+        // Update client with Stripe customer ID
+        await storage.updateClient(clientId, { stripeCustomerId: customerId });
+      }
+
+      // Create SetupIntent for future payments
+      const setupIntent = await stripe.setupIntents.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        usage: 'off_session', // For future payments
+        metadata: {
+          clientId: client.id
+        }
+      });
+
+      res.json({
+        success: true,
+        clientSecret: setupIntent.client_secret,
+        setupIntentId: setupIntent.id,
+        stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
+        message: "SetupIntent created successfully for secure payment method update"
+      });
+    } catch (error) {
+      console.error("Error creating SetupIntent:", error);
+      res.status(500).json({ error: "Failed to create secure payment setup" });
+    }
+  });
+
+  // Confirm SetupIntent and save payment method
+  app.post("/api/client/:clientId/confirm-setup-intent", requirePermission('payments.edit'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { setupIntentId, setAsDefault } = req.body;
+
+      if (!stripe) {
+        return res.status(500).json({ error: "Stripe not configured" });
+      }
+
+      // Get current client
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Retrieve the SetupIntent to get the payment method
+      const setupIntent = await stripe.setupIntents.retrieve(setupIntentId);
+      
+      if (setupIntent.status !== 'succeeded') {
+        return res.status(400).json({ error: "SetupIntent not completed successfully" });
+      }
+
+      const paymentMethodId = setupIntent.payment_method as string;
+
+      // Set as default payment method if requested
+      if (setAsDefault && client.stripeCustomerId) {
+        await stripe.customers.update(client.stripeCustomerId, {
+          invoice_settings: {
+            default_payment_method: paymentMethodId
+          }
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Payment method saved successfully",
+        paymentMethodId: paymentMethodId
+      });
+    } catch (error) {
+      console.error("Error confirming SetupIntent:", error);
+      res.status(500).json({ error: "Failed to confirm payment method setup" });
+    }
+  });
+
   // =============================================================================
   // AUTHENTICATION ROUTES
   // =============================================================================

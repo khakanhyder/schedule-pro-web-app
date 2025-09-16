@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { 
   CreditCard, 
   Calendar, 
@@ -28,6 +29,7 @@ import {
   Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
+import SecurePaymentMethodSetup from '../payment/SecurePaymentMethodSetup';
 
 interface SubscriptionDetails {
   id: string;
@@ -171,12 +173,7 @@ export default function SubscriptionManagement({ clientId, isOpen, onClose }: Su
   // Change plan mutation
   const changePlanMutation = useMutation({
     mutationFn: async ({ planId }: { planId: string }) => {
-      const response = await fetch(`/api/client/${clientId}/subscription/update-plan`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId })
-      });
-      if (!response.ok) throw new Error('Failed to change plan');
+      const response = await apiRequest(`/api/client/${clientId}/subscription/update-plan`, 'POST', { planId });
       return response.json();
     },
     onSuccess: () => {
@@ -200,11 +197,7 @@ export default function SubscriptionManagement({ clientId, isOpen, onClose }: Su
   // Cancel subscription mutation
   const cancelSubscriptionMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`/api/client/${clientId}/subscription/cancel`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to cancel subscription');
+      const response = await apiRequest(`/api/client/${clientId}/subscription/cancel`, 'POST');
       return response.json();
     },
     onSuccess: () => {
@@ -224,33 +217,14 @@ export default function SubscriptionManagement({ clientId, isOpen, onClose }: Su
     }
   });
 
-  // Update payment method mutation
-  const updatePaymentMethodMutation = useMutation({
-    mutationFn: async (paymentMethodData: any) => {
-      const response = await fetch(`/api/client/${clientId}/subscription/update-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentMethodData)
-      });
-      if (!response.ok) throw new Error('Failed to update payment method');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/payment-methods`] });
-      setShowUpdatePaymentDialog(false);
-      toast({ 
-        title: 'Payment Method Updated', 
-        description: 'Your payment method has been updated successfully.' 
-      });
-    },
-    onError: (error: any) => {
-      toast({ 
-        title: 'Update Failed', 
-        description: error.message || 'Failed to update payment method.',
-        variant: 'destructive' 
-      });
-    }
-  });
+  const handlePaymentMethodSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/payment-methods`] });
+    setShowUpdatePaymentDialog(false);
+    toast({
+      title: 'Payment Method Added',
+      description: 'Your payment method has been securely saved.',
+    });
+  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -615,84 +589,17 @@ export default function SubscriptionManagement({ clientId, isOpen, onClose }: Su
                 </div>
               )}
 
-              {/* Update Payment Method Dialog */}
+              {/* PCI-COMPLIANT: Secure Payment Method Setup Dialog */}
               <Dialog open={showUpdatePaymentDialog} onOpenChange={setShowUpdatePaymentDialog}>
-                <DialogContent>
+                <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Update Payment Method</DialogTitle>
+                    <DialogTitle>Add Payment Method</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                      <div className="flex items-center space-x-2">
-                        <Shield className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-900">Secure Payment Processing</span>
-                      </div>
-                      <p className="text-xs text-blue-700 mt-1">
-                        Payment details are processed securely by Stripe. We never store your credit card information.
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="card-number">Card Number</Label>
-                        <Input 
-                          id="card-number" 
-                          placeholder="1234 5678 9012 3456"
-                          data-testid="input-card-number"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="expiry">Expiry Date</Label>
-                          <Input 
-                            id="expiry" 
-                            placeholder="MM/YY"
-                            data-testid="input-expiry"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="cvc">CVC</Label>
-                          <Input 
-                            id="cvc" 
-                            placeholder="123"
-                            data-testid="input-cvc"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="cardholder-name">Cardholder Name</Label>
-                        <Input 
-                          id="cardholder-name" 
-                          placeholder="John Doe"
-                          data-testid="input-cardholder-name"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2 pt-4">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowUpdatePaymentDialog(false)}
-                        data-testid="button-cancel-payment-update"
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={() => updatePaymentMethodMutation.mutate({})}
-                        disabled={updatePaymentMethodMutation.isPending}
-                        data-testid="button-save-payment-method"
-                      >
-                        {updatePaymentMethodMutation.isPending ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Saving...
-                          </>
-                        ) : (
-                          'Save Payment Method'
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+                  <SecurePaymentMethodSetup
+                    clientId={clientId}
+                    onSuccess={handlePaymentMethodSuccess}
+                    onCancel={() => setShowUpdatePaymentDialog(false)}
+                  />
                 </DialogContent>
               </Dialog>
             </TabsContent>
