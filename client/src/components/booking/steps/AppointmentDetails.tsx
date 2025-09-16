@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Clock, User, Mail, Phone, CheckCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CalendarIcon, Clock, User, Mail, Phone, CheckCircle, AlertCircle } from "lucide-react";
 import { format, addDays, isToday, isTomorrow, startOfDay, isAfter } from "date-fns";
 import { cn } from "@/lib/utils";
 import { type ClientService, type Stylist } from "@shared/schema";
@@ -34,12 +36,6 @@ interface AppointmentDetailsProps {
   selectedStylist?: Stylist;
 }
 
-// Available time slots (in a real app, these would come from API based on stylist availability)
-const timeSlots = [
-  "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
-  "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
-  "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM", "5:00 PM", "5:30 PM"
-];
 
 export default function AppointmentDetails({ 
   bookingData, 
@@ -76,6 +72,12 @@ export default function AppointmentDetails({
 
   const selectedDate = form.watch("appointmentDate");
   const selectedTimeSlot = form.watch("timeSlot");
+
+  // Fetch available time slots when date is selected
+  const { data: availableSlots = [], isLoading: slotsLoading } = useQuery<string[]>({
+    queryKey: [`/api/public/client/client_1/available-slots`, selectedDate?.toISOString()],
+    enabled: !!selectedDate,
+  });
 
   // Generate available dates (next 30 days, excluding past dates)
   const availableDates = Array.from({ length: 30 }, (_, i) => addDays(new Date(), i))
@@ -192,20 +194,37 @@ export default function AppointmentDetails({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Available Times</FormLabel>
-                        <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                          {timeSlots.map((time) => (
-                            <Button
-                              key={time}
-                              type="button"
-                              variant={field.value === time ? "default" : "outline"}
-                              className="text-sm h-12"
-                              onClick={() => field.onChange(time)}
-                              data-testid={`time-slot-${time.replace(/[^a-zA-Z0-9]/g, '')}`}
-                            >
-                              {time}
-                            </Button>
-                          ))}
-                        </div>
+                        {slotsLoading ? (
+                          <div className="grid grid-cols-3 gap-2">
+                            {[...Array(6)].map((_, i) => (
+                              <Skeleton key={i} className="h-12 w-full" />
+                            ))}
+                          </div>
+                        ) : availableSlots.length === 0 ? (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                            <AlertCircle className="w-5 h-5 text-yellow-600 mx-auto mb-2" />
+                            <p className="text-yellow-800 font-medium">No availability configured</p>
+                            <p className="text-yellow-700 text-sm mt-1">
+                              The business owner hasn't set up availability for {format(selectedDate, "EEEE, MMM d")}.
+                              Please try another date or contact them directly.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                            {availableSlots.map((time) => (
+                              <Button
+                                key={time}
+                                type="button"
+                                variant={field.value === time ? "default" : "outline"}
+                                className="text-sm h-12"
+                                onClick={() => field.onChange(time)}
+                                data-testid={`time-slot-${time.replace(/[^a-zA-Z0-9]/g, '')}`}
+                              >
+                                {time}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
