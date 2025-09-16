@@ -48,6 +48,44 @@ interface TeamMemberSession {
   clientId: string;
 }
 
+// Admin authentication middleware - checks for SUPER_ADMIN role
+const requireAdmin = async (req: any, res: any, next: any) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Admin authentication required" });
+    }
+
+    // In production, this would verify a JWT token
+    // For demo, we check against a simple user session stored in header
+    const userSession = req.headers['x-admin-user'];
+    if (!userSession) {
+      return res.status(401).json({ error: "Admin user session required" });
+    }
+
+    try {
+      const userData = JSON.parse(userSession as string);
+      if (!userData.role || userData.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Super admin privileges required" });
+      }
+      
+      // Verify user exists in storage
+      const user = await storage.getUserByEmail(userData.email);
+      if (!user || user.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Invalid admin credentials" });
+      }
+
+      req.adminUser = userData;
+      next();
+    } catch (parseError) {
+      return res.status(401).json({ error: "Invalid admin session format" });
+    }
+  } catch (error) {
+    console.error("Admin auth error:", error);
+    res.status(500).json({ error: "Admin authentication failed" });
+  }
+};
+
 const requirePermission = (requiredPermission: string) => {
   return async (req: any, res: any, next: any) => {
     try {
@@ -675,7 +713,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =============================================================================
 
   // Get all platform reviews across all clients (for super admin analytics)
-  app.get("/api/admin/platform-reviews", async (req, res) => {
+  app.get("/api/admin/platform-reviews", requireAdmin, async (req, res) => {
     try {
       const { platform, clientId } = req.query;
       
@@ -701,7 +739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get review analytics summary for super admin
-  app.get("/api/admin/review-analytics", async (req, res) => {
+  app.get("/api/admin/review-analytics", requireAdmin, async (req, res) => {
     try {
       const clients = await storage.getClients();
       const analytics = [];
@@ -2952,7 +2990,7 @@ Email: ${client.email}
   });
 
   // Super Admin: Create Stripe subscription for client plan
-  app.post('/api/admin/create-subscription', async (req, res) => {
+  app.post('/api/admin/create-subscription', requireAdmin, async (req, res) => {
     try {
       if (!stripe) {
         return res.status(500).json({ message: "Stripe not configured" });
@@ -3011,6 +3049,116 @@ Email: ${client.email}
       res.status(500).json({ 
         message: "Error creating subscription: " + error.message 
       });
+    }
+  });
+
+  // =============================================================================
+  // STRIPE WEBHOOK HANDLERS - PRODUCTION CRITICAL
+  // =============================================================================
+
+  // Stripe webhook endpoint for handling payment and subscription events
+  app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!stripe || !endpointSecret || !sig) {
+      console.log("Stripe webhook config missing");
+      return res.status(400).send('Webhook configuration error');
+    }
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err: any) {
+      console.log(`Webhook signature verification failed:`, err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    console.log(`Stripe webhook received: ${event.type}`);
+
+    try {
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          console.log(`PaymentIntent succeeded: ${paymentIntent.id}`);
+          
+          // Update payment status in our database
+          if (paymentIntent.metadata.clientId && paymentIntent.metadata.serviceId) {
+            // Payment was for a booking - record is likely already created by confirm endpoint
+            console.log(`Booking payment confirmed via webhook: ${paymentIntent.id}`);
+          }
+          break;
+
+        case 'payment_intent.payment_failed':
+          const failedPayment = event.data.object;
+          console.log(`PaymentIntent failed: ${failedPayment.id}`);
+          // Could update appointment status to PAYMENT_FAILED
+          break;
+
+        case 'invoice.payment_succeeded':
+          const invoice = event.data.object;
+          console.log(`Invoice payment succeeded: ${invoice.id}`);
+          
+          // Update subscription/client status
+          if (invoice.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+            // Find client by Stripe customer ID and update status
+            const clients = await storage.getClients();
+            const client = clients.find(c => c.stripeCustomerId === subscription.customer);
+            if (client) {
+              await storage.updateClient(client.id, { status: "ACTIVE" });
+              console.log(`Client ${client.id} activated via subscription payment`);
+            }
+          }
+          break;
+
+        case 'invoice.payment_failed':
+          const failedInvoice = event.data.object;
+          console.log(`Invoice payment failed: ${failedInvoice.id}`);
+          
+          // Update client status to PAYMENT_FAILED or SUSPENDED
+          if (failedInvoice.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(failedInvoice.subscription as string);
+            const clients = await storage.getClients();
+            const client = clients.find(c => c.stripeCustomerId === subscription.customer);
+            if (client) {
+              await storage.updateClient(client.id, { status: "PAYMENT_FAILED" });
+              console.log(`Client ${client.id} payment failed`);
+            }
+          }
+          break;
+
+        case 'customer.subscription.created':
+          const newSubscription = event.data.object;
+          console.log(`Subscription created: ${newSubscription.id}`);
+          break;
+
+        case 'customer.subscription.updated':
+          const updatedSubscription = event.data.object;
+          console.log(`Subscription updated: ${updatedSubscription.id} - Status: ${updatedSubscription.status}`);
+          break;
+
+        case 'customer.subscription.deleted':
+          const deletedSubscription = event.data.object;
+          console.log(`Subscription cancelled: ${deletedSubscription.id}`);
+          
+          // Update client status to CANCELLED
+          const clients = await storage.getClients();
+          const client = clients.find(c => c.stripeSubscriptionId === deletedSubscription.id);
+          if (client) {
+            await storage.updateClient(client.id, { status: "CANCELLED" });
+            console.log(`Client ${client.id} subscription cancelled`);
+          }
+          break;
+
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error(`Webhook handler error:`, error);
+      res.status(500).json({ error: "Webhook handler failed" });
     }
   });
 

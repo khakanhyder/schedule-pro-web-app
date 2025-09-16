@@ -255,6 +255,34 @@ export default function SuperAdminDashboard() {
     }
   });
 
+  // Stripe subscription management mutation
+  const createSubscriptionMutation = useMutation({
+    mutationFn: async ({ clientId, planId, customerEmail }: { clientId: string; planId: string; customerEmail: string }) => {
+      const response = await fetch('/api/admin/create-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ clientId, planId, customerEmail }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create subscription');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      alert(`✅ Subscription created successfully!\n\nPayment link has been sent to the client's email. They need to complete payment to activate their subscription.\n\nSubscription ID: ${data.subscriptionId}`);
+      queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
+      setSelectedClient(null); // Close the sheet
+    },
+    onError: (error: any) => {
+      alert(`❌ Error creating subscription: ${error.message}`);
+    }
+  });
+
   // Review platform mutations
   const createPlatformMutation = useMutation({
     mutationFn: async (platformData: typeof platformForm) => {
@@ -834,6 +862,72 @@ export default function SuperAdminDashboard() {
                                             : 'Never'
                                           }
                                         </p>
+                                      </div>
+                                      
+                                      {/* Stripe Subscription Management */}
+                                      <div className="border-t pt-4 mt-4">
+                                        <h4 className="font-semibold mb-3 flex items-center">
+                                          <CreditCard className="w-4 h-4 mr-2" />
+                                          Billing & Subscription
+                                        </h4>
+                                        <div className="space-y-3">
+                                          <div className="flex justify-between items-center">
+                                            <Label>Subscription Status</Label>
+                                            <Badge className={selectedClient.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                              {selectedClient.status === 'ACTIVE' ? 'Subscribed' : 'Trial/Inactive'}
+                                            </Badge>
+                                          </div>
+                                          
+                                          <div className="flex justify-between items-center">
+                                            <Label>Current Plan</Label>
+                                            <span className="font-medium">{selectedClient.plan}</span>
+                                          </div>
+                                          
+                                          <div className="flex space-x-2 mt-4">
+                                            <Button 
+                                              size="sm" 
+                                              onClick={() => {
+                                                const plan = plans.find(p => p.id === selectedClient.planId);
+                                                if (plan && plan.stripePriceId) {
+                                                  createSubscriptionMutation.mutate({
+                                                    clientId: selectedClient.id,
+                                                    planId: selectedClient.planId!,
+                                                    customerEmail: selectedClient.email
+                                                  });
+                                                } else {
+                                                  alert('This plan does not have Stripe pricing configured');
+                                                }
+                                              }}
+                                              disabled={createSubscriptionMutation.isPending || selectedClient.status === 'ACTIVE'}
+                                              data-testid={`button-charge-client-${selectedClient.id}`}
+                                            >
+                                              {createSubscriptionMutation.isPending ? 'Creating...' : 'Start Subscription'}
+                                            </Button>
+                                            
+                                            {selectedClient.status === 'ACTIVE' && (
+                                              <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => {
+                                                  if (confirm(`Cancel subscription for ${selectedClient.businessName}?`)) {
+                                                    // TODO: Implement subscription cancellation
+                                                    alert('Subscription cancellation feature coming soon');
+                                                  }
+                                                }}
+                                              >
+                                                Cancel Subscription
+                                              </Button>
+                                            )}
+                                          </div>
+                                          
+                                          <Alert>
+                                            <AlertCircle className="h-4 w-4" />
+                                            <AlertDescription className="text-xs">
+                                              Starting a subscription will send a payment link to the client's email.
+                                              They must complete payment to activate their subscription.
+                                            </AlertDescription>
+                                          </Alert>
+                                        </div>
                                       </div>
                                     </div>
                                   )}
