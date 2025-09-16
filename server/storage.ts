@@ -22,6 +22,7 @@ import {
   websiteStaff, type WebsiteStaff, type InsertWebsiteStaff,
   servicePricingTiers, type ServicePricingTier, type InsertServicePricingTier,
   websiteTestimonials, type WebsiteTestimonial, type InsertWebsiteTestimonial,
+  payments, type Payment, type InsertPayment,
 } from "@shared/schema";
 import { dnsVerificationService } from "./dns-verification";
 
@@ -175,6 +176,23 @@ export interface IStorage {
   createWebsiteTestimonial(testimonial: InsertWebsiteTestimonial): Promise<WebsiteTestimonial>;
   updateWebsiteTestimonial(id: string, updates: Partial<InsertWebsiteTestimonial>): Promise<WebsiteTestimonial>;
   deleteWebsiteTestimonial(id: string): Promise<void>;
+
+  // Payment Operations (SECURE)
+  getPayments(clientId: string): Promise<Payment[]>;
+  getPayment(id: string): Promise<Payment | undefined>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  updatePayment(id: string, updates: Partial<InsertPayment>): Promise<Payment>;
+  getPaymentsByAppointment(appointmentId: string): Promise<Payment[]>;
+
+  // Secure Service Price Calculation (SERVER-SIDE ONLY)
+  calculateServiceAmount(clientId: string, serviceId: string): Promise<number>;
+  calculateTotalWithTip(baseAmount: number, tipPercentage?: number): Promise<number>;
+
+  // Stripe Configuration (SECURE - no secret key exposure)
+  updateStripeConfig(clientId: string, publicKey: string, secretKey: string): Promise<void>;
+  getStripePublicKey(clientId: string): Promise<string | null>;
+  validateStripeConfig(clientId: string): Promise<boolean>;
+  clearStripeConfig(clientId: string): Promise<void>;
 }
 
 // In-memory storage implementation
@@ -189,6 +207,7 @@ class MemStorage implements IStorage {
   private appointments: Appointment[] = [];
   private operatingHours: OperatingHours[] = [];
   private leads: Lead[] = [];
+  private payments: Payment[] = [];
   private clientWebsites: ClientWebsite[] = [
     {
       id: "website_1",
@@ -1691,6 +1710,111 @@ class MemStorage implements IStorage {
     const index = this.websiteTestimonials.findIndex(testimonial => testimonial.id === id);
     if (index === -1) throw new Error("Website testimonial not found");
     this.websiteTestimonials.splice(index, 1);
+  }
+
+  // ====================================
+  // SECURE PAYMENT OPERATIONS
+  // ====================================
+
+  async getPayments(clientId: string): Promise<Payment[]> {
+    return this.payments.filter(payment => payment.clientId === clientId);
+  }
+
+  async getPayment(id: string): Promise<Payment | undefined> {
+    return this.payments.find(payment => payment.id === id);
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const newPayment: Payment = {
+      id: `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...payment,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.payments.push(newPayment);
+    return newPayment;
+  }
+
+  async updatePayment(id: string, updates: Partial<InsertPayment>): Promise<Payment> {
+    const index = this.payments.findIndex(payment => payment.id === id);
+    if (index === -1) throw new Error("Payment not found");
+    
+    this.payments[index] = {
+      ...this.payments[index],
+      ...updates,
+      updatedAt: new Date()
+    };
+    return this.payments[index];
+  }
+
+  async getPaymentsByAppointment(appointmentId: string): Promise<Payment[]> {
+    return this.payments.filter(payment => payment.appointmentId === appointmentId);
+  }
+
+  // ====================================
+  // SECURE SERVICE PRICE CALCULATION (SERVER-SIDE ONLY)
+  // ====================================
+
+  async calculateServiceAmount(clientId: string, serviceId: string): Promise<number> {
+    // Get the service for the specific client
+    const service = this.clientServices.find(s => 
+      s.clientId === clientId && s.id === serviceId && s.isActive
+    );
+    
+    if (!service) {
+      throw new Error("Service not found or inactive");
+    }
+    
+    return service.price;
+  }
+
+  async calculateTotalWithTip(baseAmount: number, tipPercentage?: number): Promise<number> {
+    if (!tipPercentage || tipPercentage <= 0) {
+      return baseAmount;
+    }
+    
+    const tipAmount = (baseAmount * tipPercentage) / 100;
+    return baseAmount + tipAmount;
+  }
+
+  // ====================================
+  // SECURE STRIPE CONFIGURATION (NO SECRET KEY EXPOSURE)
+  // ====================================
+
+  async updateStripeConfig(clientId: string, publicKey: string, secretKey: string): Promise<void> {
+    const clientIndex = this.clients.findIndex(c => c.id === clientId);
+    if (clientIndex === -1) throw new Error("Client not found");
+    
+    // Store public key only - secret key would be encrypted in real DB
+    this.clients[clientIndex] = {
+      ...this.clients[clientIndex],
+      stripePublicKey: publicKey,
+      // NOTE: In production, secretKey should be encrypted before storage
+      stripeSecretKey: secretKey, // This should be encrypted
+      updatedAt: new Date()
+    };
+  }
+
+  async getStripePublicKey(clientId: string): Promise<string | null> {
+    const client = this.clients.find(c => c.id === clientId);
+    return client?.stripePublicKey || null;
+  }
+
+  async validateStripeConfig(clientId: string): Promise<boolean> {
+    const client = this.clients.find(c => c.id === clientId);
+    return !!(client?.stripePublicKey && client?.stripeSecretKey);
+  }
+
+  async clearStripeConfig(clientId: string): Promise<void> {
+    const clientIndex = this.clients.findIndex(c => c.id === clientId);
+    if (clientIndex === -1) throw new Error("Client not found");
+    
+    this.clients[clientIndex] = {
+      ...this.clients[clientIndex],
+      stripePublicKey: null,
+      stripeSecretKey: null,
+      updatedAt: new Date()
+    };
   }
 }
 

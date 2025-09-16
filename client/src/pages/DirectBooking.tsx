@@ -14,15 +14,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
+import PaymentMethodSelector from '@/components/payment/PaymentMethodSelector';
+import StripeCheckout from '@/components/payment/StripeCheckout';
 
 const bookingFormSchema = z.object({
-  serviceId: z.number().min(1, "Please select a service"),
+  serviceId: z.string().min(1, "Please select a service"),
   stylistId: z.number().min(1, "Please select a staff member"),
   clientName: z.string().min(2, "Name must be at least 2 characters"),
   clientEmail: z.string().email("Please enter a valid email"),
   clientPhone: z.string().min(10, "Please enter a valid phone number"),
   date: z.string().min(1, "Please select a date"),
   notes: z.string().optional(),
+  paymentMethod: z.enum(["CASH", "ONLINE"]).default("CASH"),
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
@@ -35,6 +38,9 @@ export default function DirectBooking() {
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingResult, setBookingResult] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'online' | null>(null);
+  const [showStripeCheckout, setShowStripeCheckout] = useState(false);
+  const [currentStep, setCurrentStep] = useState<'details' | 'payment' | 'checkout'>('details');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -49,6 +55,7 @@ export default function DirectBooking() {
       clientEmail: '',
       clientPhone: '',
       notes: '',
+      paymentMethod: 'CASH',
     },
   });
 
@@ -97,11 +104,10 @@ export default function DirectBooking() {
   // Pre-select service from URL parameter
   useEffect(() => {
     if (preSelectedServiceId && bookingData?.services) {
-      const serviceId = parseInt(preSelectedServiceId);
-      const service = (bookingData.services as any[]).find((s: any) => s.id === serviceId);
+      const service = (bookingData.services as any[]).find((s: any) => s.id === preSelectedServiceId);
       if (service) {
         setSelectedService(service);
-        form.setValue('serviceId', serviceId);
+        form.setValue('serviceId', preSelectedServiceId);
       }
     }
   }, [preSelectedServiceId, bookingData, form]);

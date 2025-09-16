@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { insertAppointmentSchema, type Service, type Stylist, type Appointment } from "@shared/schema";
+import { insertAppointmentSchema, type Service, type Stylist, type Appointment, type ClientService } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { SelectedBooking } from "@/pages/Booking";
@@ -17,21 +17,25 @@ const formSchema = insertAppointmentSchema.extend({
   clientName: z.string().min(2, "Name must be at least 2 characters"),
   clientEmail: z.string().email("Invalid email address"),
   clientPhone: z.string().min(10, "Phone number must be at least 10 characters"),
-  serviceId: z.number().min(1, "Please select a service"),
+  serviceId: z.string().min(1, "Please select a service"),
   stylistId: z.number().min(1, "Please select a stylist"),
   date: z.date().refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a date and time",
   }),
+}).omit({
+  appointmentDate: true,
+  startTime: true,
+  endTime: true
 });
 
 interface BookingFormProps {
   selectedBooking: SelectedBooking;
   setSelectedBooking: React.Dispatch<React.SetStateAction<SelectedBooking>>;
-  services?: Service[];
+  services?: ClientService[];
   stylists?: Stylist[];
   onConfirmation: (data: {
     appointment: Appointment;
-    service: Service | undefined;
+    service: ClientService | undefined;
     stylist: Stylist | undefined;
     confirmations: string[];
   }) => void;
@@ -52,11 +56,13 @@ export default function BookingForm({
       clientName: "",
       clientEmail: "",
       clientPhone: "",
-      serviceId: 0,
+      serviceId: "",
       stylistId: 0,
       notes: "",
       emailConfirmation: true,
       smsConfirmation: false,
+      paymentMethod: "CASH",
+      paymentStatus: "PENDING",
       date: new Date(),
     },
   });

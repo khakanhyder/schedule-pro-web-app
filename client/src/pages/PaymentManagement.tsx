@@ -52,16 +52,16 @@ import type { Payment } from "@shared/schema";
 
 const clientId = "client_1"; // This would come from auth context
 
+// SECURE: No secret keys on frontend - only public keys allowed
 const paymentMethodSchema = z.object({
   stripeEnabled: z.boolean().default(false),
   paypalEnabled: z.boolean().default(false),
   venmoEnabled: z.boolean().default(false),
   zelleEnabled: z.boolean().default(false),
   cashEnabled: z.boolean().default(true),
-  stripePublishableKey: z.string().optional(),
-  stripeSecretKey: z.string().optional(),
+  stripePublicKey: z.string().optional(),
+  // NEVER include secret keys in frontend schemas
   paypalClientId: z.string().optional(),
-  paypalClientSecret: z.string().optional(),
   venmoBusinessProfile: z.string().optional(),
   zelleEmail: z.string().email().optional(),
   processingFeePercentage: z.number().min(0).max(10).default(2.9),
@@ -119,46 +119,7 @@ const paymentMethods = [
   },
 ];
 
-const mockPayments: Payment[] = [
-  {
-    id: "pay_1",
-    clientId: clientId,
-    appointmentId: "apt_1",
-    paymentMethod: "STRIPE",
-    paymentProvider: "stripe",
-    paymentIntentId: "pi_1234567890",
-    amount: 125.00,
-    currency: "USD",
-    status: "COMPLETED",
-    customerName: "Sarah Johnson",
-    customerEmail: "sarah@example.com",
-    description: "Haircut and Color - Sarah Johnson",
-    processingFee: 3.93,
-    netAmount: 121.07,
-    createdAt: new Date('2024-01-15T10:30:00'),
-    updatedAt: new Date('2024-01-15T10:30:00'),
-    paidAt: new Date('2024-01-15T10:31:00'),
-  },
-  {
-    id: "pay_2",
-    clientId: clientId,
-    appointmentId: "apt_2",
-    paymentMethod: "PAYPAL",
-    paymentProvider: "paypal",
-    paymentIntentId: "PAYID-ABCDEF",
-    amount: 85.00,
-    currency: "USD",
-    status: "COMPLETED",
-    customerName: "Mike Chen",
-    customerEmail: "mike@example.com",
-    description: "Massage Therapy - Mike Chen",
-    processingFee: 2.77,
-    netAmount: 82.23,
-    createdAt: new Date('2024-01-14T14:15:00'),
-    updatedAt: new Date('2024-01-14T14:15:00'),
-    paidAt: new Date('2024-01-14T14:16:00'),
-  },
-];
+// SECURE: Removed mock data - using real backend payments
 
 export default function PaymentManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -181,19 +142,30 @@ export default function PaymentManagement() {
     },
   });
 
-  const { data: payments = mockPayments, isLoading: paymentsLoading } = useQuery({
+  // SECURE: Connect to real backend payments (no mock fallback)
+  const { data: payments = [], isLoading: paymentsLoading } = useQuery({
     queryKey: [`/api/client/${clientId}/payments`],
   });
 
-  const { data: paymentSettings, isLoading: settingsLoading } = useQuery({
-    queryKey: [`/api/client/${clientId}/payment-settings`],
+  // SECURE: Get Stripe status from secure backend
+  const { data: stripeStatus, isLoading: settingsLoading } = useQuery({
+    queryKey: [`/api/client/${clientId}/stripe-status`],
   });
 
+  // SECURE: Update to use secure Stripe config endpoint (no secret key exposure)
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: PaymentMethodFormData) => {
+      // Only send public key to secure backend (never secret key)
+      if (data.stripeEnabled && data.stripePublicKey) {
+        await apiRequest(`/api/client/${clientId}/stripe-config`, "POST", {
+          stripePublicKey: data.stripePublicKey,
+          // Secret key must be entered through separate secure admin interface
+        });
+      }
       return apiRequest(`/api/client/${clientId}/payment-settings`, "POST", data);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/stripe-status`] });
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/payment-settings`] });
       setDialogOpen(false);
       toast({
@@ -347,31 +319,36 @@ export default function PaymentManagement() {
                       
                       {method.id === "stripe" && (
                         <CardContent className="pt-0">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-4">
                             <FormField
                               control={form.control}
-                              name="stripePublishableKey"
+                              name="stripePublicKey"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Publishable Key</FormLabel>
+                                  <FormLabel>Stripe Public Key</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="pk_test_..." {...field} />
+                                    <Input 
+                                      placeholder="pk_test_..." 
+                                      {...field} 
+                                      data-testid="input-stripe-public-key"
+                                    />
                                   </FormControl>
+                                  <FormDescription>
+                                    Only enter your Stripe public key here. Secret keys are managed securely server-side.
+                                  </FormDescription>
                                 </FormItem>
                               )}
                             />
-                            <FormField
-                              control={form.control}
-                              name="stripeSecretKey"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Secret Key</FormLabel>
-                                  <FormControl>
-                                    <Input type="password" placeholder="sk_test_..." {...field} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
+                            {/* SECURITY: Secret key field removed - managed server-side only */}
+                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                              <div className="flex items-center space-x-2">
+                                <div className="h-2 w-2 bg-amber-500 rounded-full"></div>
+                                <span className="text-sm text-amber-800 font-medium">Security Notice</span>
+                              </div>
+                              <p className="text-sm text-amber-700 mt-1">
+                                Secret keys are handled securely by our system and never exposed to the frontend for your protection.
+                              </p>
+                            </div>
                           </div>
                         </CardContent>
                       )}

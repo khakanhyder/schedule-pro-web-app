@@ -191,6 +191,29 @@ export const insertClientServiceSchema = createInsertSchema(clientServices).pick
   isActive: true,
 });
 
+// Add Stripe price ID to services for custom pricing
+export const clientServicesStripe = pgTable("client_services_stripe", {
+  id: text("id").primaryKey(),
+  serviceId: text("service_id").notNull(),
+  clientId: text("client_id").notNull(),
+  stripePriceId: text("stripe_price_id").notNull(),
+  stripeProductId: text("stripe_product_id"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertClientServicesStripeSchema = createInsertSchema(clientServicesStripe).pick({
+  serviceId: true,
+  clientId: true,
+  stripePriceId: true,
+  stripeProductId: true,
+  isActive: true,
+});
+
+export type InsertClientServicesStripe = z.infer<typeof insertClientServicesStripeSchema>;
+export type ClientServicesStripe = typeof clientServicesStripe.$inferSelect;
+
 export type InsertClientService = z.infer<typeof insertClientServiceSchema>;
 export type ClientService = typeof clientServices.$inferSelect;
 
@@ -208,6 +231,11 @@ export const appointments = pgTable("appointments", {
   status: text("status").notNull().default("SCHEDULED"), // SCHEDULED, CONFIRMED, COMPLETED, CANCELLED
   notes: text("notes"),
   totalPrice: real("total_price").notNull(),
+  paymentMethod: text("payment_method").default("CASH"), // CASH, ONLINE
+  paymentStatus: text("payment_status").default("PENDING"), // PENDING, PAID, FAILED
+  paymentIntentId: text("payment_intent_id"), // Stripe Payment Intent ID
+  emailConfirmation: boolean("email_confirmation").default(true),
+  smsConfirmation: boolean("sms_confirmation").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -224,6 +252,11 @@ export const insertAppointmentSchema = createInsertSchema(appointments).pick({
   status: true,
   notes: true,
   totalPrice: true,
+  paymentMethod: true,
+  paymentStatus: true,
+  paymentIntentId: true,
+  emailConfirmation: true,
+  smsConfirmation: true,
 });
 
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;

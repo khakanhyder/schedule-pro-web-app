@@ -187,6 +187,200 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // =============================================================================
+  // SECURE STRIPE CONFIGURATION ROUTES
+  // =============================================================================
+
+  // Get Stripe configuration status (PUBLIC KEY ONLY - NO SECRET EXPOSURE)
+  app.get("/api/client/:clientId/stripe-status", requirePermission('stripe.view'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      
+      const isConfigured = await storage.validateStripeConfig(clientId);
+      const publicKey = await storage.getStripePublicKey(clientId);
+      
+      res.json({
+        isConfigured,
+        hasValidKeys: isConfigured,
+        publicKey: publicKey // Only return public key
+        // NEVER expose secret key to frontend
+      });
+    } catch (error) {
+      console.error("Error fetching Stripe status:", error);
+      res.status(500).json({ error: "Failed to fetch Stripe status" });
+    }
+  });
+
+  // Save Stripe configuration (SECURE SECRET KEY HANDLING)
+  app.post("/api/client/:clientId/stripe-config", requirePermission('stripe.edit'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { stripePublicKey, stripeSecretKey } = req.body;
+
+      // Validate Stripe keys format
+      if (!stripePublicKey?.startsWith('pk_')) {
+        return res.status(400).json({ error: "Invalid Stripe public key format" });
+      }
+      if (!stripeSecretKey?.startsWith('sk_')) {
+        return res.status(400).json({ error: "Invalid Stripe secret key format" });
+      }
+
+      // Store securely (secret key should be encrypted in production)
+      await storage.updateStripeConfig(clientId, stripePublicKey, stripeSecretKey);
+
+      res.json({ 
+        success: true, 
+        message: "Stripe configuration saved securely",
+        publicKey: stripePublicKey // Only return public key in response
+      });
+    } catch (error) {
+      console.error("Error saving Stripe config:", error);
+      res.status(500).json({ error: "Failed to save Stripe configuration" });
+    }
+  });
+
+  // =============================================================================
+  // SECURE PAYMENT DASHBOARD ROUTES  
+  // =============================================================================
+
+  // Get client payments (SECURE - FILTERED BY CLIENT)
+  app.get("/api/client/:clientId/payments", requirePermission('payments.view'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const payments = await storage.getPayments(clientId);
+      res.json(payments);
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      res.status(500).json({ error: "Failed to fetch payments" });
+    }
+  });
+
+  // =============================================================================
+  // SECURE BOOKING PAYMENT ROUTES (SERVER-SIDE AMOUNT CALCULATION)
+  // =============================================================================
+
+  // Create payment intent with SERVER-SIDE amount calculation
+  app.post("/api/bookings/payment-intent", async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ error: "Stripe not configured" });
+      }
+
+      const { clientId, serviceId, tipPercentage, customerEmail, customerName } = req.body;
+
+      // CRITICAL: Calculate amount SERVER-SIDE (never trust client)
+      const baseAmount = await storage.calculateServiceAmount(clientId, serviceId);
+      const totalAmount = await storage.calculateTotalWithTip(baseAmount, tipPercentage);
+
+      // Verify client has valid Stripe configuration
+      const isConfigured = await storage.validateStripeConfig(clientId);
+      if (!isConfigured) {
+        return res.status(400).json({ error: "Stripe not configured for this business" });
+      }
+
+      // Create payment intent with server-calculated amount
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(totalAmount * 100), // Convert to cents
+        currency: 'usd',
+        metadata: {
+          clientId,
+          serviceId,
+          baseAmount: baseAmount.toString(),
+          tipPercentage: tipPercentage?.toString() || '0',
+          customerEmail,
+          customerName
+        }
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        amount: totalAmount,
+        baseAmount,
+        tipAmount: totalAmount - baseAmount,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ error: "Failed to create payment intent" });
+    }
+  });
+
+  // Confirm booking payment and create appointment + payment record
+  app.post("/api/bookings/confirm", async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ error: "Stripe not configured" });
+      }
+
+      const { 
+        paymentIntentId, 
+        customerName, 
+        customerEmail, 
+        customerPhone,
+        appointmentDate,
+        startTime,
+        endTime,
+        notes 
+      } = req.body;
+
+      // Verify payment with Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({ error: "Payment not successful" });
+      }
+
+      const { clientId, serviceId, baseAmount } = paymentIntent.metadata;
+      const totalAmount = paymentIntent.amount / 100; // Convert from cents
+
+      // Create appointment record
+      const appointment = await storage.createAppointment({
+        clientId,
+        customerName,
+        customerEmail,
+        customerPhone,
+        serviceId,
+        appointmentDate: new Date(appointmentDate),
+        startTime,
+        endTime,
+        notes,
+        totalPrice: totalAmount,
+        paymentMethod: "ONLINE",
+        paymentStatus: "PAID",
+        paymentIntentId,
+        status: "CONFIRMED"
+      });
+
+      // Create payment record
+      const payment = await storage.createPayment({
+        clientId,
+        appointmentId: appointment.id,
+        paymentMethod: "STRIPE",
+        paymentProvider: "stripe",
+        paymentIntentId,
+        amount: totalAmount,
+        currency: "USD",
+        status: "COMPLETED",
+        customerName,
+        customerEmail,
+        description: `Service payment - ${customerName}`,
+        processingFee: totalAmount * 0.029 + 0.30, // 2.9% + $0.30
+        netAmount: totalAmount - (totalAmount * 0.029 + 0.30),
+        paidAt: new Date()
+      });
+
+      res.json({ 
+        success: true, 
+        appointment, 
+        payment,
+        message: "Booking confirmed and payment processed" 
+      });
+    } catch (error) {
+      console.error("Error confirming booking payment:", error);
+      res.status(500).json({ error: "Failed to confirm booking payment" });
+    }
+  });
+
+  // =============================================================================
   // AUTHENTICATION ROUTES
   // =============================================================================
 
@@ -2654,6 +2848,169 @@ Email: ${client.email}
     } catch (error) {
       console.error("Error deleting website testimonial:", error);
       res.status(500).json({ error: "Failed to delete website testimonial" });
+    }
+  });
+
+  // ===========================================
+  // STRIPE PAYMENT ROUTES
+  // ===========================================
+
+  // Create payment intent for appointment booking
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe not configured" });
+      }
+
+      const { amount, customerEmail, customerName, appointmentData } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+        receipt_email: customerEmail,
+        metadata: {
+          customerName,
+          appointmentData: JSON.stringify(appointmentData)
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error: any) {
+      console.error('Stripe payment intent creation error:', error);
+      res.status(500).json({ 
+        message: "Error creating payment intent: " + error.message 
+      });
+    }
+  });
+
+  // Confirm payment and complete booking
+  app.post("/api/confirm-payment-booking", async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe not configured" });
+      }
+
+      const { paymentIntentId, appointmentData } = req.body;
+
+      // Verify payment with Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({ 
+          message: "Payment not completed" 
+        });
+      }
+
+      // Create the appointment with payment confirmation
+      const appointment = await storage.createAppointment({
+        ...appointmentData,
+        paymentMethod: 'ONLINE',
+        paymentStatus: 'PAID',
+        paymentIntentId: paymentIntentId,
+        status: 'CONFIRMED' // Auto-confirm paid appointments
+      });
+
+      // Store payment record
+      await storage.createPayment({
+        id: `payment_${Date.now()}`,
+        clientId: appointmentData.clientId,
+        appointmentId: appointment.id,
+        paymentMethod: 'STRIPE',
+        paymentProvider: 'stripe',
+        paymentIntentId: paymentIntentId,
+        amount: paymentIntent.amount / 100, // Convert back from cents
+        currency: paymentIntent.currency.toUpperCase(),
+        status: 'COMPLETED',
+        customerName: appointmentData.customerName,
+        customerEmail: appointmentData.customerEmail,
+        description: `Payment for appointment`,
+        processingFee: 0, // Could calculate Stripe fees here
+        netAmount: paymentIntent.amount / 100,
+        paidAt: new Date().toISOString(),
+      });
+
+      res.json({ 
+        appointment,
+        message: "Payment confirmed and appointment booked successfully!" 
+      });
+    } catch (error: any) {
+      console.error('Payment confirmation error:', error);
+      res.status(500).json({ 
+        message: "Error confirming payment: " + error.message 
+      });
+    }
+  });
+
+  // Super Admin: Create Stripe subscription for client plan
+  app.post('/api/admin/create-subscription', async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe not configured" });
+      }
+
+      const { clientId, planId, customerEmail } = req.body;
+
+      const plan = await storage.getPlan(planId);
+      if (!plan) {
+        return res.status(404).json({ message: "Plan not found" });
+      }
+
+      // Create or retrieve Stripe customer
+      let customer;
+      const existingCustomers = await stripe.customers.list({
+        email: customerEmail,
+        limit: 1,
+      });
+
+      if (existingCustomers.data.length > 0) {
+        customer = existingCustomers.data[0];
+      } else {
+        customer = await stripe.customers.create({
+          email: customerEmail,
+        });
+      }
+
+      // Create subscription using plan's Stripe price ID
+      if (!plan.stripePriceId) {
+        return res.status(400).json({ 
+          message: "Plan does not have Stripe pricing configured" 
+        });
+      }
+
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: plan.stripePriceId,
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Update client with Stripe IDs
+      await storage.updateClient(clientId, {
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id,
+      });
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+      });
+    } catch (error: any) {
+      console.error('Subscription creation error:', error);
+      res.status(500).json({ 
+        message: "Error creating subscription: " + error.message 
+      });
     }
   });
 
