@@ -831,6 +831,37 @@ export const insertStylistSchema = createInsertSchema(stylists).pick({
 export type InsertStylist = z.infer<typeof insertStylistSchema>;
 export type Stylist = typeof stylists.$inferSelect;
 
+// Booking data interface for managing state across steps
+export interface BookingData {
+  // Step 1: Service Selection
+  serviceId: string | null;
+  stylistId: string | null;
+  
+  // Step 2: Appointment Details
+  appointmentDate: Date | null;
+  timeSlot: string | null;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  
+  // Step 3: Additional Details
+  specialRequests: string;
+  howHeardAboutUs: string;
+  emailConfirmation: boolean;
+  smsConfirmation: boolean;
+  
+  // Step 4: Payment Method
+  paymentMethod: "CASH" | "ONLINE" | null;
+  
+  // Step 5: Payment Processing
+  paymentIntentId: string | null;
+  paymentStatus: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | null;
+  
+  // Step 6: Confirmation
+  appointmentId: string | null;
+  confirmationNumber: string | null;
+}
+
 // Review platforms configuration for real review data
 export const reviewPlatformConnections = pgTable("review_platform_connections", {
   id: text("id").primaryKey(),

@@ -145,14 +145,18 @@ const getIndustryTactics = (industryId: string): SEOTactic[] => {
   }
 ];
 
+  return baseTactics;
+};
+
 export default function SEOBoostTools() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [completedTactics, setCompletedTactics] = useState<Set<string>>(new Set());
   const { selectedIndustry } = useIndustry();
 
+  const seoTactics = getIndustryTactics(selectedIndustry?.id || 'default');
   const filteredTactics = selectedCategory === 'all' 
     ? seoTactics 
-    : seoTactics.filter(tactic => tactic.category === selectedCategory);
+    : seoTactics.filter((tactic: SEOTactic) => tactic.category === selectedCategory);
 
   const toggleCompleted = (tacticId: string) => {
     const newCompleted = new Set(completedTactics);

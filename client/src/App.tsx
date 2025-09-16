@@ -11,6 +11,7 @@ import AdvancedWebsiteBuilder from "@/pages/AdvancedWebsiteBuilder";
 import CheckoutPage from "@/pages/CheckoutPage";
 import ClientWebsite from "@/pages/ClientWebsite";
 import ReviewPlatformConnections from "@/pages/ReviewPlatformConnections";
+import MultiStepBooking from "@/pages/MultiStepBooking";
 import NotFound from "@/pages/not-found";
 
 function App() {
@@ -49,6 +50,9 @@ function App() {
           
           {/* Checkout */}
           <Route path="/checkout" component={CheckoutPage} />
+          
+          {/* Multi-Step Booking */}
+          <Route path="/booking" component={MultiStepBooking} />
           
           {/* Public Client Websites */}
           <Route path="/client-website/:clientId" component={ClientWebsite} />
