@@ -9,7 +9,7 @@ interface TimeSlot {
 
 interface TimeSlotsProps {
   selectedDate: Date | null;
-  selectedStylistId: number | null;
+  selectedStylistId: string | null;
   selectedTimeSlot: string | null;
   onSelectTimeSlot: (timeSlot: string) => void;
 }
@@ -25,7 +25,7 @@ export default function TimeSlots({
       `/api/timeslots`, 
       selectedDate ? { 
         date: selectedDate.toISOString(), 
-        stylistId: selectedStylistId || 0 
+        stylistId: selectedStylistId || "" 
       } : null
     ],
     enabled: !!selectedDate,

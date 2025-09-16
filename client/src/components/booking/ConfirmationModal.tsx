@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckIcon } from "@/assets/icons";
-import { type Appointment, type Service, type Stylist } from "@shared/schema";
+import { type Appointment, type ClientService, type Stylist } from "@shared/schema";
 import { format } from "date-fns";
 import { Link } from "wouter";
 
@@ -17,7 +17,7 @@ interface ConfirmationModalProps {
   onClose: () => void;
   data: {
     appointment: Appointment;
-    service: Service | undefined;
+    service: ClientService | undefined;
     stylist: Stylist | undefined;
     confirmations: string[];
   };
@@ -26,7 +26,7 @@ interface ConfirmationModalProps {
 export default function ConfirmationModal({ isOpen, onClose, data }: ConfirmationModalProps) {
   const { appointment, service, stylist, confirmations } = data;
   
-  const appointmentDate = new Date(appointment.date);
+  const appointmentDate = new Date(appointment.appointmentDate);
   const formattedDate = format(appointmentDate, "MMMM d, yyyy 'at' h:mm a");
   
   return (

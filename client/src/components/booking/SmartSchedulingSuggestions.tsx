@@ -8,8 +8,8 @@ import { apiRequest } from "@/lib/queryClient";
 
 interface SmartSchedulingSuggestionsProps {
   selectedDate: Date | null;
-  selectedServiceId: number | null;
-  selectedStylistId: number | null;
+  selectedServiceId: string | null;
+  selectedStylistId: string | null;
   onTimeSlotSelect?: (timeSlot: string) => void;
 }
 
@@ -29,8 +29,8 @@ export default function SmartSchedulingSuggestions({
       
       const params = new URLSearchParams({
         date: selectedDate.toISOString(),
-        serviceId: selectedServiceId.toString(),
-        ...(selectedStylistId && { stylistId: selectedStylistId.toString() })
+        serviceId: selectedServiceId,
+        ...(selectedStylistId && { stylistId: selectedStylistId })
       });
       
       return apiRequest('GET', `/api/ai/scheduling-suggestions?${params}`).then(res => res.json());

@@ -6,13 +6,13 @@ import Calendar from "@/components/booking/Calendar";
 import TimeSlots from "@/components/booking/TimeSlots";
 import ConfirmationModal from "@/components/booking/ConfirmationModal";
 import SmartSchedulingSuggestions from "@/components/booking/SmartSchedulingSuggestions";
-import { type Service, type Stylist, type Appointment } from "@shared/schema";
+import { type ClientService, type Stylist, type Appointment } from "@shared/schema";
 
 export interface SelectedBooking {
   date: Date | null;
   timeSlot: string | null;
-  serviceId: number | null;
-  stylistId: number | null;
+  serviceId: string | null;
+  stylistId: string | null;
 }
 
 export default function Booking() {
@@ -26,18 +26,18 @@ export default function Booking() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationData, setConfirmationData] = useState<{
     appointment: Appointment;
-    service: Service | undefined;
+    service: ClientService | undefined;
     stylist: Stylist | undefined;
     confirmations: string[];
   } | null>(null);
 
   // Fetch services and stylists data
-  const { data: services } = useQuery<Service[]>({
-    queryKey: ["/api/services"],
+  const { data: services } = useQuery<ClientService[]>({
+    queryKey: ["/api/public/client/client_1/services"],
   });
   
   const { data: stylists } = useQuery<Stylist[]>({
-    queryKey: ["/api/stylists"],
+    queryKey: ["/api/public/clients/client_1/website-staff"],
   });
 
   // Get selected service and stylist objects
@@ -47,7 +47,7 @@ export default function Booking() {
   // Handle appointment confirmation
   const handleConfirmation = (data: {
     appointment: Appointment;
-    service: Service | undefined;
+    service: ClientService | undefined;
     stylist: Stylist | undefined;
     confirmations: string[];
   }) => {

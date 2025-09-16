@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { insertAppointmentSchema, type Service, type Stylist, type Appointment, type ClientService } from "@shared/schema";
+import { insertAppointmentSchema, type Stylist, type Appointment, type ClientService } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { SelectedBooking } from "@/pages/Booking";
@@ -25,7 +25,7 @@ const step1Schema = z.object({
   clientEmail: z.string().email("Invalid email address"),
   clientPhone: z.string().min(10, "Phone number must be at least 10 characters"),
   serviceId: z.string().min(1, "Please select a service"),
-  stylistId: z.number().min(1, "Please select a stylist"),
+  stylistId: z.string().min(1, "Please select a stylist"),
   date: z.date().refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a date and time",
   }),
@@ -79,7 +79,7 @@ export default function BookingForm({
       clientEmail: "",
       clientPhone: "",
       serviceId: "",
-      stylistId: 0,
+      stylistId: "",
       notes: "",
       emailConfirmation: true,
       smsConfirmation: false,
@@ -100,7 +100,7 @@ export default function BookingForm({
   const watchedStylistId = step1Form.watch("stylistId");
   
   // Update the form when selectedBooking changes
-  const updateFormFromSelectedBooking = () => {
+  useEffect(() => {
     if (selectedBooking.serviceId !== null && selectedBooking.serviceId !== watchedServiceId) {
       step1Form.setValue("serviceId", selectedBooking.serviceId);
     }
@@ -113,10 +113,7 @@ export default function BookingForm({
       const dateTime = new Date(selectedBooking.timeSlot);
       step1Form.setValue("date", dateTime);
     }
-  };
-  
-  // Update the form when selectedBooking changes
-  updateFormFromSelectedBooking();
+  }, [selectedBooking, step1Form, watchedServiceId, watchedStylistId]);
 
   const mutation = useMutation({
     mutationFn: (data: FormData) => {
@@ -213,19 +210,19 @@ export default function BookingForm({
               <FormLabel>Select Service</FormLabel>
               <Select 
                 onValueChange={(value) => {
-                  field.onChange(Number(value));
-                  setSelectedBooking({...selectedBooking, serviceId: Number(value)});
+                  field.onChange(value);
+                  setSelectedBooking({...selectedBooking, serviceId: value});
                 }}
-                value={field.value?.toString() || ""}
+                value={field.value || ""}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="select-service">
                     <SelectValue placeholder="Select a service" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {services?.map((service) => (
-                    <SelectItem key={service.id} value={service.id.toString()}>
+                    <SelectItem key={service.id} value={service.id.toString()} data-testid={`option-service-${service.id}`}>
                       {service.name} - {service.price}
                     </SelectItem>
                   ))}
@@ -244,19 +241,19 @@ export default function BookingForm({
               <FormLabel>Select Stylist</FormLabel>
               <Select 
                 onValueChange={(value) => {
-                  field.onChange(Number(value));
-                  setSelectedBooking({...selectedBooking, stylistId: Number(value), timeSlot: null});
+                  field.onChange(value);
+                  setSelectedBooking({...selectedBooking, stylistId: value, timeSlot: null});
                 }}
-                value={field.value?.toString() || ""}
+                value={field.value || ""}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="select-stylist">
                     <SelectValue placeholder="Any available stylist" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {stylists?.map((stylist) => (
-                    <SelectItem key={stylist.id} value={stylist.id.toString()}>
+                    <SelectItem key={stylist.id} value={stylist.id} data-testid={`option-stylist-${stylist.id}`}>
                       {stylist.name}
                     </SelectItem>
                   ))}
@@ -268,9 +265,9 @@ export default function BookingForm({
         />
         
         {selectedDateTime && (
-          <div className="p-4 bg-neutral rounded-md">
+          <div className="p-4 bg-neutral rounded-md" data-testid="selected-appointment-display">
             <p className="font-medium">Selected Appointment:</p>
-            <p className="text-primary">
+            <p className="text-primary" data-testid="text-selected-datetime">
               {selectedDateTime.toLocaleDateString('en-US', { 
                 weekday: 'long',
                 year: 'numeric', 
@@ -292,7 +289,7 @@ export default function BookingForm({
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
+                <Input placeholder="John Doe" data-testid="input-client-name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -306,7 +303,7 @@ export default function BookingForm({
             <FormItem>
               <FormLabel>Email Address</FormLabel>
               <FormControl>
-                <Input placeholder="your@email.com" {...field} />
+                <Input placeholder="your@email.com" data-testid="input-client-email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -320,7 +317,7 @@ export default function BookingForm({
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
-                <Input placeholder="(555) 123-4567" {...field} />
+                <Input placeholder="(555) 123-4567" data-testid="input-client-phone" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -337,6 +334,7 @@ export default function BookingForm({
                 <Textarea 
                   placeholder="Any special requests or notes for your stylist..." 
                   className="resize-none" 
+                  data-testid="textarea-notes"
                   {...field} 
                 />
               </FormControl>
@@ -356,6 +354,7 @@ export default function BookingForm({
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    data-testid="checkbox-sms-confirmation"
                   />
                 </FormControl>
                 <FormLabel className="text-gray-700">Text confirmation</FormLabel>
@@ -372,6 +371,7 @@ export default function BookingForm({
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    data-testid="checkbox-email-confirmation"
                   />
                 </FormControl>
                 <FormLabel className="text-gray-700">Email confirmation</FormLabel>
