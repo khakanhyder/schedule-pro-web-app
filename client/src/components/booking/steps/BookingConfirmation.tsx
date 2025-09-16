@@ -23,6 +23,7 @@ export default function BookingConfirmation({
 }: BookingConfirmationProps) {
   const { toast } = useToast();
   const [isBookingComplete, setIsBookingComplete] = useState(false);
+  const [bookingInProgress, setBookingInProgress] = useState(false);
 
   const createAppointmentMutation = useMutation({
     mutationFn: async () => {
@@ -68,11 +69,13 @@ export default function BookingConfirmation({
       });
     },
     onSuccess: async (response) => {
+      console.log('Booking API Success!');
       const appointment = await response.json();
       updateBookingData({
         appointmentId: appointment.id,
         confirmationNumber: appointment.id,
       });
+      setBookingInProgress(false);
       setIsBookingComplete(true);
       
       toast({
@@ -82,6 +85,7 @@ export default function BookingConfirmation({
     },
     onError: (error) => {
       console.error("Appointment creation failed:", error);
+      setBookingInProgress(false);
       toast({
         title: "Booking Failed", 
         description: "There was an error creating your appointment. Please contact us directly.",
@@ -91,12 +95,23 @@ export default function BookingConfirmation({
   });
 
   useEffect(() => {
-    // For cash payments or if payment is already completed, create the appointment
+    console.log('BookingConfirmation useEffect triggered:', {
+      paymentMethod: bookingData.paymentMethod,
+      paymentStatus: bookingData.paymentStatus,
+      appointmentId: bookingData.appointmentId,
+      isPending: createAppointmentMutation.isPending,
+      serviceId: bookingData.serviceId,
+      timeSlot: bookingData.timeSlot
+    });
+    
+    // Automatically create appointment when confirmation screen loads for cash payments
     if ((bookingData.paymentMethod === "CASH" || bookingData.paymentStatus === "COMPLETED") 
-        && !bookingData.appointmentId && !createAppointmentMutation.isPending) {
+        && !bookingData.appointmentId && !createAppointmentMutation.isPending && !bookingInProgress) {
+      console.log('Triggering appointment creation...');
+      setBookingInProgress(true);
       createAppointmentMutation.mutate();
     }
-  }, [bookingData.paymentMethod, bookingData.paymentStatus, bookingData.appointmentId]);
+  }, [bookingData.paymentMethod, bookingData.paymentStatus, bookingData.appointmentId, bookingInProgress]);
 
   // Helper to convert 24-hour to 12-hour format for display
   const formatTime = (timeStr: string) => {
@@ -164,6 +179,49 @@ export default function BookingConfirmation({
       });
     });
   };
+
+  // Show different states based on booking progress
+  if (bookingInProgress || createAppointmentMutation.isPending) {
+    return (
+      <div className="p-8">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="bg-blue-100 rounded-full p-4">
+              <Clock className="w-12 h-12 text-blue-600 animate-pulse" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Processing Your Booking...</h2>
+          <p className="text-lg text-gray-600">Please wait while we confirm your appointment</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (createAppointmentMutation.isError) {
+    return (
+      <div className="p-8">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="bg-red-100 rounded-full p-4">
+              <div className="w-12 h-12 text-red-600 flex items-center justify-center text-2xl font-bold">✕</div>
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-red-900 mb-2">Booking Failed</h2>
+          <p className="text-lg text-red-600">There was an error creating your appointment. Please try again or contact us directly.</p>
+          <Button 
+            onClick={() => {
+              setBookingInProgress(false);
+              createAppointmentMutation.reset();
+              createAppointmentMutation.mutate();
+            }}
+            className="mt-4"
+          >
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
