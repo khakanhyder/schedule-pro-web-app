@@ -18,7 +18,7 @@ import {
   Twitter,
   Youtube
 } from 'lucide-react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Import Figma assets
 import heroImage from '@assets/Image (3)_1757807495639.png';
