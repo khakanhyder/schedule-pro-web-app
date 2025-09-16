@@ -293,6 +293,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // =============================================================================
+  // STRIPE PRODUCT GENERATION FOR SERVICES
+  // =============================================================================
+
+  // Generate new Stripe product and price for a service
+  app.post("/api/client/:clientId/generate-stripe-product", requirePermission('services.edit'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { name, price, description } = req.body;
+
+      if (!name || !price || !description) {
+        return res.status(400).json({ error: "Name, price, and description are required" });
+      }
+
+      // Get client's Stripe configuration
+      const isConfigured = await storage.validateStripeConfig(clientId);
+      if (!isConfigured) {
+        return res.status(400).json({ error: "Stripe not configured for this client" });
+      }
+
+      const stripeSecretKey = await storage.getStripeSecretKey(clientId);
+      if (!stripeSecretKey) {
+        return res.status(400).json({ error: "Stripe secret key not found" });
+      }
+
+      // Initialize client-specific Stripe instance
+      const clientStripe = new Stripe(stripeSecretKey);
+
+      // Create Stripe product
+      const product = await clientStripe.products.create({
+        name: name,
+        description: description,
+        type: 'service'
+      });
+
+      // Create Stripe price
+      const stripePrice = await clientStripe.prices.create({
+        product: product.id,
+        unit_amount: Math.round(price * 100), // Convert to cents
+        currency: 'usd'
+      });
+
+      res.json({
+        success: true,
+        productId: product.id,
+        priceId: stripePrice.id,
+        message: `Stripe product "${name}" created successfully`
+      });
+
+    } catch (error) {
+      console.error('Error generating Stripe product:', error);
+      res.status(500).json({ 
+        error: "Failed to generate Stripe product",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // =============================================================================
   // SECURE BOOKING PAYMENT ROUTES (SERVER-SIDE AMOUNT CALCULATION)
   // =============================================================================
 

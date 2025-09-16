@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Scissors, Plus, Edit, Trash2, Clock, DollarSign, CreditCard, AlertCircle } from "lucide-react";
+import { Scissors, Plus, Edit, Trash2, Clock, DollarSign, CreditCard, AlertCircle, RefreshCw, ExternalLink } from "lucide-react";
 import { insertServiceSchema, type Service } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -27,7 +27,8 @@ const formSchema = insertServiceSchema.extend({
   category: z.string().optional(),
   stripeProductId: z.string().optional(),
   stripePriceId: z.string().optional(),
-  enableOnlinePayments: z.boolean().default(true)
+  enableOnlinePayments: z.boolean().default(true),
+  stripeIdMode: z.enum(["auto", "manual"]).default("auto")
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -55,6 +56,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+  const [isGeneratingStripe, setIsGeneratingStripe] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { selectedIndustry } = useIndustry();
@@ -79,7 +81,8 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
       category: "",
       stripeProductId: "",
       stripePriceId: "",
-      enableOnlinePayments: true
+      enableOnlinePayments: true,
+      stripeIdMode: "auto" as const
     }
   });
 
@@ -150,7 +153,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
       ...data,
       price: parseFloat(data.price),
       clientId
-    };
+    } as any;
     
     if (editingService) {
       updateMutation.mutate({ id: editingService.id, data: transformedData });
@@ -169,7 +172,8 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
       category: service.category || "",
       stripeProductId: (service as any).stripeProductId || "",
       stripePriceId: (service as any).stripePriceId || "",
-      enableOnlinePayments: (service as any).enableOnlinePayments ?? true
+      enableOnlinePayments: (service as any).enableOnlinePayments ?? true,
+      stripeIdMode: (service as any).stripeProductId ? "manual" as const : "auto" as const
     });
   };
 
@@ -182,6 +186,50 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
       deleteMutation.mutate(deleteConfirmId);
       setDeleteConfirmId(null);
     }
+  };
+
+  const generateStripeMutation = useMutation({
+    mutationFn: async (data: { name: string; price: number; description: string }) => {
+      const response = await apiRequest(`/api/client/${clientId}/generate-stripe-product`, "POST", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      form.setValue("stripeProductId", data.productId);
+      form.setValue("stripePriceId", data.priceId);
+      toast({
+        title: "Stripe Product Generated",
+        description: "Successfully created new Stripe product and price"
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate Stripe product",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleGenerateStripeProduct = async () => {
+    const name = form.watch("name");
+    const price = parseFloat(form.watch("price"));
+    const description = form.watch("description");
+
+    if (!name || !price || !description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill out service name, price, and description before generating Stripe product",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    generateStripeMutation.mutate({ name, price, description });
+  };
+
+  const validateStripeId = (id: string, type: 'product' | 'price') => {
+    const prefix = type === 'product' ? 'prod_' : 'price_';
+    return id.startsWith(prefix) && id.length > prefix.length;
   };
 
   const closeDialog = () => {
@@ -365,24 +413,165 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
                   />
 
                   {form.watch("enableOnlinePayments") && (
-                    <div className="space-y-3 p-3 bg-muted/50 rounded-md">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <AlertCircle className="h-4 w-4" />
-                        <span>Stripe products will be created automatically when you save this service</span>
-                      </div>
-                      
-                      {editingService && (
-                        <div className="grid grid-cols-1 gap-3">
-                          <div>
-                            <label className="text-xs font-medium">Stripe Product ID</label>
-                            <p className="text-xs text-muted-foreground font-mono">
-                              {form.watch("stripeProductId") || "Will be generated automatically"}
-                            </p>
+                    <div className="space-y-4 p-4 bg-muted/50 rounded-md">
+                      {/* Stripe ID Management Mode Selector */}
+                      <FormField
+                        control={form.control}
+                        name="stripeIdMode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Stripe Product Setup</FormLabel>
+                            <FormControl>
+                              <div className="flex gap-4">
+                                <label className="flex items-center space-x-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    value="auto"
+                                    checked={field.value === "auto"}
+                                    onChange={() => field.onChange("auto")}
+                                    className="w-4 h-4 text-primary"
+                                    data-testid="radio-stripe-auto"
+                                  />
+                                  <span className="text-sm">Generate New Product</span>
+                                </label>
+                                <label className="flex items-center space-x-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    value="manual"
+                                    checked={field.value === "manual"}
+                                    onChange={() => field.onChange("manual")}
+                                    className="w-4 h-4 text-primary"
+                                    data-testid="radio-stripe-manual"
+                                  />
+                                  <span className="text-sm">Link Existing Product</span>
+                                </label>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Auto-Generate Mode */}
+                      {form.watch("stripeIdMode") === "auto" && (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <AlertCircle className="h-4 w-4" />
+                            <span>A new Stripe product and price will be created for this service</span>
                           </div>
-                          <div>
-                            <label className="text-xs font-medium">Stripe Price ID</label>
-                            <p className="text-xs text-muted-foreground font-mono">
-                              {form.watch("stripePriceId") || "Will be generated automatically"}
+                          
+                          {/* Generate Button */}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleGenerateStripeProduct}
+                            disabled={generateStripeMutation.isPending}
+                            className="w-full"
+                            data-testid="button-generate-stripe-product"
+                          >
+                            {generateStripeMutation.isPending ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Generate Stripe Product Now
+                              </>
+                            )}
+                          </Button>
+
+                          {/* Display Generated IDs */}
+                          {(form.watch("stripeProductId") || form.watch("stripePriceId")) && (
+                            <div className="grid grid-cols-1 gap-3 p-3 bg-background border rounded-md">
+                              <div className="text-xs font-medium text-center mb-2">Generated Stripe IDs</div>
+                              {form.watch("stripeProductId") && (
+                                <div>
+                                  <label className="text-xs font-medium">Product ID</label>
+                                  <p className="text-xs text-muted-foreground font-mono break-all">
+                                    {form.watch("stripeProductId")}
+                                  </p>
+                                </div>
+                              )}
+                              {form.watch("stripePriceId") && (
+                                <div>
+                                  <label className="text-xs font-medium">Price ID</label>
+                                  <p className="text-xs text-muted-foreground font-mono break-all">
+                                    {form.watch("stripePriceId")}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Manual Entry Mode */}
+                      {form.watch("stripeIdMode") === "manual" && (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <ExternalLink className="h-4 w-4" />
+                            <span>Link to existing Stripe product and price IDs</span>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-3">
+                            <FormField
+                              control={form.control}
+                              name="stripeProductId"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Stripe Product ID</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="prod_xxxxxxxxxx"
+                                      {...field}
+                                      className={!validateStripeId(field.value || '', 'product') && field.value ? 'border-destructive' : ''}
+                                      data-testid="input-stripe-product-id"
+                                    />
+                                  </FormControl>
+                                  <p className="text-xs text-muted-foreground">
+                                    Format: prod_xxxxxxxxxx
+                                  </p>
+                                  {field.value && !validateStripeId(field.value, 'product') && (
+                                    <p className="text-xs text-destructive">Invalid Product ID format</p>
+                                  )}
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="stripePriceId"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Stripe Price ID</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="price_xxxxxxxxxx"
+                                      {...field}
+                                      className={!validateStripeId(field.value || '', 'price') && field.value ? 'border-destructive' : ''}
+                                      data-testid="input-stripe-price-id"
+                                    />
+                                  </FormControl>
+                                  <p className="text-xs text-muted-foreground">
+                                    Format: price_xxxxxxxxxx
+                                  </p>
+                                  {field.value && !validateStripeId(field.value, 'price') && (
+                                    <p className="text-xs text-destructive">Invalid Price ID format</p>
+                                  )}
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                            <p className="text-xs text-blue-700 dark:text-blue-300">
+                              💡 <strong>Tip:</strong> You can find these IDs in your Stripe Dashboard under Products. 
+                              The price ID is associated with the specific pricing tier of your product.
                             </p>
                           </div>
                         </div>
