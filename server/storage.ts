@@ -1016,8 +1016,12 @@ class MemStorage implements IStorage {
   }
 
   async getAvailableSlots(clientId: string, date: string): Promise<string[]> {
-    const targetDate = new Date(date);
-    const dayOfWeek = targetDate.getDay(); // 0-6 (Sunday-Saturday)
+    // Parse date as local calendar date to avoid UTC/timezone issues
+    const [year, month, day] = date.split('-').map(Number);
+    const localDate = new Date(year, month - 1, day); // month is 0-indexed
+    const dayOfWeek = localDate.getDay(); // 0-6 (Sunday-Saturday)
+    
+    console.log(`getAvailableSlots: date=${date}, parsed=(${year},${month},${day}), dayOfWeek=${dayOfWeek}`);
     
     // Get slot configurations for this day
     const daySlots = this.appointmentSlots.filter(slot => 
@@ -1026,18 +1030,20 @@ class MemStorage implements IStorage {
       slot.isActive
     );
     
+    console.log(`Found ${daySlots.length} slot configurations for dayOfWeek ${dayOfWeek}`);
+    
     if (daySlots.length === 0) return [];
     
     // Get existing appointments for this date
     const existingAppointments = this.appointments.filter(apt => 
       apt.clientId === clientId && 
-      new Date(apt.appointmentDate).toDateString() === new Date(date).toDateString()
+      new Date(apt.appointmentDate).toDateString() === localDate.toDateString()
     );
     
     const bookedTimes = existingAppointments.map(apt => apt.startTime);
     
-    // Generate available time slots
-    const availableSlots: string[] = [];
+    // Generate available time slots using Set to prevent duplicates
+    const availableSlots = new Set<string>();
     
     for (const slotConfig of daySlots) {
       const start = this.timeToMinutes(slotConfig.startTime);
@@ -1047,12 +1053,14 @@ class MemStorage implements IStorage {
       for (let time = start; time < end; time += duration) {
         const timeString = this.minutesToTime(time);
         if (!bookedTimes.includes(timeString)) {
-          availableSlots.push(timeString);
+          availableSlots.add(timeString);
         }
       }
     }
     
-    return availableSlots.sort();
+    const result = Array.from(availableSlots).sort();
+    console.log(`Generated ${result.length} available slots:`, result);
+    return result;
   }
 
   private timeToMinutes(timeString: string): number {

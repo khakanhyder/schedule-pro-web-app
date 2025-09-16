@@ -634,7 +634,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await stripe.subscriptions.update(client.stripeSubscriptionId, {
             items: [{
               id: client.stripeSubscriptionId, // This would be the subscription item ID
-              price: newPlan.stripePriceId
+              price: newPlan.stripePriceId || undefined
             }],
             proration_behavior: 'always_invoice'
           });

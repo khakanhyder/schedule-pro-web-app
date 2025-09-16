@@ -75,7 +75,16 @@ export default function AppointmentDetails({
 
   // Fetch available time slots when date is selected
   const { data: availableSlots = [], isLoading: slotsLoading } = useQuery<string[]>({
-    queryKey: [`/api/public/client/client_1/available-slots`, selectedDate?.toISOString()],
+    queryKey: [`/api/public/client/client_1/available-slots`, selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null],
+    queryFn: async () => {
+      if (!selectedDate) return [];
+      const dateStr = format(selectedDate, 'yyyy-MM-dd'); // Use date-fns format for consistency
+      const response = await fetch(`/api/public/client/client_1/available-slots?date=${dateStr}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch available slots');
+      }
+      return response.json();
+    },
     enabled: !!selectedDate,
   });
 
