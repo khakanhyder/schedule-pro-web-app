@@ -145,10 +145,17 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
   });
 
   const onSubmit = (data: FormData) => {
+    // Transform price from string to number for API
+    const transformedData = {
+      ...data,
+      price: parseFloat(data.price),
+      clientId
+    };
+    
     if (editingService) {
-      updateMutation.mutate({ id: editingService.id, data });
+      updateMutation.mutate({ id: editingService.id, data: transformedData });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(transformedData);
     }
   };
 
@@ -157,7 +164,7 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
     form.reset({
       name: service.name,
       description: service.description,
-      price: service.price,
+      price: service.price.toString(), // Convert number to string for form
       durationMinutes: service.durationMinutes,
       category: service.category || "",
       stripeProductId: (service as any).stripeProductId || "",
