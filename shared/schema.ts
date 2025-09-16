@@ -33,6 +33,8 @@ export const plans = pgTable("plans", {
   isActive: boolean("is_active").default(true),
   isFreeTrial: boolean("is_free_trial").default(false),
   trialDays: integer("trial_days").default(0),
+  stripePriceId: text("stripe_price_id"), // Stripe Price ID for subscription
+  stripeProductId: text("stripe_product_id"), // Stripe Product ID
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -91,6 +93,11 @@ export const clients = pgTable("clients", {
   status: text("status").notNull().default("TRIAL"), // TRIAL, ACTIVE, INACTIVE, CANCELLED
   userId: text("user_id").notNull().unique(),
   onboardingSessionId: text("onboarding_session_id"),
+  stripeCustomerId: text("stripe_customer_id"), // Stripe Customer ID
+  stripeSubscriptionId: text("stripe_subscription_id"), // Stripe Subscription ID for plan billing
+  stripePublicKey: text("stripe_public_key"), // Client's own Stripe public key
+  stripeSecretKey: text("stripe_secret_key"), // Client's own Stripe secret key (encrypted)
+  stripeAccountId: text("stripe_account_id"), // Stripe Connect Account ID for direct payments
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   lastLogin: timestamp("last_login"),
