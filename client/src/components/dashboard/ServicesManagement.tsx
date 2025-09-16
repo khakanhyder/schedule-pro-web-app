@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Scissors, Plus, Edit, Trash2, Clock, DollarSign } from "lucide-react";
+import { Scissors, Plus, Edit, Trash2, Clock, DollarSign, CreditCard, AlertCircle } from "lucide-react";
 import { insertServiceSchema, type Service } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -23,7 +24,10 @@ const formSchema = insertServiceSchema.extend({
   description: z.string().min(10, "Description must be at least 10 characters"),
   price: z.string().min(1, "Price is required"),
   durationMinutes: z.number().min(15, "Duration must be at least 15 minutes").max(480, "Duration cannot exceed 8 hours"),
-  category: z.string().optional()
+  category: z.string().optional(),
+  stripeProductId: z.string().optional(),
+  stripePriceId: z.string().optional(),
+  enableOnlinePayments: z.boolean().default(true)
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -72,7 +76,10 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
       description: "",
       price: "",
       durationMinutes: 60,
-      category: ""
+      category: "",
+      stripeProductId: "",
+      stripePriceId: "",
+      enableOnlinePayments: true
     }
   });
 
@@ -152,7 +159,10 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
       description: service.description,
       price: service.price,
       durationMinutes: service.durationMinutes,
-      category: service.category || ""
+      category: service.category || "",
+      stripeProductId: (service as any).stripeProductId || "",
+      stripePriceId: (service as any).stripePriceId || "",
+      enableOnlinePayments: (service as any).enableOnlinePayments ?? true
     });
   };
 
@@ -316,6 +326,64 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
                   />
                 </div>
 
+                {/* Stripe Integration Section */}
+                <div className="border-t pt-4 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    <h3 className="text-sm font-medium">Online Payments</h3>
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="enableOnlinePayments"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-enable-online-payments"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            Enable online payments for this service
+                          </FormLabel>
+                          <p className="text-xs text-muted-foreground">
+                            Customers can pay online via Stripe when booking this service
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("enableOnlinePayments") && (
+                    <div className="space-y-3 p-3 bg-muted/50 rounded-md">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>Stripe products will be created automatically when you save this service</span>
+                      </div>
+                      
+                      {editingService && (
+                        <div className="grid grid-cols-1 gap-3">
+                          <div>
+                            <label className="text-xs font-medium">Stripe Product ID</label>
+                            <p className="text-xs text-muted-foreground font-mono">
+                              {form.watch("stripeProductId") || "Will be generated automatically"}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium">Stripe Price ID</label>
+                            <p className="text-xs text-muted-foreground font-mono">
+                              {form.watch("stripePriceId") || "Will be generated automatically"}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={closeDialog}>
                     Cancel
@@ -357,6 +425,12 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
                       <Clock className="h-3 w-3" />
                       <span>{service.durationMinutes}min</span>
                     </div>
+                    {(service as any).enableOnlinePayments && (
+                      <div className="flex items-center gap-1">
+                        <CreditCard className="h-3 w-3" />
+                        <span>Online Pay</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-1">

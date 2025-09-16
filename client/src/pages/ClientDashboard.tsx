@@ -42,6 +42,7 @@ import AIFeatures from './AIFeatures';
 import GoogleBusinessSetup from './GoogleBusinessSetup';
 import ServicesManagement from '../components/dashboard/ServicesManagement';
 import DomainConfig from '../components/dashboard/DomainConfig';
+import StripeConfiguration from '../components/dashboard/StripeConfiguration';
 
 interface Client {
   id: string;
@@ -118,8 +119,13 @@ export default function ClientDashboard() {
 
   // Check if team member has permission for a specific action
   const hasPermission = (permission: string) => {
-    if (!teamContext?.permissions) return true; // Full access for business owners
-    return teamContext.permissions.includes(permission);
+    if (!teamContext?.permissions) {
+      console.log(`Business owner access: granting permission for ${permission}`);
+      return true; // Full access for business owners
+    }
+    const hasAccess = teamContext.permissions.includes(permission) || teamContext.permissions.includes('*');
+    console.log(`Team member permission check for ${permission}: ${hasAccess}`, teamContext.permissions);
+    return hasAccess;
   };
 
   // Check if user is a team member (not the business owner)
@@ -666,6 +672,7 @@ export default function ClientDashboard() {
     { id: "services", label: "Services", icon: Package },
     { id: "leads", label: "Leads", icon: UserPlus },
     { id: "team", label: "Team", icon: Users },
+    { id: "payments", label: "Payments", icon: CreditCard },
     { id: "ai", label: "AI Features", icon: Bot },
     { id: "google", label: "Google Business", icon: MapPin },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
@@ -689,6 +696,8 @@ export default function ClientDashboard() {
           return hasPermission('leads.view') || hasPermission('leads.create') || hasPermission('leads.edit');
         case 'team':
           return hasPermission('team.view');
+        case 'payments':
+          return hasPermission('payments.view') || hasPermission('payments.manage');
         case 'ai':
           return hasPermission('ai_features.view') || hasPermission('ai_features.edit');
         case 'google':
@@ -1828,7 +1837,12 @@ export default function ClientDashboard() {
 
             {activeView === "google" && <GoogleBusinessSetup />}
 
-
+            {activeView === "payments" && (
+              <StripeConfiguration 
+                clientId={clientData?.id || "client_1"}
+                hasPermission={hasPermission}
+              />
+            )}
 
           </div>
         </main>

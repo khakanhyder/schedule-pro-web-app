@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { insertAppointmentSchema, type Service, type Stylist, type Appointment, type ClientService } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +24,7 @@ const formSchema = insertAppointmentSchema.extend({
   date: z.date().refine((date) => date instanceof Date && !isNaN(date.getTime()), {
     message: "Please select a date and time",
   }),
+  preferredPaymentMethod: z.enum(["CASH", "ONLINE"], { required_error: "Please select a payment method" }),
 }).omit({
   appointmentDate: true,
   startTime: true,
@@ -63,6 +66,7 @@ export default function BookingForm({
       smsConfirmation: false,
       paymentMethod: "CASH",
       paymentStatus: "PENDING",
+      preferredPaymentMethod: "CASH",
       date: new Date(),
     },
   });
@@ -270,6 +274,56 @@ export default function BookingForm({
                   className="resize-none" 
                   {...field} 
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Payment Method Selection */}
+        <FormField
+          control={form.control}
+          name="preferredPaymentMethod"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel className="text-base font-medium">Preferred Payment Method</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  className="grid grid-cols-1 gap-4"
+                  data-testid="radio-group-payment-method"
+                >
+                  <div className="flex items-center space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="CASH" id="cash" data-testid="radio-payment-cash" />
+                    <Label htmlFor="cash" className="flex-1 cursor-pointer">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
+                          <span className="text-green-600 font-semibold">$</span>
+                        </div>
+                        <div>
+                          <div className="font-medium">Pay with Cash</div>
+                          <div className="text-sm text-gray-500">Pay in person at your appointment</div>
+                        </div>
+                      </div>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                    <RadioGroupItem value="ONLINE" id="online" data-testid="radio-payment-online" />
+                    <Label htmlFor="online" className="flex-1 cursor-pointer">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+                          <span className="text-blue-600">💳</span>
+                        </div>
+                        <div>
+                          <div className="font-medium">Pay Online (Stripe)</div>
+                          <div className="text-sm text-gray-500">Secure online payment with credit/debit card</div>
+                        </div>
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>

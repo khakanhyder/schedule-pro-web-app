@@ -1225,21 +1225,178 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/client/:clientId/services", requirePermission('services.create'), async (req, res) => {
     try {
       const { clientId } = req.params;
-      const serviceData = { ...insertClientServiceSchema.parse(req.body), clientId };
-      const service = await storage.createClientService(serviceData);
-      res.json(service);
+      const { enableOnlinePayments, stripeProductId, stripePriceId, ...serviceData } = req.body;
+      
+      // Create the service
+      const parsedServiceData = { ...insertClientServiceSchema.parse(serviceData), clientId };
+      const service = await storage.createClientService(parsedServiceData);
+      
+      // If online payments are enabled and client has Stripe configured, create Stripe product
+      if (enableOnlinePayments) {
+        const client = await storage.getClient(clientId);
+        
+        if (client?.stripeSecretKey) {
+          try {
+            const clientStripe = new Stripe(client.stripeSecretKey);
+            
+            // Create Stripe product
+            const product = await clientStripe.products.create({
+              name: serviceData.name,
+              description: serviceData.description || `${serviceData.name} service`,
+              metadata: {
+                clientId,
+                serviceId: service.id
+              }
+            });
+            
+            // Create Stripe price
+            const price = await clientStripe.prices.create({
+              product: product.id,
+              unit_amount: Math.round(parseFloat(serviceData.price) * 100), // Convert to cents
+              currency: 'usd',
+              metadata: {
+                clientId,
+                serviceId: service.id
+              }
+            });
+            
+            // Store Stripe IDs in the service (extend the service record)
+            await storage.updateClientService(service.id, {
+              stripeProductId: product.id,
+              stripePriceId: price.id,
+              enableOnlinePayments: true
+            });
+            
+            // Return updated service with Stripe info
+            res.json({
+              ...service,
+              stripeProductId: product.id,
+              stripePriceId: price.id,
+              enableOnlinePayments: true
+            });
+          } catch (stripeError) {
+            console.error("Stripe product creation failed:", stripeError);
+            // Service was created but Stripe failed - return service anyway
+            res.json({
+              ...service,
+              enableOnlinePayments: false,
+              warning: "Service created but Stripe integration failed"
+            });
+          }
+        } else {
+          // No Stripe configured - just return the service
+          res.json({
+            ...service,
+            enableOnlinePayments: false,
+            warning: "Stripe not configured for online payments"
+          });
+        }
+      } else {
+        res.json(service);
+      }
     } catch (error) {
+      console.error("Service creation error:", error);
       res.status(500).json({ error: "Failed to create service" });
     }
   });
 
   app.put("/api/client/:clientId/services/:serviceId", requirePermission('services.edit'), async (req, res) => {
     try {
-      const { serviceId } = req.params;
-      const updates = req.body;
+      const { clientId, serviceId } = req.params;
+      const { enableOnlinePayments, stripeProductId, stripePriceId, ...updates } = req.body;
+      
+      // Update the basic service info
       const service = await storage.updateClientService(serviceId, updates);
-      res.json(service);
+      
+      // Handle Stripe integration updates
+      if (enableOnlinePayments !== undefined) {
+        const client = await storage.getClient(clientId);
+        
+        if (enableOnlinePayments && client?.stripeSecretKey) {
+          try {
+            const clientStripe = new Stripe(client.stripeSecretKey);
+            
+            let productId = stripeProductId;
+            let priceId = stripePriceId;
+            
+            // Create or update Stripe product if needed
+            if (!productId) {
+              const product = await clientStripe.products.create({
+                name: updates.name || service.name,
+                description: updates.description || service.description || `${service.name} service`,
+                metadata: {
+                  clientId,
+                  serviceId: service.id
+                }
+              });
+              productId = product.id;
+            } else {
+              // Update existing product
+              await clientStripe.products.update(productId, {
+                name: updates.name || service.name,
+                description: updates.description || service.description
+              });
+            }
+            
+            // Create new price if price changed or no price exists
+            if (!priceId || updates.price) {
+              const price = await clientStripe.prices.create({
+                product: productId,
+                unit_amount: Math.round(parseFloat(updates.price || service.price) * 100),
+                currency: 'usd',
+                metadata: {
+                  clientId,
+                  serviceId: service.id
+                }
+              });
+              priceId = price.id;
+              
+              // Deactivate old price if it exists
+              if (stripePriceId && stripePriceId !== priceId) {
+                try {
+                  await clientStripe.prices.update(stripePriceId, { active: false });
+                } catch (e) {
+                  console.warn("Failed to deactivate old price:", e.message);
+                }
+              }
+            }
+            
+            // Update service with Stripe info
+            await storage.updateClientService(serviceId, {
+              stripeProductId: productId,
+              stripePriceId: priceId,
+              enableOnlinePayments: true
+            });
+            
+            res.json({
+              ...service,
+              stripeProductId: productId,
+              stripePriceId: priceId,
+              enableOnlinePayments: true
+            });
+          } catch (stripeError) {
+            console.error("Stripe update failed:", stripeError);
+            res.json({
+              ...service,
+              enableOnlinePayments: false,
+              warning: "Service updated but Stripe integration failed"
+            });
+          }
+        } else {
+          // Disable online payments
+          await storage.updateClientService(serviceId, {
+            enableOnlinePayments: false
+          });
+          res.json({
+            ...service,
+            enableOnlinePayments: false
+          });
+        }
+      } else {
+        res.json(service);
+      }
     } catch (error) {
+      console.error("Service update error:", error);
       res.status(500).json({ error: "Failed to update service" });
     }
   });
@@ -1251,6 +1408,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Service deleted successfully" });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete service" });
+    }
+  });
+
+  // =============================================================================
+  // CLIENT STRIPE CONFIGURATION ROUTES
+  // =============================================================================
+
+  // Get client Stripe configuration
+  app.get("/api/client/:clientId/stripe-config", requirePermission('payments.view'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const client = await storage.getClient(clientId);
+      
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Return configuration without exposing the full secret key
+      const config = {
+        stripePublicKey: client.stripePublicKey || "",
+        stripeSecretKey: client.stripeSecretKey ? client.stripeSecretKey.substring(0, 8) + "••••••••" : "",
+        stripeAccountId: client.stripeAccountId || "",
+        isConnected: !!(client.stripePublicKey && client.stripeSecretKey)
+      };
+
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching Stripe config:", error);
+      res.status(500).json({ error: "Failed to fetch Stripe configuration" });
+    }
+  });
+
+  // Update client Stripe configuration
+  app.put("/api/client/:clientId/stripe-config", requirePermission('payments.manage'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { stripePublicKey, stripeSecretKey } = req.body;
+
+      // Basic validation
+      if (!stripePublicKey || !stripeSecretKey) {
+        return res.status(400).json({ error: "Both public and secret keys are required" });
+      }
+
+      if (!stripePublicKey.startsWith('pk_')) {
+        return res.status(400).json({ error: "Invalid public key format" });
+      }
+
+      if (!stripeSecretKey.startsWith('sk_')) {
+        return res.status(400).json({ error: "Invalid secret key format" });
+      }
+
+      // Update client with encrypted secret key (in production, encrypt this)
+      const updatedClient = await storage.updateClient(clientId, {
+        stripePublicKey,
+        stripeSecretKey, // In production, encrypt this before storing
+        updatedAt: new Date()
+      });
+
+      res.json({ 
+        message: "Stripe configuration updated successfully",
+        isConnected: true 
+      });
+    } catch (error) {
+      console.error("Error updating Stripe config:", error);
+      res.status(500).json({ error: "Failed to update Stripe configuration" });
+    }
+  });
+
+  // Test client Stripe connection
+  app.post("/api/client/:clientId/stripe-test", requirePermission('payments.manage'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const client = await storage.getClient(clientId);
+      
+      if (!client || !client.stripeSecretKey) {
+        return res.status(400).json({ error: "Stripe not configured for this client" });
+      }
+
+      // Create a temporary Stripe instance with client's secret key
+      const clientStripe = new Stripe(client.stripeSecretKey);
+      
+      // Test the connection by retrieving account information
+      const account = await clientStripe.accounts.retrieve();
+      
+      res.json({ 
+        success: true, 
+        accountName: account.business_profile?.name || account.email || "Account verified",
+        accountId: account.id
+      });
+    } catch (error) {
+      console.error("Stripe connection test failed:", error);
+      res.status(400).json({ 
+        error: "Failed to connect to Stripe",
+        details: error.message 
+      });
     }
   });
 
