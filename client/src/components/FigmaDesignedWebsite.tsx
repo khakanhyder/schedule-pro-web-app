@@ -2,18 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter 
-} from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Link } from 'wouter';
 import { 
   Phone,
   Mail,
@@ -26,12 +16,9 @@ import {
   Facebook,
   Instagram,
   Twitter,
-  Youtube,
-  Calendar,
-  Clock
+  Youtube
 } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
 // Import Figma assets
 import heroImage from '@assets/Image (3)_1757807495639.png';
@@ -101,28 +88,7 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [bookingForm, setBookingForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: '',
-    source: ''
-  });
   const [newsletterEmail, setNewsletterEmail] = useState('');
-  
-  // Booking modal state
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [bookingModalForm, setBookingModalForm] = useState({
-    customerName: '',
-    customerEmail: '',
-    customerPhone: '',
-    serviceId: '',
-    appointmentDate: '',
-    startTime: '',
-    notes: '',
-    source: ''
-  });
-  const [selectedServiceForBooking, setSelectedServiceForBooking] = useState('');
 
   // Fetch client data
   const { data: client } = useQuery<Client>({
@@ -175,79 +141,6 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
     }
   });
 
-  // Appointment booking mutation (syncs with client admin)
-  const appointmentMutation = useMutation({
-    mutationFn: async (formData: typeof bookingModalForm) => {
-      const response = await apiRequest('POST', `/api/public/client/${clientId}/book`, {
-        serviceId: formData.serviceId,
-        customerName: formData.customerName,
-        customerEmail: formData.customerEmail,
-        customerPhone: formData.customerPhone,
-        appointmentDate: formData.appointmentDate,
-        startTime: formData.startTime,
-        notes: formData.notes,
-        source: formData.source
-      });
-      if (!response.ok) throw new Error('Failed to book appointment');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ 
-        title: "Appointment Booked!", 
-        description: "Your appointment has been scheduled. We'll send you a confirmation email." 
-      });
-      setIsBookingModalOpen(false);
-      setBookingModalForm({
-        customerName: '',
-        customerEmail: '',
-        customerPhone: '',
-        serviceId: '',
-        appointmentDate: '',
-        startTime: '',
-        notes: '',
-        source: ''
-      });
-      // Invalidate queries to refresh any cached appointment data
-      queryClient.invalidateQueries({ queryKey: ['/api/client'] });
-      // Also invalidate the specific slots query to refresh availability
-      queryClient.invalidateQueries({ 
-        queryKey: [`/api/public/client/${clientId}/available-slots`, bookingModalForm.appointmentDate, bookingModalForm.serviceId] 
-      });
-    },
-    onError: () => {
-      toast({ 
-        title: "Booking Failed", 
-        description: "There was an issue booking your appointment. Please try again or contact us directly.", 
-        variant: "destructive" 
-      });
-    }
-  });
-
-  // Booking form mutation
-  const bookingMutation = useMutation({
-    mutationFn: async (formData: typeof bookingForm) => {
-      const response = await fetch(`/api/public/client/${clientId}/submit-lead`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          notes: formData.message,
-          serviceInterest: formData.source || 'website'
-        })
-      });
-      if (!response.ok) throw new Error('Failed to submit booking');
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: "Success!", description: "Your booking request has been submitted. We'll contact you soon!" });
-      setBookingForm({ name: '', email: '', phone: '', message: '', source: '' });
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to submit booking. Please try again.", variant: "destructive" });
-    }
-  });
 
   // Fallback to imported assets only if no admin data is available
   const defaultStaffWithAssets = [
@@ -312,91 +205,6 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
     }
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (bookingForm.name && bookingForm.email) {
-      bookingMutation.mutate(bookingForm);
-    }
-  };
-
-  const handleOpenBookingModal = (serviceId?: string) => {
-    if (serviceId) {
-      setSelectedServiceForBooking(serviceId);
-      setBookingModalForm(prev => ({ ...prev, serviceId }));
-    }
-    setIsBookingModalOpen(true);
-  };
-
-  const handleBookingModalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (bookingModalForm.customerName && 
-        bookingModalForm.customerEmail && 
-        bookingModalForm.serviceId && 
-        bookingModalForm.appointmentDate && 
-        bookingModalForm.startTime) {
-      
-      // Verify selected time is still available
-      if (!availableSlots.includes(bookingModalForm.startTime)) {
-        toast({
-          title: "Time No Longer Available",
-          description: "The selected time is no longer available. Please choose a different time.",
-          variant: "destructive"
-        });
-        setBookingModalForm(prev => ({ ...prev, startTime: '' }));
-        return;
-      }
-      
-      appointmentMutation.mutate(bookingModalForm);
-    } else {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields including date and time to book your appointment.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Fetch available time slots based on selected date and service
-  const { data: availableSlots = [] } = useQuery<string[]>({
-    queryKey: [`/api/public/client/${clientId}/available-slots`, bookingModalForm.appointmentDate, bookingModalForm.serviceId],
-    enabled: !!(bookingModalForm.appointmentDate && bookingModalForm.serviceId),
-    queryFn: async () => {
-      if (!bookingModalForm.appointmentDate || !bookingModalForm.serviceId) return [];
-      const params = new URLSearchParams({
-        date: bookingModalForm.appointmentDate,
-        serviceId: bookingModalForm.serviceId
-      });
-      const response = await fetch(`/api/public/client/${clientId}/available-slots?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch available slots');
-      return response.json();
-    }
-  });
-
-  // Convert available slots to display format
-  const timeSlots = availableSlots.map((slot: string) => {
-    const displayTime = new Date(`2000-01-01T${slot}:00`).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-    return { value: slot, display: displayTime };
-  });
-
-  // Clear selected time if it's no longer available or if slots become empty
-  React.useEffect(() => {
-    if (bookingModalForm.startTime && (
-      (availableSlots.length > 0 && !availableSlots.includes(bookingModalForm.startTime)) ||
-      (availableSlots.length === 0)
-    )) {
-      setBookingModalForm(prev => ({ ...prev, startTime: '' }));
-      toast({
-        title: "Time No Longer Available",
-        description: "The selected time is no longer available. Please choose a different time.",
-        variant: "destructive"
-      });
-    }
-  }, [availableSlots, bookingModalForm.startTime]);
-
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % displayTestimonials.length);
   };
@@ -449,14 +257,15 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
             <p className="text-xl mb-8 opacity-90" data-testid="hero-description">
               {heroContent}
             </p>
-            <Button 
-              className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-semibold"
-              data-testid="hero-cta-button"
-              onClick={() => handleOpenBookingModal()}
-            >
-              Book Appointment
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <Link href="/booking">
+              <Button 
+                className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-semibold"
+                data-testid="hero-cta-button"
+              >
+                Book Appointment
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
           <div className="relative" data-testid="hero-image">
             <img 
@@ -545,21 +354,18 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
                         </li>
                       ))}
                     </ul>
-                    <Button 
-                      className={`w-full ${
-                        tier.isPopular 
-                          ? 'bg-pink-500 hover:bg-pink-600 text-white' 
-                          : 'bg-purple-600 hover:bg-purple-700 text-white'
-                      }`}
-                      data-testid={`tier-button-${index}`}
-                      onClick={() => {
-                        // Pass service ID if it's from admin services
-                        const serviceId = (tier as any).isFromAdminServices ? tier.id : '';
-                        handleOpenBookingModal(serviceId);
-                      }}
-                    >
-                      {tier.buttonText || 'Book Now'}
-                    </Button>
+                    <Link href="/booking">
+                      <Button 
+                        className={`w-full ${
+                          tier.isPopular 
+                            ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                            : 'bg-purple-600 hover:bg-purple-700 text-white'
+                        }`}
+                        data-testid={`tier-button-${index}`}
+                      >
+                        {tier.buttonText || 'Book Now'}
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               ))}
@@ -677,115 +483,6 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
         </div>
       </section>
 
-      {/* Booking Section */}
-      <section id="contact" className="py-20 bg-white" data-testid="booking-section">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-6" data-testid="booking-title">
-                Schedule your hair experience
-              </h2>
-              <p className="text-gray-600 mb-8" data-testid="booking-description">
-                Ready to transform your look? Fill out the form and we'll get back to you to schedule your appointment.
-              </p>
-              
-              <form onSubmit={handleBookingSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="name" data-testid="booking-name-label">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={bookingForm.name}
-                    onChange={(e) => setBookingForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="mt-1"
-                    required
-                    data-testid="booking-name-input"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="email" data-testid="booking-email-label">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={bookingForm.email}
-                    onChange={(e) => setBookingForm(prev => ({ ...prev, email: e.target.value }))}
-                    className="mt-1"
-                    required
-                    data-testid="booking-email-input"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="phone" data-testid="booking-phone-label">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={bookingForm.phone}
-                    onChange={(e) => setBookingForm(prev => ({ ...prev, phone: e.target.value }))}
-                    className="mt-1"
-                    data-testid="booking-phone-input"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="source" data-testid="booking-source-label">How did you hear about us?</Label>
-                  <Select value={bookingForm.source} onValueChange={(value) => setBookingForm(prev => ({ ...prev, source: value }))}>
-                    <SelectTrigger className="mt-1" data-testid="booking-source-select">
-                      <SelectValue placeholder="Select how you found us" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="website">Website</SelectItem>
-                      <SelectItem value="google-search">Google Search</SelectItem>
-                      <SelectItem value="social-media">Social Media</SelectItem>
-                      <SelectItem value="referral">Friend/Family Referral</SelectItem>
-                      <SelectItem value="walk-in">Walk-in</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="message" data-testid="booking-message-label">Message</Label>
-                  <Textarea
-                    id="message"
-                    value={bookingForm.message}
-                    onChange={(e) => setBookingForm(prev => ({ ...prev, message: e.target.value }))}
-                    className="mt-1"
-                    rows={4}
-                    placeholder="Tell us about your hair goals..."
-                    data-testid="booking-message-input"
-                  />
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
-                  disabled={bookingMutation.isPending}
-                  data-testid="booking-submit-button"
-                >
-                  {bookingMutation.isPending ? 'Submitting...' : 'Request Booking'}
-                </Button>
-              </form>
-            </div>
-            
-            <div className="relative" data-testid="booking-image">
-              <div 
-                className="rounded-full w-96 h-96 mx-auto overflow-hidden"
-                style={{
-                  background: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)'
-                }}
-              >
-                <img 
-                  src={heroImageUrl} 
-                  alt="Hair styling" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-purple-900 text-white py-16" data-testid="footer">
@@ -855,187 +552,6 @@ export default function FigmaDesignedWebsite({ clientId, isBuilderPreview = fals
         </div>
       </footer>
 
-      {/* Booking Modal */}
-      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-purple-600">Book Your Appointment</DialogTitle>
-            <DialogDescription>
-              Fill in your details to schedule your appointment with us
-            </DialogDescription>
-          </DialogHeader>
-          
-          <form onSubmit={handleBookingModalSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="modal-name">Full Name *</Label>
-              <Input
-                id="modal-name"
-                type="text"
-                value={bookingModalForm.customerName}
-                onChange={(e) => setBookingModalForm(prev => ({ ...prev, customerName: e.target.value }))}
-                className="mt-1"
-                placeholder="Enter your full name"
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="modal-email">Email Address *</Label>
-              <Input
-                id="modal-email"
-                type="email"
-                value={bookingModalForm.customerEmail}
-                onChange={(e) => setBookingModalForm(prev => ({ ...prev, customerEmail: e.target.value }))}
-                className="mt-1"
-                placeholder="Enter your email address"
-                required
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="modal-phone">Phone Number</Label>
-              <Input
-                id="modal-phone"
-                type="tel"
-                value={bookingModalForm.customerPhone}
-                onChange={(e) => setBookingModalForm(prev => ({ ...prev, customerPhone: e.target.value }))}
-                className="mt-1"
-                placeholder="Enter your phone number"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="modal-source">How did you hear about us?</Label>
-              <Select 
-                value={bookingModalForm.source} 
-                onValueChange={(value) => setBookingModalForm(prev => ({ ...prev, source: value }))}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select how you found us" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="website">Website</SelectItem>
-                  <SelectItem value="google-search">Google Search</SelectItem>
-                  <SelectItem value="social-media">Social Media</SelectItem>
-                  <SelectItem value="referral">Friend/Family Referral</SelectItem>
-                  <SelectItem value="walk-in">Walk-in</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="modal-service">Service *</Label>
-              <Select 
-                value={bookingModalForm.serviceId} 
-                onValueChange={(value) => setBookingModalForm(prev => ({ 
-                  ...prev, 
-                  serviceId: value,
-                  startTime: '' // Reset time when service changes
-                }))}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select a service" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clientServices.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.name} - ${service.price} ({service.durationMinutes} min)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="modal-date">Preferred Date *</Label>
-              <Input
-                id="modal-date"
-                type="date"
-                value={bookingModalForm.appointmentDate}
-                onChange={(e) => setBookingModalForm(prev => ({ 
-                  ...prev, 
-                  appointmentDate: e.target.value,
-                  startTime: '' // Reset time when date changes
-                }))}
-                className="mt-1"
-                min={new Date().toISOString().split('T')[0]}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="modal-time">Preferred Time *</Label>
-              <Select 
-                value={bookingModalForm.startTime} 
-                onValueChange={(value) => setBookingModalForm(prev => ({ ...prev, startTime: value }))}
-                disabled={!bookingModalForm.appointmentDate || !bookingModalForm.serviceId}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder={
-                    !bookingModalForm.appointmentDate || !bookingModalForm.serviceId 
-                      ? "Select date and service first" 
-                      : timeSlots.length === 0 
-                        ? "No available times" 
-                        : "Select a time"
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  {timeSlots.map((slot) => (
-                    <SelectItem key={slot.value} value={slot.value}>
-                      {slot.display}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="modal-notes">Additional Notes</Label>
-              <Textarea
-                id="modal-notes"
-                value={bookingModalForm.notes}
-                onChange={(e) => setBookingModalForm(prev => ({ ...prev, notes: e.target.value }))}
-                className="mt-1"
-                placeholder="Any special requests or notes..."
-                rows={3}
-              />
-            </div>
-
-            <DialogFooter className="flex gap-3 sm:justify-end">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setIsBookingModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-                disabled={appointmentMutation.isPending || 
-                  !bookingModalForm.customerName || 
-                  !bookingModalForm.customerEmail || 
-                  !bookingModalForm.serviceId || 
-                  !bookingModalForm.appointmentDate || 
-                  !bookingModalForm.startTime}
-              >
-                {appointmentMutation.isPending ? (
-                  <>
-                    <Clock className="mr-2 h-4 w-4 animate-spin" />
-                    Booking...
-                  </>
-                ) : (
-                  <>
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Book Appointment
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
