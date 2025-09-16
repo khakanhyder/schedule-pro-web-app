@@ -29,6 +29,38 @@ const formSchema = insertServiceSchema.extend({
   stripePriceId: z.string().optional(),
   enableOnlinePayments: z.boolean().default(true),
   stripeIdMode: z.enum(["auto", "manual"]).default("auto")
+}).superRefine((data, ctx) => {
+  // Conditional validation for manual Stripe ID mode
+  if (data.stripeIdMode === "manual" && data.enableOnlinePayments) {
+    if (data.stripeProductId && !data.stripeProductId.startsWith("prod_")) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Product ID must start with 'prod_'",
+        path: ["stripeProductId"]
+      });
+    }
+    if (data.stripePriceId && !data.stripePriceId.startsWith("price_")) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Price ID must start with 'price_'",
+        path: ["stripePriceId"]
+      });
+    }
+    if (!data.stripeProductId || data.stripeProductId.trim() === "") {
+      ctx.addIssue({
+        code: "custom",
+        message: "Product ID is required in manual mode",
+        path: ["stripeProductId"]
+      });
+    }
+    if (!data.stripePriceId || data.stripePriceId.trim() === "") {
+      ctx.addIssue({
+        code: "custom",
+        message: "Price ID is required in manual mode",
+        path: ["stripePriceId"]
+      });
+    }
+  }
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -147,18 +179,70 @@ export default function ServicesManagement({ hasPermission, clientId = "client_1
     }
   });
 
-  const onSubmit = (data: FormData) => {
-    // Transform price from string to number for API
-    const transformedData = {
-      ...data,
-      price: parseFloat(data.price),
-      clientId
-    } as any;
-    
-    if (editingService) {
-      updateMutation.mutate({ id: editingService.id, data: transformedData });
-    } else {
-      createMutation.mutate(transformedData);
+  const onSubmit = async (data: FormData) => {
+    try {
+      // Transform price from string to number for API
+      let transformedData = {
+        ...data,
+        price: parseFloat(data.price),
+        clientId
+      } as any;
+      
+      // Auto-generate Stripe product/price if in auto mode and online payments enabled
+      if (data.stripeIdMode === "auto" && data.enableOnlinePayments && 
+          (!data.stripeProductId || !data.stripePriceId || data.stripeProductId.trim() === "" || data.stripePriceId.trim() === "")) {
+        
+        // Validate required fields for auto-generation
+        if (!data.name || !data.description || !data.price) {
+          toast({
+            title: "Missing Information",
+            description: "Please fill out service name, price, and description for auto-generation",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // Show generating state
+        toast({
+          title: "Generating Stripe Product",
+          description: "Creating Stripe product and price automatically..."
+        });
+        
+        try {
+          // Auto-generate Stripe product and price
+          const generated = await generateStripeMutation.mutateAsync({
+            name: data.name,
+            price: parseFloat(data.price),
+            description: data.description
+          });
+          
+          // Update transformed data with generated IDs
+          transformedData.stripeProductId = generated.productId;
+          transformedData.stripePriceId = generated.priceId;
+          
+        } catch (generateError: any) {
+          toast({
+            title: "Auto-Generation Failed",
+            description: generateError.message || "Failed to auto-generate Stripe product",
+            variant: "destructive"
+          });
+          return; // Stop submission if auto-generation fails
+        }
+      }
+      
+      // Proceed with service creation/update
+      if (editingService) {
+        updateMutation.mutate({ id: editingService.id, data: transformedData });
+      } else {
+        createMutation.mutate(transformedData);
+      }
+      
+    } catch (error: any) {
+      toast({
+        title: "Submission Error",
+        description: error.message || "An error occurred during submission",
+        variant: "destructive"
+      });
     }
   };
 

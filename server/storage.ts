@@ -191,6 +191,7 @@ export interface IStorage {
   // Stripe Configuration (SECURE - no secret key exposure)
   updateStripeConfig(clientId: string, publicKey: string, secretKey: string): Promise<void>;
   getStripePublicKey(clientId: string): Promise<string | null>;
+  getStripeSecretKey(clientId: string): Promise<string | null>;
   validateStripeConfig(clientId: string): Promise<boolean>;
   clearStripeConfig(clientId: string): Promise<void>;
 }
@@ -583,6 +584,8 @@ class MemStorage implements IStorage {
       isActive: plan.isActive ?? true,
       isFreeTrial: plan.isFreeTrial ?? false,
       trialDays: plan.trialDays ?? 0,
+      stripePriceId: null,
+      stripeProductId: null,
       createdAt: new Date()
     };
     this.plans.push(newPlan);
@@ -683,6 +686,11 @@ class MemStorage implements IStorage {
       status: client.status || "TRIAL",
       userId: client.userId,
       onboardingSessionId: client.onboardingSessionId || null,
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
+      stripePublicKey: null,
+      stripeSecretKey: null,
+      stripeAccountId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
       lastLogin: null
@@ -766,6 +774,9 @@ class MemStorage implements IStorage {
       durationMinutes: service.durationMinutes,
       category: service.category || null,
       isActive: service.isActive ?? true,
+      stripePriceId: null,
+      stripeProductId: null,
+      enableOnlinePayments: false,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -814,6 +825,11 @@ class MemStorage implements IStorage {
       status: appointment.status || "SCHEDULED",
       notes: appointment.notes || null,
       totalPrice: appointment.totalPrice,
+      paymentMethod: null,
+      paymentStatus: null,
+      paymentIntentId: null,
+      emailConfirmation: false,
+      smsConfirmation: false,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -1570,7 +1586,7 @@ class MemStorage implements IStorage {
   // Website Staff methods
   async getWebsiteStaff(clientId: string): Promise<WebsiteStaff[]> {
     return this.websiteStaff.filter(staff => staff.clientId === clientId && staff.isActive)
-      .sort((a, b) => a.displayOrder - b.displayOrder);
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   async getWebsiteStaffMember(id: string): Promise<WebsiteStaff | undefined> {
@@ -1618,7 +1634,7 @@ class MemStorage implements IStorage {
   // Service Pricing Tiers methods
   async getServicePricingTiers(clientId: string): Promise<ServicePricingTier[]> {
     return this.servicePricingTiers.filter(tier => tier.clientId === clientId && tier.isActive)
-      .sort((a, b) => a.displayOrder - b.displayOrder);
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   async getServicePricingTier(id: string): Promise<ServicePricingTier | undefined> {
@@ -1667,7 +1683,7 @@ class MemStorage implements IStorage {
   // Website Testimonials methods
   async getWebsiteTestimonials(clientId: string): Promise<WebsiteTestimonial[]> {
     return this.websiteTestimonials.filter(testimonial => testimonial.clientId === clientId && testimonial.isActive)
-      .sort((a, b) => a.displayOrder - b.displayOrder);
+      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   async getWebsiteTestimonial(id: string): Promise<WebsiteTestimonial | undefined> {
@@ -1727,7 +1743,21 @@ class MemStorage implements IStorage {
   async createPayment(payment: InsertPayment): Promise<Payment> {
     const newPayment: Payment = {
       id: `payment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      ...payment,
+      clientId: payment.clientId,
+      appointmentId: payment.appointmentId || null,
+      paymentMethod: payment.paymentMethod,
+      paymentProvider: payment.paymentProvider || null,
+      paymentIntentId: payment.paymentIntentId || null,
+      amount: payment.amount,
+      currency: payment.currency || "USD",
+      status: payment.status || "PENDING",
+      customerName: payment.customerName,
+      customerEmail: payment.customerEmail,
+      description: payment.description || null,
+      metadata: payment.metadata || null,
+      processingFee: payment.processingFee || null,
+      netAmount: payment.netAmount || null,
+      paidAt: payment.paidAt || null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -1798,6 +1828,11 @@ class MemStorage implements IStorage {
   async getStripePublicKey(clientId: string): Promise<string | null> {
     const client = this.clients.find(c => c.id === clientId);
     return client?.stripePublicKey || null;
+  }
+
+  async getStripeSecretKey(clientId: string): Promise<string | null> {
+    const client = this.clients.find(c => c.id === clientId);
+    return client?.stripeSecretKey || null;
   }
 
   async validateStripeConfig(clientId: string): Promise<boolean> {

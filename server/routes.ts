@@ -302,47 +302,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { clientId } = req.params;
       const { name, price, description } = req.body;
 
-      if (!name || !price || !description) {
-        return res.status(400).json({ error: "Name, price, and description are required" });
+      // Enhanced input validation
+      if (!name || typeof name !== 'string' || name.trim().length < 2) {
+        return res.status(400).json({ 
+          error: "Invalid name: Must be a string with at least 2 characters" 
+        });
       }
 
-      // Get client's Stripe configuration
+      if (!description || typeof description !== 'string' || description.trim().length < 10) {
+        return res.status(400).json({ 
+          error: "Invalid description: Must be a string with at least 10 characters" 
+        });
+      }
+
+      if (!price || isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+        return res.status(400).json({ 
+          error: "Invalid price: Must be a positive number" 
+        });
+      }
+
+      const numericPrice = parseFloat(price);
+      
+      // Validate reasonable price limits (cents conversion safe)
+      if (numericPrice > 99999.99) {
+        return res.status(400).json({ 
+          error: "Price too high: Maximum allowed is $99,999.99" 
+        });
+      }
+
+      if (numericPrice < 0.50) {
+        return res.status(400).json({ 
+          error: "Price too low: Minimum allowed is $0.50" 
+        });
+      }
+
+      // Verify client exists
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ error: "Client not found" });
+      }
+
+      // Get client's Stripe configuration with enhanced validation
       const isConfigured = await storage.validateStripeConfig(clientId);
       if (!isConfigured) {
-        return res.status(400).json({ error: "Stripe not configured for this client" });
+        return res.status(400).json({ 
+          error: "Stripe not configured for this client",
+          details: "Please configure your Stripe keys in payment settings first"
+        });
       }
 
       const stripeSecretKey = await storage.getStripeSecretKey(clientId);
       if (!stripeSecretKey) {
-        return res.status(400).json({ error: "Stripe secret key not found" });
+        return res.status(400).json({ 
+          error: "Stripe secret key not found",
+          details: "Missing Stripe secret key configuration"
+        });
       }
 
-      // Initialize client-specific Stripe instance
+      // Validate Stripe secret key format
+      if (!stripeSecretKey.startsWith('sk_')) {
+        return res.status(400).json({ 
+          error: "Invalid Stripe secret key format",
+          details: "Stripe secret key must start with 'sk_'"
+        });
+      }
+
+      // Initialize client-specific Stripe instance (CRITICAL SECURITY FIX)
       const clientStripe = new Stripe(stripeSecretKey);
 
-      // Create Stripe product
+      // Create Stripe product with sanitized input
       const product = await clientStripe.products.create({
-        name: name,
-        description: description,
-        type: 'service'
+        name: name.trim(),
+        description: description.trim(),
+        type: 'service',
+        metadata: {
+          client_id: clientId,
+          created_via: 'saas_platform_auto_generation'
+        }
       });
 
-      // Create Stripe price
+      // Create Stripe price with proper cent conversion
       const stripePrice = await clientStripe.prices.create({
         product: product.id,
-        unit_amount: Math.round(price * 100), // Convert to cents
-        currency: 'usd'
+        unit_amount: Math.round(numericPrice * 100), // Ensure proper cents conversion
+        currency: 'usd',
+        metadata: {
+          client_id: clientId,
+          original_price: numericPrice.toString()
+        }
       });
 
       res.json({
         success: true,
         productId: product.id,
         priceId: stripePrice.id,
-        message: `Stripe product "${name}" created successfully`
+        message: `Stripe product "${name.trim()}" created successfully`,
+        details: {
+          price_in_cents: Math.round(numericPrice * 100),
+          price_formatted: `$${numericPrice.toFixed(2)}`
+        }
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating Stripe product:', error);
+      
+      // Handle specific Stripe errors
+      if (error.type === 'StripeCardError' || error.type === 'StripeInvalidRequestError') {
+        return res.status(400).json({ 
+          error: "Stripe API error",
+          details: error.message
+        });
+      }
+      
+      if (error.type === 'StripeAuthenticationError') {
+        return res.status(401).json({ 
+          error: "Invalid Stripe credentials",
+          details: "Please check your Stripe secret key configuration"
+        });
+      }
+
       res.status(500).json({ 
         error: "Failed to generate Stripe product",
         details: error instanceof Error ? error.message : "Unknown error"
