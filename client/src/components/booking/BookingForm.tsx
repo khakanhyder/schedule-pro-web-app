@@ -117,7 +117,7 @@ export default function BookingForm({
 
   const mutation = useMutation({
     mutationFn: (data: FormData) => {
-      return apiRequest("POST", "/api/appointments", data);
+      return apiRequest("/api/appointments", "POST", data);
     },
     onSuccess: async (response) => {
       const responseData = await response.json();

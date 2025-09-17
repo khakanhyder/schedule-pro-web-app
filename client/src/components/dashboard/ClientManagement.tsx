@@ -57,13 +57,13 @@ export default function ClientManagement() {
   // Fetch clients
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ["/api/clients"],
-    queryFn: () => apiRequest("GET", "/api/clients").then(res => res.json())
+    queryFn: () => apiRequest("/api/clients", "GET").then(res => res.json())
   });
 
   // Create client mutation
   const createMutation = useMutation({
     mutationFn: (data: FormData) =>
-      apiRequest("POST", "/api/clients", data).then(res => res.json()),
+      apiRequest("/api/clients", "POST", data).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       form.reset();
@@ -78,7 +78,7 @@ export default function ClientManagement() {
   // Update client mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: FormData }) =>
-      apiRequest("PUT", `/api/clients/${id}`, data).then(res => res.json()),
+      apiRequest(`/api/clients/${id}`, "PUT", data).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       setEditingClient(null);
@@ -94,7 +94,7 @@ export default function ClientManagement() {
   // Delete client mutation
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      apiRequest("DELETE", `/api/clients/${id}`),
+      apiRequest(`/api/clients/${id}`, "DELETE"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       toast({

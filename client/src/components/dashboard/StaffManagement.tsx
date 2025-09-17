@@ -39,7 +39,7 @@ export default function StaffManagement() {
 
   const { data: stylists = [], isLoading } = useQuery<Stylist[]>({
     queryKey: ["/api/stylists"],
-    queryFn: () => apiRequest("GET", "/api/stylists").then(res => res.json())
+    queryFn: () => apiRequest("/api/stylists", "GET").then(res => res.json())
   });
 
   const form = useForm<FormData>({
@@ -55,7 +55,7 @@ export default function StaffManagement() {
 
   const createMutation = useMutation({
     mutationFn: (data: FormData) => 
-      apiRequest("POST", "/api/stylists", {
+      apiRequest("/api/stylists", "POST", {
         ...data,
         specialties: data.specialties ? data.specialties.split(",").map(s => s.trim()) : []
       }).then(res => res.json()),
@@ -79,7 +79,7 @@ export default function StaffManagement() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: FormData }) =>
-      apiRequest("PUT", `/api/stylists/${id}`, {
+      apiRequest(`/api/stylists/${id}`, "PUT", {
         ...data,
         specialties: data.specialties ? data.specialties.split(",").map(s => s.trim()) : []
       }).then(res => res.json()),
@@ -96,7 +96,7 @@ export default function StaffManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) =>
-      apiRequest("DELETE", `/api/stylists/${id}`),
+      apiRequest(`/api/stylists/${id}`, "DELETE"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/stylists"] });
       toast({

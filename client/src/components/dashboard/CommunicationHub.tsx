@@ -106,7 +106,7 @@ export default function CommunicationHub() {
 
   const sendMessage = useMutation({
     mutationFn: async (messageData: { appointmentId: number; content: string; type: string }) => {
-      return apiRequest("POST", "/api/messages", messageData);
+      return apiRequest("/api/messages", "POST", messageData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/messages"] });

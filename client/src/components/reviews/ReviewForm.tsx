@@ -41,7 +41,7 @@ export default function ReviewForm() {
 
   const mutation = useMutation({
     mutationFn: (data: z.infer<typeof formSchema>) => {
-      return apiRequest("POST", "/api/reviews", data);
+      return apiRequest("/api/reviews", "POST", data);
     },
     onSuccess: async () => {
       toast({

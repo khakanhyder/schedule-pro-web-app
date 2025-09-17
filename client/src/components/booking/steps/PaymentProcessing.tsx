@@ -40,7 +40,7 @@ function PaymentForm({
 
   const confirmPaymentMutation = useMutation({
     mutationFn: async (paymentIntentId: string) => {
-      return apiRequest("POST", "/api/bookings/confirm", {
+      return apiRequest("/api/bookings/confirm", "POST", {
         paymentIntentId,
         customerName: bookingData.clientName,
         customerEmail: bookingData.clientEmail,
@@ -256,7 +256,7 @@ export default function PaymentProcessing({
     mutationFn: async () => {
       const servicePrice = selectedService?.price || 0;
 
-      return apiRequest("POST", "/api/bookings/payment-intent", {
+      return apiRequest("/api/bookings/payment-intent", "POST", {
         clientId: "client_1", // This would be dynamic in a real app
         serviceId: bookingData.serviceId,
         tipPercentage: 0, // Could be added as a feature

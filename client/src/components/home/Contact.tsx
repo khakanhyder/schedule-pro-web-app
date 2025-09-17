@@ -33,7 +33,7 @@ export default function Contact() {
 
   const mutation = useMutation({
     mutationFn: (data: z.infer<typeof formSchema>) => {
-      return apiRequest("POST", "/api/contact", data);
+      return apiRequest("/api/contact", "POST", data);
     },
     onSuccess: async () => {
       toast({

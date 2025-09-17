@@ -71,7 +71,7 @@ export default function DepositManager() {
 
   const updateDepositSettings = useMutation({
     mutationFn: async (settings: DepositSettings) => {
-      return apiRequest("PUT", `/api/deposits/${settings.id}`, settings);
+      return apiRequest(`/api/deposits/${settings.id}`, "PUT", settings);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/deposits"] });

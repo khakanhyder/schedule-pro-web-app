@@ -148,7 +148,7 @@ export default function Checkout() {
     // Create PaymentIntent on the server
     const createPayment = async () => {
       try {
-        const response = await apiRequest("POST", "/api/create-payment-intent", { 
+        const response = await apiRequest("/api/create-payment-intent", "POST", { 
           amount: parsedAmount,
           appointmentId: parsedAppointmentId,
           clientName: clientNameParam
