@@ -408,6 +408,57 @@ class MemStorage implements IStorage {
       isActive: true
     });
 
+    // Add sample appointment slots for client_1 (ABC Consulting)
+    // Monday availability: 9:00 AM - 5:00 PM
+    await this.createAppointmentSlot({
+      clientId: "client_1",
+      dayOfWeek: 1, // Monday
+      startTime: "09:00",
+      endTime: "17:00",
+      slotDuration: 30,
+      isActive: true
+    });
+
+    // Tuesday availability: 9:00 AM - 5:00 PM  
+    await this.createAppointmentSlot({
+      clientId: "client_1",
+      dayOfWeek: 2, // Tuesday
+      startTime: "09:00",
+      endTime: "17:00",
+      slotDuration: 30,
+      isActive: true
+    });
+
+    // Wednesday availability: 9:00 AM - 5:00 PM
+    await this.createAppointmentSlot({
+      clientId: "client_1",
+      dayOfWeek: 3, // Wednesday
+      startTime: "09:00",
+      endTime: "17:00",
+      slotDuration: 30,
+      isActive: true
+    });
+
+    // Thursday availability: 9:00 AM - 5:00 PM
+    await this.createAppointmentSlot({
+      clientId: "client_1",
+      dayOfWeek: 4, // Thursday
+      startTime: "09:00",
+      endTime: "17:00",
+      slotDuration: 30,
+      isActive: true
+    });
+
+    // Friday availability: 9:00 AM - 5:00 PM
+    await this.createAppointmentSlot({
+      clientId: "client_1",
+      dayOfWeek: 5, // Friday
+      startTime: "09:00",
+      endTime: "17:00",
+      slotDuration: 30,
+      isActive: true
+    });
+
     // Add sample team member for testing team login
     await this.createTeamMember({
       clientId: "client_1",

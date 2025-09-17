@@ -2687,10 +2687,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if the time slot is available
+      console.log(`Booking validation - clientId: ${clientId}, appointmentDate: ${appointmentDate}, startTime: ${startTime}`);
       const availableSlots = await storage.getAvailableSlots(clientId, appointmentDate);
+      console.log(`Available slots for ${appointmentDate}:`, availableSlots);
+      console.log(`Checking if '${startTime}' is in available slots:`, availableSlots.includes(startTime));
+      
       if (!availableSlots.includes(startTime)) {
+        console.log(`BOOKING FAILED: startTime '${startTime}' not found in available slots:`, availableSlots);
         return res.status(400).json({ error: "Time slot is not available" });
       }
+      
+      console.log(`BOOKING SUCCESS: Time slot ${startTime} is available!`);
 
       // Calculate end time based on service duration
       const startMinutes = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);

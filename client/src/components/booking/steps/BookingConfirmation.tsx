@@ -56,8 +56,8 @@ export default function BookingConfirmation({
         return `${endHours.toString().padStart(2, "0")}:${endMins.toString().padStart(2, "0")}`;
       };
 
-      // Use public booking endpoint - no authentication required
-      return apiRequest("POST", "/api/public/client/client_1/book", {
+      // Use public booking endpoint - no authentication required  
+      return apiRequest("/api/public/client/client_1/book", "POST", {
         serviceId: bookingData.serviceId,
         customerName: bookingData.clientName,
         customerEmail: bookingData.clientEmail,
