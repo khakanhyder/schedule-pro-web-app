@@ -12,21 +12,20 @@ interface TimeSlotsProps {
   selectedStylistId: string | null;
   selectedTimeSlot: string | null;
   onSelectTimeSlot: (timeSlot: string) => void;
+  clientId: string;
 }
 
 export default function TimeSlots({ 
   selectedDate, 
   selectedStylistId, 
   selectedTimeSlot, 
-  onSelectTimeSlot 
+  onSelectTimeSlot,
+  clientId
 }: TimeSlotsProps) {
-  const { data: timeSlots, isLoading } = useQuery<TimeSlot[]>({
+  const { data: timeSlots, isLoading } = useQuery<string[]>({
     queryKey: [
-      `/api/timeslots`, 
-      selectedDate ? { 
-        date: selectedDate.toISOString(), 
-        stylistId: selectedStylistId || "" 
-      } : null
+      `/api/public/client/${clientId}/available-slots`, 
+      selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null
     ],
     enabled: !!selectedDate,
   });
@@ -55,21 +54,21 @@ export default function TimeSlots({
         </p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {timeSlots.map((slot) => {
-            const time = new Date(slot.time);
-            const formattedTime = format(time, "h:mm a");
-            const isSelected = selectedTimeSlot === slot.time;
+          {timeSlots.map((timeSlot) => {
+            const isSelected = selectedTimeSlot === timeSlot;
             
             return (
               <button
-                key={slot.time}
-                onClick={() => slot.available && onSelectTimeSlot(slot.time)}
-                className={`time-slot ${
-                  isSelected ? "selected" : slot.available ? "available" : "unavailable"
+                key={timeSlot}
+                data-testid={`time-slot-${timeSlot.replace(':', '')}`}
+                onClick={() => onSelectTimeSlot(timeSlot)}
+                className={`px-4 py-2 border rounded-lg text-sm font-medium transition-colors ${
+                  isSelected 
+                    ? "bg-blue-600 text-white border-blue-600" 
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
-                disabled={!slot.available}
               >
-                {formattedTime}
+                {timeSlot}
               </button>
             );
           })}

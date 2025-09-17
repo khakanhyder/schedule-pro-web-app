@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,29 @@ export default function AppointmentDetails({
   selectedStylist 
 }: AppointmentDetailsProps) {
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [location] = useLocation();
+  
+  // Get clientId from URL or localStorage
+  const getClientId = () => {
+    // First try to extract from URL (e.g., /client-website/client_1)
+    const urlMatch = location.match(/\/client-website\/([^\/]+)/);
+    if (urlMatch) {
+      return urlMatch[1];
+    }
+    
+    // Fallback to localStorage
+    const clientData = localStorage.getItem('clientData');
+    if (clientData) {
+      try {
+        return JSON.parse(clientData).id;
+      } catch (e) {
+        console.warn('Failed to parse clientData from localStorage');
+      }
+    }
+    return localStorage.getItem('currentClientId') || 'client_1';
+  };
+  
+  const clientId = getClientId();
 
   const form = useForm<AppointmentDetailsData>({
     resolver: zodResolver(appointmentDetailsSchema),
@@ -75,11 +99,11 @@ export default function AppointmentDetails({
 
   // Fetch available time slots when date is selected
   const { data: availableSlots = [], isLoading: slotsLoading } = useQuery<string[]>({
-    queryKey: [`/api/public/client/client_1/available-slots`, selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null],
+    queryKey: [`/api/public/client/${clientId}/available-slots`, selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null],
     queryFn: async () => {
       if (!selectedDate) return [];
       const dateStr = format(selectedDate, 'yyyy-MM-dd'); // Use date-fns format for consistency
-      const response = await fetch(`/api/public/client/client_1/available-slots?date=${dateStr}`);
+      const response = await fetch(`/api/public/client/${clientId}/available-slots?date=${dateStr}`);
       if (!response.ok) {
         throw new Error('Failed to fetch available slots');
       }
