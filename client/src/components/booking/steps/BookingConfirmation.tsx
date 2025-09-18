@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,15 +13,18 @@ interface BookingConfirmationProps {
   updateBookingData: (updates: Partial<BookingData>) => void;
   selectedService?: ClientService;
   selectedStylist?: Stylist;
+  onNavigateBack?: () => void;
 }
 
 export default function BookingConfirmation({ 
   bookingData, 
   updateBookingData, 
   selectedService, 
-  selectedStylist 
+  selectedStylist,
+  onNavigateBack
 }: BookingConfirmationProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isBookingComplete, setIsBookingComplete] = useState(false);
   const [bookingInProgress, setBookingInProgress] = useState(false);
 
@@ -83,12 +86,45 @@ export default function BookingConfirmation({
         description: "Your appointment has been successfully booked.",
       });
     },
-    onError: (error) => {
+    onError: async (error) => {
       console.error("Appointment creation failed:", error);
       setBookingInProgress(false);
+      
+      // Try to get the error message from the response
+      let errorMessage = "There was an error creating your appointment. Please contact us directly.";
+      
+      try {
+        if (error instanceof Response) {
+          const errorData = await error.json();
+          if (errorData.error === "Time slot is not available") {
+            errorMessage = "This time slot is no longer available. Please select a different time.";
+            
+            // Clear the selected time slot and navigate back to appointment details
+            updateBookingData({
+              timeSlot: null,
+              appointmentDate: null
+            });
+            
+            // Invalidate the available slots query to refresh the list
+            queryClient.invalidateQueries({ 
+              queryKey: ['/api/public/client/client_1/available-slots'] 
+            });
+            
+            // Navigate back to date/time selection after showing the error
+            setTimeout(() => {
+              if (onNavigateBack) {
+                onNavigateBack();
+              }
+            }, 2000);
+          }
+        }
+      } catch (parseError) {
+        console.error("Error parsing error response:", parseError);
+      }
+      
       toast({
         title: "Booking Failed", 
-        description: "There was an error creating your appointment. Please contact us directly.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
