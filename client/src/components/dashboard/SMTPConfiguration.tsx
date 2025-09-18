@@ -48,7 +48,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
   };
 
   const { data: smtpConfig, isLoading } = useQuery({
-    queryKey: [`/api/client/${clientId}/smtp-config`],
+    queryKey: ['/api/client', clientId, 'smtp-config'],
     enabled: !!clientId
   });
 
@@ -87,7 +87,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
       return apiRequest(`/api/client/${clientId}/smtp-config`, "PUT", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/client', clientId, 'smtp-config'] });
       setIsConfigDialogOpen(false);
       toast({
         title: "SMTP Configuration Updated",
@@ -107,15 +107,14 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     mutationFn: async (email: string) => {
       return apiRequest(`/api/client/${clientId}/smtp-test`, "POST", { testEmail: email });
     },
-    onSuccess: (response: any) => {
-      response.json().then((data: any) => {
-        toast({
-          title: "Test Successful",
-          description: data.message || "SMTP configuration test passed!",
-        });
+    onSuccess: (data: any) => {
+      toast({
+        title: "Test Successful",
+        description: data.message || "SMTP configuration test passed!",
       });
       setIsTestDialogOpen(false);
       setTestEmail("");
+      setIsTestingConnection(false);
     },
     onError: (error: any) => {
       toast({
@@ -123,6 +122,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
         description: error.message || "SMTP connection test failed",
         variant: "destructive",
       });
+      setIsTestingConnection(false);
     },
   });
 
@@ -131,7 +131,17 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
       return apiRequest(`/api/client/${clientId}/smtp-config`, "DELETE");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/client', clientId, 'smtp-config'] });
+      form.reset({
+        smtpHost: "",
+        smtpPort: 587,
+        smtpUsername: "",
+        smtpPassword: "",
+        smtpFromEmail: "",
+        smtpFromName: "",
+        smtpSecure: true,
+        smtpEnabled: false
+      });
       toast({
         title: "Configuration Cleared",
         description: "SMTP configuration has been removed.",
@@ -161,7 +171,6 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     }
     setIsTestingConnection(true);
     testConnectionMutation.mutate(testEmail);
-    setTimeout(() => setIsTestingConnection(false), 2000);
   };
 
   const getConnectionStatusBadge = () => {
