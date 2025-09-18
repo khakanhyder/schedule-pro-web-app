@@ -73,7 +73,11 @@ export default function BookingConfirmation({
     },
     onSuccess: async (response) => {
       console.log('Booking API Success!');
-      const appointment = await response.json();
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
+      
+      // The API returns { message: "...", appointment: {...} }
+      const appointment = responseData.appointment || responseData;
       updateBookingData({
         appointmentId: appointment.id,
         confirmationNumber: appointment.id,
