@@ -13,7 +13,12 @@ import DomainConfig from "./DomainConfig";
 import SMTPConfiguration from "./SMTPConfiguration";
 import { useIndustry, getTerminology } from "@/lib/industryContext";
 
-export default function SettingsManagement() {
+interface SettingsManagementProps {
+  clientId?: string;
+  hasPermission?: (permission: string) => boolean;
+}
+
+export default function SettingsManagement({ clientId, hasPermission }: SettingsManagementProps) {
   const { selectedIndustry } = useIndustry();
   const terminology = getTerminology(selectedIndustry);
 
@@ -115,8 +120,8 @@ export default function SettingsManagement() {
 
         <TabsContent value="email" className="space-y-6">
           <SMTPConfiguration 
-            clientId="client_1" 
-            hasPermission={(permission: string) => true}
+            clientId={clientId || "client_1"} 
+            hasPermission={hasPermission || (() => true)}
           />
         </TabsContent>
       </Tabs>

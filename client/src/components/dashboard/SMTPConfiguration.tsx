@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,17 +67,20 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
   });
 
   // Set form values when config data loads
-  useState(() => {
+  useEffect(() => {
     if (smtpConfig) {
-      form.setValue("smtpHost", smtpConfig.smtpHost || "");
-      form.setValue("smtpPort", smtpConfig.smtpPort || 587);
-      form.setValue("smtpUsername", smtpConfig.smtpUsername || "");
-      form.setValue("smtpFromEmail", smtpConfig.smtpFromEmail || "");
-      form.setValue("smtpFromName", smtpConfig.smtpFromName || "");
-      form.setValue("smtpSecure", smtpConfig.smtpSecure ?? true);
-      form.setValue("smtpEnabled", smtpConfig.smtpEnabled ?? false);
+      form.reset({
+        smtpHost: smtpConfig.smtpHost || "",
+        smtpPort: smtpConfig.smtpPort || 587,
+        smtpUsername: smtpConfig.smtpUsername || "",
+        smtpPassword: "", // Don't pre-fill password for security
+        smtpFromEmail: smtpConfig.smtpFromEmail || "",
+        smtpFromName: smtpConfig.smtpFromName || "",
+        smtpSecure: smtpConfig.smtpSecure ?? true,
+        smtpEnabled: smtpConfig.smtpEnabled ?? false
+      });
     }
-  });
+  }, [smtpConfig, form]);
 
   const updateConfigMutation = useMutation({
     mutationFn: async (data: SMTPConfigFormData) => {
