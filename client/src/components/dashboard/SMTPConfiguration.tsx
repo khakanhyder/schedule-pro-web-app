@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +28,17 @@ const smtpConfigSchema = z.object({
 
 type SMTPConfigFormData = z.infer<typeof smtpConfigSchema>;
 
+interface SMTPConfigResponse {
+  smtpHost: string | null;
+  smtpPort: number | null;
+  smtpUsername: string | null;
+  smtpFromEmail: string | null;
+  smtpFromName: string | null;
+  smtpSecure: boolean | null;
+  smtpEnabled: boolean | null;
+  isConfigured: boolean;
+}
+
 interface SMTPConfigurationProps {
   clientId: string;
   hasPermission?: (permission: string) => boolean;
@@ -47,7 +58,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     return hasPermission ? hasPermission(permission) : true;
   };
 
-  const { data: smtpConfig, isLoading } = useQuery({
+  const { data: smtpConfig, isLoading } = useQuery<SMTPConfigResponse>({
     queryKey: [`/api/client/${clientId}/smtp-config`],
     enabled: !!clientId
   });
@@ -67,7 +78,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
   });
 
   // Set form values when config data loads
-  useState(() => {
+  useEffect(() => {
     if (smtpConfig) {
       form.setValue("smtpHost", smtpConfig.smtpHost || "");
       form.setValue("smtpPort", smtpConfig.smtpPort || 587);
@@ -77,7 +88,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
       form.setValue("smtpSecure", smtpConfig.smtpSecure ?? true);
       form.setValue("smtpEnabled", smtpConfig.smtpEnabled ?? false);
     }
-  });
+  }, [smtpConfig, form]);
 
   const updateConfigMutation = useMutation({
     mutationFn: async (data: SMTPConfigFormData) => {
@@ -104,12 +115,10 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     mutationFn: async (email: string) => {
       return apiRequest(`/api/client/${clientId}/smtp-test`, "POST", { testEmail: email });
     },
-    onSuccess: (response: any) => {
-      response.json().then((data: any) => {
-        toast({
-          title: "Test Successful",
-          description: data.message || "SMTP configuration test passed!",
-        });
+    onSuccess: (data: any) => {
+      toast({
+        title: "Test Successful",
+        description: data.message || "SMTP configuration test passed!",
       });
       setIsTestDialogOpen(false);
       setTestEmail("");
@@ -129,6 +138,17 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
+      // Reset form to default values
+      form.reset({
+        smtpHost: "",
+        smtpPort: 587,
+        smtpUsername: "",
+        smtpPassword: "",
+        smtpFromEmail: "",
+        smtpFromName: "",
+        smtpSecure: true,
+        smtpEnabled: false
+      });
       toast({
         title: "Configuration Cleared",
         description: "SMTP configuration has been removed.",
@@ -354,7 +374,10 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
                                       placeholder="587"
                                       {...field}
                                       value={field.value || ''}
-                                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        field.onChange(value ? parseInt(value, 10) : undefined);
+                                      }}
                                       data-testid="input-smtp-port"
                                     />
                                   </FormControl>
