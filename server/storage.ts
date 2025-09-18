@@ -1895,7 +1895,10 @@ class MemStorage implements IStorage {
 
   async validateStripeConfig(clientId: string): Promise<boolean> {
     const client = this.clients.find(c => c.id === clientId);
-    return !!(client?.stripePublicKey && client?.stripeSecretKey);
+    // Check client-specific Stripe configuration first, then fall back to global env variables
+    const hasClientConfig = !!(client?.stripePublicKey && client?.stripeSecretKey);
+    const hasGlobalConfig = !!(process.env.STRIPE_SECRET_KEY && process.env.VITE_STRIPE_PUBLIC_KEY);
+    return hasClientConfig || hasGlobalConfig;
   }
 
   async clearStripeConfig(clientId: string): Promise<void> {
