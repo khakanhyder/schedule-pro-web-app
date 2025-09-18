@@ -1110,7 +1110,6 @@ class MemStorage implements IStorage {
     }
     
     const result = Array.from(availableSlots).sort();
-    console.log(`Generated ${result.length} available slots:`, result);
     return result;
   }
 
