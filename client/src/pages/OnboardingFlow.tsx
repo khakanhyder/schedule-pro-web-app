@@ -570,7 +570,7 @@ export default function OnboardingFlow() {
                onboardingData.businessEmail && 
                onboardingData.industry;
       case 3:
-        return onboardingData.adminEmail && 
+        return (onboardingData.adminEmail || onboardingData.businessEmail) && 
                onboardingData.password && 
                onboardingData.password.length >= 6 &&
                onboardingData.confirmPassword &&

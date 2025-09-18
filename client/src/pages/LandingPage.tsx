@@ -94,7 +94,10 @@ export default function LandingPage() {
             </nav>
             
             <div className="flex items-center space-x-2 md:space-x-4">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white px-4 md:px-6 py-2 text-sm md:text-base">
+              <Button 
+                className="bg-orange-500 hover:bg-orange-600 text-white px-4 md:px-6 py-2 text-sm md:text-base"
+                onClick={() => handleGetStarted('plan_1')}
+              >
                 Get Started
               </Button>
               
@@ -312,6 +315,7 @@ export default function LandingPage() {
               style={{backgroundColor: '#7CB8EA'}} 
               onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#6BA6E0'} 
               onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = '#7CB8EA'}
+              onClick={() => handleGetStarted('plan_1')}
             >
               Get Started Free
             </Button>
