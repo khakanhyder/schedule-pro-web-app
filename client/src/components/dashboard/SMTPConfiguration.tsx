@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,7 +48,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
   };
 
   const { data: smtpConfig, isLoading } = useQuery({
-    queryKey: ['/api/client', clientId, 'smtp-config'],
+    queryKey: [`/api/client/${clientId}/smtp-config`],
     enabled: !!clientId
   });
 
@@ -67,27 +67,24 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
   });
 
   // Set form values when config data loads
-  useEffect(() => {
+  useState(() => {
     if (smtpConfig) {
-      form.reset({
-        smtpHost: smtpConfig.smtpHost || "",
-        smtpPort: smtpConfig.smtpPort || 587,
-        smtpUsername: smtpConfig.smtpUsername || "",
-        smtpPassword: "", // Don't pre-fill password for security
-        smtpFromEmail: smtpConfig.smtpFromEmail || "",
-        smtpFromName: smtpConfig.smtpFromName || "",
-        smtpSecure: smtpConfig.smtpSecure ?? true,
-        smtpEnabled: smtpConfig.smtpEnabled ?? false
-      });
+      form.setValue("smtpHost", smtpConfig.smtpHost || "");
+      form.setValue("smtpPort", smtpConfig.smtpPort || 587);
+      form.setValue("smtpUsername", smtpConfig.smtpUsername || "");
+      form.setValue("smtpFromEmail", smtpConfig.smtpFromEmail || "");
+      form.setValue("smtpFromName", smtpConfig.smtpFromName || "");
+      form.setValue("smtpSecure", smtpConfig.smtpSecure ?? true);
+      form.setValue("smtpEnabled", smtpConfig.smtpEnabled ?? false);
     }
-  }, [smtpConfig, form]);
+  });
 
   const updateConfigMutation = useMutation({
     mutationFn: async (data: SMTPConfigFormData) => {
       return apiRequest(`/api/client/${clientId}/smtp-config`, "PUT", data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/client', clientId, 'smtp-config'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
       setIsConfigDialogOpen(false);
       toast({
         title: "SMTP Configuration Updated",
@@ -107,14 +104,15 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     mutationFn: async (email: string) => {
       return apiRequest(`/api/client/${clientId}/smtp-test`, "POST", { testEmail: email });
     },
-    onSuccess: (data: any) => {
-      toast({
-        title: "Test Successful",
-        description: data.message || "SMTP configuration test passed!",
+    onSuccess: (response: any) => {
+      response.json().then((data: any) => {
+        toast({
+          title: "Test Successful",
+          description: data.message || "SMTP configuration test passed!",
+        });
       });
       setIsTestDialogOpen(false);
       setTestEmail("");
-      setIsTestingConnection(false);
     },
     onError: (error: any) => {
       toast({
@@ -122,7 +120,6 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
         description: error.message || "SMTP connection test failed",
         variant: "destructive",
       });
-      setIsTestingConnection(false);
     },
   });
 
@@ -131,17 +128,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
       return apiRequest(`/api/client/${clientId}/smtp-config`, "DELETE");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/client', clientId, 'smtp-config'] });
-      form.reset({
-        smtpHost: "",
-        smtpPort: 587,
-        smtpUsername: "",
-        smtpPassword: "",
-        smtpFromEmail: "",
-        smtpFromName: "",
-        smtpSecure: true,
-        smtpEnabled: false
-      });
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
       toast({
         title: "Configuration Cleared",
         description: "SMTP configuration has been removed.",
@@ -171,6 +158,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     }
     setIsTestingConnection(true);
     testConnectionMutation.mutate(testEmail);
+    setTimeout(() => setIsTestingConnection(false), 2000);
   };
 
   const getConnectionStatusBadge = () => {
