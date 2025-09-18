@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Clock, Calendar, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface BusinessHours {
   [key: string]: {
@@ -35,10 +36,76 @@ const DEFAULT_HOURS: BusinessHours = {
   sunday: { isOpen: false, openTime: "10:00", closeTime: "16:00" }
 };
 
+// Correct day-of-week mapping to match JS Date.getDay()
+const DAY_OF_WEEK_MAP: { [key: string]: number } = {
+  sunday: 0,
+  monday: 1, 
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6
+};
+
 export default function BusinessHoursManagement() {
   const [hours, setHours] = useState<BusinessHours>(DEFAULT_HOURS);
   const [hasChanges, setHasChanges] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const { toast } = useToast();
+
+  // Get clientId (TODO: Get from auth context in real app)
+  const getClientId = () => {
+    const clientData = localStorage.getItem('clientData');
+    if (clientData) {
+      try {
+        return JSON.parse(clientData).id;
+      } catch (e) {
+        console.warn('Failed to parse clientData from localStorage');
+      }
+    }
+    return localStorage.getItem('currentClientId') || 'client_1';
+  };
+  
+  const clientId = getClientId();
+
+  // Load existing appointment slots on component mount
+  useEffect(() => {
+    const loadExistingSlots = async () => {
+      if (!clientId) return;
+      
+      try {
+        const response = await apiRequest("GET", `/api/client/${clientId}/appointment-slots`);
+        const existingSlots = await response.json();
+        
+        if (existingSlots && existingSlots.length > 0) {
+          // Convert existing slots back to BusinessHours format
+          const loadedHours = { ...DEFAULT_HOURS };
+          
+          existingSlots.forEach((slot: any) => {
+            const dayKey = Object.keys(DAY_OF_WEEK_MAP).find(key => DAY_OF_WEEK_MAP[key] === slot.dayOfWeek);
+            if (dayKey) {
+              loadedHours[dayKey] = {
+                isOpen: slot.isActive,
+                openTime: slot.startTime,
+                closeTime: slot.endTime
+              };
+            }
+          });
+          
+          setHours(loadedHours);
+        }
+      } catch (error) {
+        console.error("Error loading existing slots:", error);
+        // Use defaults if loading fails
+      } finally {
+        setInitialLoading(false);
+        setHasChanges(false);
+      }
+    };
+
+    loadExistingSlots();
+  }, [clientId]);
 
   const updateDayHours = (day: string, field: keyof BusinessHours[string], value: boolean | string) => {
     setHours(prev => ({
@@ -92,23 +159,74 @@ export default function BusinessHoursManagement() {
   };
 
   const saveHours = async () => {
+    if (!clientId) {
+      toast({
+        title: "Error",
+        description: "Client ID not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
     try {
-      // Here you would typically save to your backend
-      // await apiRequest("PUT", "/api/business-hours", hours);
+      // First, get existing appointment slots to update them
+      const response = await apiRequest("GET", `/api/client/${clientId}/appointment-slots`);
+      const existingSlots = await response.json();
+      
+      // Convert BusinessHours format to AppointmentSlot format using correct day mapping
+      const slotsToUpdate = Object.entries(hours).map(([day, dayHours]) => {
+        const dayOfWeek = DAY_OF_WEEK_MAP[day];
+        return {
+          clientId,
+          dayOfWeek,
+          startTime: dayHours.openTime,
+          endTime: dayHours.closeTime,
+          slotDuration: 30,
+          isActive: dayHours.isOpen
+        };
+      });
+
+      // Update or create each appointment slot using correct apiRequest signature
+      for (const slot of slotsToUpdate) {
+        const existingSlot = existingSlots?.find((s: any) => s.dayOfWeek === slot.dayOfWeek);
+        
+        if (existingSlot) {
+          // Update existing slot
+          await apiRequest("PUT", `/api/client/${clientId}/appointment-slots/${existingSlot.id}`, slot);
+        } else {
+          // Create new slot  
+          await apiRequest("POST", `/api/client/${clientId}/appointment-slots`, slot);
+        }
+      }
       
       setHasChanges(false);
       toast({
         title: "Business Hours Saved",
-        description: "Your operating hours have been updated successfully"
+        description: "Your operating hours have been updated successfully. Available appointment slots will now reflect these changes."
       });
     } catch (error) {
+      console.error("Error saving business hours:", error);
       toast({
-        title: "Error",
-        description: "Failed to save business hours",
+        title: "Error", 
+        description: "Failed to save business hours. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (initialLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-8">
+          <Clock className="h-8 w-8 mx-auto mb-2 text-muted-foreground animate-spin" />
+          <p className="text-muted-foreground">Loading business hours...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -133,9 +251,9 @@ export default function BusinessHoursManagement() {
             Set Weekend Hours
           </Button>
           {hasChanges && (
-            <Button onClick={saveHours}>
+            <Button onClick={saveHours} disabled={loading}>
               <Save className="h-4 w-4 mr-2" />
-              Save Changes
+              {loading ? "Saving..." : "Save Changes"}
             </Button>
           )}
         </div>
