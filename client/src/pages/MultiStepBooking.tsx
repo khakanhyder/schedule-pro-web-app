@@ -301,6 +301,7 @@ export default function MultiStepBooking() {
                   updateBookingData={updateBookingData}
                   selectedService={selectedService}
                   selectedStylist={selectedStylist}
+                  onNavigateBack={() => goToStep(2)}
                 />
               )}
             </div>

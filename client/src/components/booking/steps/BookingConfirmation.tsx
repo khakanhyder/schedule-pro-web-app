@@ -99,23 +99,24 @@ export default function BookingConfirmation({
           if (errorData.error === "Time slot is not available") {
             errorMessage = "This time slot is no longer available. Please select a different time.";
             
-            // Clear the selected time slot and navigate back to appointment details
+            // Clear only the selected time slot, keep the date so user doesn't have to reselect
             updateBookingData({
-              timeSlot: null,
-              appointmentDate: null
+              timeSlot: null
             });
             
-            // Invalidate the available slots query to refresh the list
-            queryClient.invalidateQueries({ 
-              queryKey: ['/api/public/client/client_1/available-slots'] 
-            });
+            // Invalidate the available slots query to refresh the list with the exact query key shape
+            const selectedDate = bookingData.appointmentDate;
+            if (selectedDate) {
+              const dateStr = selectedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+              queryClient.invalidateQueries({ 
+                queryKey: [`/api/public/client/client_1/available-slots`, dateStr]
+              });
+            }
             
-            // Navigate back to date/time selection after showing the error
-            setTimeout(() => {
-              if (onNavigateBack) {
-                onNavigateBack();
-              }
-            }, 2000);
+            // Navigate back to date/time selection immediately
+            if (onNavigateBack) {
+              onNavigateBack();
+            }
           }
         }
       } catch (parseError) {
