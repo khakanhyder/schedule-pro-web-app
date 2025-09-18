@@ -435,10 +435,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create payment intent with SERVER-SIDE amount calculation
   app.post("/api/bookings/payment-intent", async (req, res) => {
     try {
-      if (!stripe) {
-        return res.status(500).json({ error: "Stripe not configured" });
-      }
-
       const { clientId, serviceId, tipPercentage, customerEmail, customerName } = req.body;
 
       // CRITICAL: Calculate amount SERVER-SIDE (never trust client)
@@ -451,8 +447,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Stripe not configured for this business" });
       }
 
+      // Determine which Stripe instance to use: client-specific or global
+      let stripeInstance = null;
+      const client = await storage.getClient(clientId);
+      
+      // Try client-specific configuration first
+      if (client?.stripeSecretKey) {
+        try {
+          stripeInstance = new Stripe(client.stripeSecretKey);
+          // Test the key with a simple operation to ensure it's valid
+          await stripeInstance.balance.retrieve();
+        } catch (error: any) {
+          console.warn(`Client Stripe key failed (${error.message}), falling back to global config`);
+          stripeInstance = null;
+          // Clear the invalid client-specific key
+          await storage.clearStripeConfig(clientId);
+        }
+      }
+      
+      // Fall back to global Stripe configuration if client config failed or doesn't exist
+      if (!stripeInstance && process.env.STRIPE_SECRET_KEY) {
+        try {
+          stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
+          // Test the global key
+          await stripeInstance.balance.retrieve();
+        } catch (error: any) {
+          console.error(`Global Stripe key also failed: ${error.message}`);
+          return res.status(500).json({ error: "No valid Stripe configuration available" });
+        }
+      }
+      
+      if (!stripeInstance) {
+        return res.status(500).json({ error: "No Stripe configuration found" });
+      }
+
       // Create payment intent with server-calculated amount
-      const paymentIntent = await stripe.paymentIntents.create({
+      const paymentIntent = await stripeInstance.paymentIntents.create({
         amount: Math.round(totalAmount * 100), // Convert to cents
         currency: 'usd',
         metadata: {

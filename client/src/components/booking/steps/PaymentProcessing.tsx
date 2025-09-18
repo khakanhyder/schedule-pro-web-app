@@ -10,8 +10,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { type ClientService, type Stylist, type BookingData } from "@shared/schema";
 
-// Initialize Stripe (you would use your actual publishable key)
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_...");
+// Initialize Stripe using the correct environment variable name
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_test_...");
 
 interface PaymentProcessingProps {
   bookingData: BookingData;
