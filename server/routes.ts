@@ -2073,6 +2073,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =============================================================================
+  // SMTP EMAIL CONFIGURATION ROUTES
+  // =============================================================================
+
+  // Get SMTP configuration (sanitized - no passwords)
+  app.get("/api/client/:clientId/smtp-config", requirePermission('settings.view'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const config = await storage.getSmtpConfig(clientId);
+      
+      // Sanitize sensitive information
+      const sanitizedConfig = {
+        smtpHost: config.smtpHost,
+        smtpPort: config.smtpPort,
+        smtpUsername: config.smtpUsername,
+        smtpFromEmail: config.smtpFromEmail,
+        smtpFromName: config.smtpFromName,
+        smtpSecure: config.smtpSecure,
+        smtpEnabled: config.smtpEnabled,
+        isConfigured: !!(config.smtpHost && config.smtpPort && config.smtpUsername && config.smtpPassword && config.smtpFromEmail)
+      };
+      
+      res.json(sanitizedConfig);
+    } catch (error) {
+      console.error('Get SMTP config error:', error);
+      res.status(500).json({ error: 'Failed to get SMTP configuration' });
+    }
+  });
+
+  // Update SMTP configuration
+  app.put("/api/client/:clientId/smtp-config", requirePermission('settings.manage'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { smtpHost, smtpPort, smtpUsername, smtpPassword, smtpFromEmail, smtpFromName, smtpSecure, smtpEnabled } = req.body;
+
+      // Validation
+      if (smtpEnabled) {
+        if (!smtpHost || !smtpPort || !smtpUsername || !smtpPassword || !smtpFromEmail) {
+          return res.status(400).json({ error: 'All SMTP fields are required when enabled' });
+        }
+        
+        if (smtpPort < 1 || smtpPort > 65535) {
+          return res.status(400).json({ error: 'SMTP port must be between 1 and 65535' });
+        }
+        
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(smtpFromEmail)) {
+          return res.status(400).json({ error: 'Invalid from email address' });
+        }
+      }
+
+      await storage.updateSmtpConfig(clientId, {
+        smtpHost: smtpHost || undefined,
+        smtpPort: smtpPort ? parseInt(smtpPort) : undefined,
+        smtpUsername: smtpUsername || undefined,
+        smtpPassword: smtpPassword || undefined, // In production, encrypt this
+        smtpFromEmail: smtpFromEmail || undefined,
+        smtpFromName: smtpFromName || undefined,
+        smtpSecure: smtpSecure !== undefined ? smtpSecure : true,
+        smtpEnabled: smtpEnabled !== undefined ? smtpEnabled : false
+      });
+
+      res.json({ message: 'SMTP configuration updated successfully' });
+    } catch (error) {
+      console.error('Update SMTP config error:', error);
+      res.status(500).json({ error: 'Failed to update SMTP configuration' });
+    }
+  });
+
+  // Test SMTP configuration
+  app.post("/api/client/:clientId/smtp-test", requirePermission('settings.manage'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      const { testEmail } = req.body;
+      
+      if (!testEmail) {
+        return res.status(400).json({ error: 'Test email address is required' });
+      }
+      
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(testEmail)) {
+        return res.status(400).json({ error: 'Invalid test email address' });
+      }
+      
+      const isValid = await storage.testSmtpConfig(clientId);
+      if (!isValid) {
+        return res.status(400).json({ error: 'SMTP configuration is not properly configured' });
+      }
+      
+      // Here you would actually send a test email
+      // For now, we'll just simulate a successful test
+      res.json({ 
+        success: true, 
+        message: 'Test email would be sent successfully',
+        note: 'Actual email sending will be implemented with the email service update'
+      });
+    } catch (error) {
+      console.error('Test SMTP error:', error);
+      res.status(500).json({ error: 'Failed to test SMTP configuration' });
+    }
+  });
+
+  // Clear SMTP configuration
+  app.delete("/api/client/:clientId/smtp-config", requirePermission('settings.manage'), async (req, res) => {
+    try {
+      const { clientId } = req.params;
+      await storage.clearSmtpConfig(clientId);
+      res.json({ message: 'SMTP configuration cleared successfully' });
+    } catch (error) {
+      console.error('Clear SMTP config error:', error);
+      res.status(500).json({ error: 'Failed to clear SMTP configuration' });
+    }
+  });
+
   // Appointments Management
   app.get("/api/client/:clientId/appointments", requirePermission('appointments.view'), async (req, res) => {
     try {

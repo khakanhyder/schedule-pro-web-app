@@ -98,6 +98,15 @@ export const clients = pgTable("clients", {
   stripePublicKey: text("stripe_public_key"), // Client's own Stripe public key
   stripeSecretKey: text("stripe_secret_key"), // Client's own Stripe secret key (encrypted)
   stripeAccountId: text("stripe_account_id"), // Stripe Connect Account ID for direct payments
+  // SMTP Email Configuration
+  smtpHost: text("smtp_host"),
+  smtpPort: integer("smtp_port"),
+  smtpUsername: text("smtp_username"),
+  smtpPassword: text("smtp_password"), // Encrypted in production
+  smtpFromEmail: text("smtp_from_email"),
+  smtpFromName: text("smtp_from_name"),
+  smtpSecure: boolean("smtp_secure").default(true), // Use TLS/SSL
+  smtpEnabled: boolean("smtp_enabled").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
   lastLogin: timestamp("last_login"),
@@ -123,6 +132,14 @@ export const insertClientSchema = createInsertSchema(clients).pick({
   stripePublicKey: true,
   stripeSecretKey: true,
   stripeAccountId: true,
+  smtpHost: true,
+  smtpPort: true,
+  smtpUsername: true,
+  smtpPassword: true,
+  smtpFromEmail: true,
+  smtpFromName: true,
+  smtpSecure: true,
+  smtpEnabled: true,
 });
 
 export type InsertClient = z.infer<typeof insertClientSchema>;

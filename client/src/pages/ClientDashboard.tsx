@@ -348,7 +348,7 @@ export default function ClientDashboard() {
       // Get service details to calculate price and duration
       const selectedService = services.find(service => service.id === data.serviceId);
       const serviceDuration = selectedService?.durationMinutes || 60;
-      const servicePrice = selectedService?.price ? parseFloat(selectedService.price.replace(/[^\d.]/g, '')) : 0;
+      const servicePrice = selectedService?.price ? parseFloat(selectedService.price.toString().replace(/[^\d.]/g, '')) : 0;
       
       // Calculate end time based on start time + duration
       const [hours, minutes] = data.startTime.split(':').map(Number);

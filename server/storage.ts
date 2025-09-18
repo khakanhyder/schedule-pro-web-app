@@ -742,6 +742,15 @@ class MemStorage implements IStorage {
       stripePublicKey: null,
       stripeSecretKey: null,
       stripeAccountId: null,
+      // SMTP Configuration
+      smtpHost: null,
+      smtpPort: null,
+      smtpUsername: null,
+      smtpPassword: null,
+      smtpFromEmail: null,
+      smtpFromName: null,
+      smtpSecure: true,
+      smtpEnabled: false,
       createdAt: new Date(),
       updatedAt: new Date(),
       lastLogin: null
@@ -1909,6 +1918,81 @@ class MemStorage implements IStorage {
       ...this.clients[clientIndex],
       stripePublicKey: null,
       stripeSecretKey: null,
+      updatedAt: new Date()
+    };
+  }
+
+  // ====================================
+  // SMTP EMAIL CONFIGURATION MANAGEMENT
+  // ====================================
+
+  async updateSmtpConfig(clientId: string, config: {
+    smtpHost?: string;
+    smtpPort?: number;
+    smtpUsername?: string;
+    smtpPassword?: string;
+    smtpFromEmail?: string;
+    smtpFromName?: string;
+    smtpSecure?: boolean;
+    smtpEnabled?: boolean;
+  }): Promise<void> {
+    const clientIndex = this.clients.findIndex(c => c.id === clientId);
+    if (clientIndex === -1) throw new Error("Client not found");
+    
+    this.clients[clientIndex] = {
+      ...this.clients[clientIndex],
+      ...config,
+      updatedAt: new Date()
+    };
+  }
+
+  async getSmtpConfig(clientId: string): Promise<{
+    smtpHost: string | null;
+    smtpPort: number | null;
+    smtpUsername: string | null;
+    smtpPassword: string | null;
+    smtpFromEmail: string | null;
+    smtpFromName: string | null;
+    smtpSecure: boolean | null;
+    smtpEnabled: boolean | null;
+  }> {
+    const client = this.clients.find(c => c.id === clientId);
+    if (!client) throw new Error("Client not found");
+    
+    return {
+      smtpHost: client.smtpHost || null,
+      smtpPort: client.smtpPort || null,
+      smtpUsername: client.smtpUsername || null,
+      smtpPassword: client.smtpPassword || null,
+      smtpFromEmail: client.smtpFromEmail || null,
+      smtpFromName: client.smtpFromName || null,
+      smtpSecure: client.smtpSecure || null,
+      smtpEnabled: client.smtpEnabled || null
+    };
+  }
+
+  async testSmtpConfig(clientId: string): Promise<boolean> {
+    const client = this.clients.find(c => c.id === clientId);
+    if (!client || !client.smtpEnabled) return false;
+    
+    // Basic validation - in real implementation, this would test the connection
+    return !!(client.smtpHost && client.smtpPort && client.smtpUsername && client.smtpPassword && client.smtpFromEmail);
+  }
+
+  async clearSmtpConfig(clientId: string): Promise<void> {
+    const clientIndex = this.clients.findIndex(c => c.id === clientId);
+    if (clientIndex === -1) throw new Error("Client not found");
+    
+    this.clients[clientIndex] = {
+      ...this.clients[clientIndex],
+      smtpHost: null,
+      smtpPort: null,
+      smtpUsername: null,
+      smtpPassword: null,
+      smtpFromEmail: null,
+      smtpFromName: null,
+      smtpSecure: true,
+      smtpEnabled: false,
       updatedAt: new Date()
     };
   }
