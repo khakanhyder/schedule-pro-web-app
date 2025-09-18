@@ -2057,11 +2057,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/client/:clientId/appointments", requirePermission('appointments.create'), async (req, res) => {
     try {
       const { clientId } = req.params;
-      const appointmentData = { ...insertAppointmentSchema.parse(req.body), clientId };
+      console.log("Creating appointment with data:", req.body);
+      
+      // Add clientId and convert appointmentDate to Date object
+      const dataWithClientId = { 
+        ...req.body, 
+        clientId,
+        appointmentDate: new Date(req.body.appointmentDate) 
+      };
+      
+      const appointmentData = insertAppointmentSchema.parse(dataWithClientId);
+      console.log("Parsed appointment data:", appointmentData);
       const appointment = await storage.createAppointment(appointmentData);
       res.json(appointment);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create appointment" });
+      console.error("Failed to create appointment:", error);
+      res.status(500).json({ error: "Failed to create appointment", details: (error as Error).message });
     }
   });
 

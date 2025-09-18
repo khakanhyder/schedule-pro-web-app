@@ -345,12 +345,36 @@ export default function ClientDashboard() {
   // Mutations for Appointments
   const createAppointmentMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch(`/api/client/${clientData?.id}/appointments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Failed to create appointment');
+      // Get service details to calculate price and duration
+      const selectedService = services.find(service => service.id === data.serviceId);
+      const serviceDuration = selectedService?.durationMinutes || 60;
+      const servicePrice = selectedService?.price ? parseFloat(selectedService.price.replace(/[^\d.]/g, '')) : 0;
+      
+      // Calculate end time based on start time + duration
+      const [hours, minutes] = data.startTime.split(':').map(Number);
+      const startMinutes = hours * 60 + minutes;
+      const endMinutes = startMinutes + serviceDuration;
+      const endHours = Math.floor(endMinutes / 60);
+      const endMins = endMinutes % 60;
+      const endTime = `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
+      
+      // Prepare complete appointment data with all required schema fields
+      const appointmentData = {
+        ...data,
+        endTime,
+        totalPrice: servicePrice,
+        paymentMethod: 'CASH', // Default payment method
+        paymentStatus: 'PENDING', // Default payment status
+        paymentIntentId: null,
+        emailConfirmation: false,
+        smsConfirmation: false
+      };
+      
+      const response = await apiRequest(
+        `/api/client/${clientData?.id}/appointments`,
+        'POST',
+        appointmentData
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -367,12 +391,11 @@ export default function ClientDashboard() {
   
   const updateAppointmentStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const response = await fetch(`/api/client/${clientData?.id}/appointments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      if (!response.ok) throw new Error('Failed to update appointment status');
+      const response = await apiRequest(
+        `/api/client/${clientData?.id}/appointments/${id}`,
+        'PUT',
+        { status }
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -392,12 +415,11 @@ export default function ClientDashboard() {
   
   const updateAppointmentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await fetch(`/api/client/${clientData?.id}/appointments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Failed to update appointment');
+      const response = await apiRequest(
+        `/api/client/${clientData?.id}/appointments/${id}`,
+        'PUT',
+        data
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -414,10 +436,10 @@ export default function ClientDashboard() {
   
   const deleteAppointmentMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch(`/api/client/${clientData?.id}/appointments/${id}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Failed to delete appointment');
+      const response = await apiRequest(
+        `/api/client/${clientData?.id}/appointments/${id}`,
+        'DELETE'
+      );
       return response.json();
     },
     onSuccess: () => {
