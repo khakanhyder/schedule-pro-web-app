@@ -1096,14 +1096,20 @@ class MemStorage implements IStorage {
     // Generate available time slots using Set to prevent duplicates
     const availableSlots = new Set<string>();
     
+    console.log(`Booked times for ${date}:`, bookedTimes);
+    
     for (const slotConfig of daySlots) {
       const start = this.timeToMinutes(slotConfig.startTime);
       const end = this.timeToMinutes(slotConfig.endTime);
       const duration = slotConfig.slotDuration || 30;
       
+      console.log(`Processing slot config: ${slotConfig.startTime} to ${slotConfig.endTime}, duration ${duration}`);
+      
       for (let time = start; time < end; time += duration) {
         const timeString = this.minutesToTime(time);
-        if (!bookedTimes.includes(timeString)) {
+        const isBooked = bookedTimes.includes(timeString);
+        console.log(`Time slot ${timeString}: ${isBooked ? 'BOOKED' : 'AVAILABLE'}`);
+        if (!isBooked) {
           availableSlots.add(timeString);
         }
       }
