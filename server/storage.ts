@@ -194,6 +194,31 @@ export interface IStorage {
   getStripeSecretKey(clientId: string): Promise<string | null>;
   validateStripeConfig(clientId: string): Promise<boolean>;
   clearStripeConfig(clientId: string): Promise<void>;
+  
+  // SMTP Email Configuration
+  updateSmtpConfig(clientId: string, config: {
+    smtpHost?: string;
+    smtpPort?: number;
+    smtpUsername?: string;
+    smtpPassword?: string;
+    smtpFromEmail?: string;
+    smtpFromName?: string;
+    smtpSecure?: boolean;
+    smtpEnabled?: boolean;
+  }): Promise<void>;
+  getSmtpConfig(clientId: string): Promise<{
+    smtpHost: string | null;
+    smtpPort: number | null;
+    smtpUsername: string | null;
+    smtpPassword: string | null;
+    smtpFromEmail: string | null;
+    smtpFromName: string | null;
+    smtpSecure: boolean | null;
+    smtpEnabled: boolean | null;
+    isConfigured: boolean;
+  }>;
+  testSmtpConfig(clientId: string): Promise<boolean>;
+  clearSmtpConfig(clientId: string): Promise<void>;
 }
 
 // In-memory storage implementation
@@ -1955,19 +1980,23 @@ class MemStorage implements IStorage {
     smtpFromName: string | null;
     smtpSecure: boolean | null;
     smtpEnabled: boolean | null;
+    isConfigured: boolean;
   }> {
     const client = this.clients.find(c => c.id === clientId);
     if (!client) throw new Error("Client not found");
+    
+    const isConfigured = !!(client.smtpHost && client.smtpPort && client.smtpUsername && client.smtpFromEmail);
     
     return {
       smtpHost: client.smtpHost || null,
       smtpPort: client.smtpPort || null,
       smtpUsername: client.smtpUsername || null,
-      smtpPassword: client.smtpPassword || null,
+      smtpPassword: null, // Never return password for security
       smtpFromEmail: client.smtpFromEmail || null,
       smtpFromName: client.smtpFromName || null,
-      smtpSecure: client.smtpSecure || null,
-      smtpEnabled: client.smtpEnabled || null
+      smtpSecure: client.smtpSecure !== false ? true : false, // default to true
+      smtpEnabled: client.smtpEnabled || false,
+      isConfigured
     };
   }
 

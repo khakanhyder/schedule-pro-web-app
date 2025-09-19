@@ -2159,18 +2159,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid test email address' });
       }
       
-      const isValid = await storage.testSmtpConfig(clientId);
-      if (!isValid) {
-        return res.status(400).json({ error: 'SMTP configuration is not properly configured' });
-      }
+      // Send actual test email using EmailService
+      const emailService = new (require('./emailService').EmailService)(storage);
+      const result = await emailService.sendTestEmail(clientId, testEmail);
       
-      // Here you would actually send a test email
-      // For now, we'll just simulate a successful test
-      res.json({ 
-        success: true, 
-        message: 'Test email would be sent successfully',
-        note: 'Actual email sending will be implemented with the email service update'
-      });
+      if (result.success) {
+        res.json({ 
+          success: true, 
+          message: result.message
+        });
+      } else {
+        res.status(400).json({ error: result.message });
+      }
     } catch (error) {
       console.error('Test SMTP error:', error);
       res.status(500).json({ error: 'Failed to test SMTP configuration' });
