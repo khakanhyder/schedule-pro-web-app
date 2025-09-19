@@ -50,6 +50,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
   const [showPassword, setShowPassword] = useState(false);
   const [testEmail, setTestEmail] = useState("");
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // Force refresh trigger
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -59,7 +60,7 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
   };
 
   const { data: smtpConfig, isLoading } = useQuery<SMTPConfigResponse>({
-    queryKey: [`/api/client/${clientId}/smtp-config`],
+    queryKey: [`/api/client/${clientId}/smtp-config`, refreshKey], // Include refreshKey for forced refetch
     enabled: !!clientId
   });
 
@@ -92,35 +93,31 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
 
   const updateConfigMutation = useMutation({
     mutationFn: async (data: SMTPConfigFormData) => {
+      console.log("📧 SMTP Save: Starting mutation with data:", { 
+        enabled: data.smtpEnabled, 
+        host: data.smtpHost, 
+        port: data.smtpPort 
+      });
       return apiRequest(`/api/client/${clientId}/smtp-config`, "PUT", data);
     },
-    onSuccess: async (data: any, variables: SMTPConfigFormData) => {
-      // Create optimistic update data with isConfigured = true
-      const optimisticData = {
-        smtpHost: variables.smtpHost || null,
-        smtpPort: variables.smtpPort || null,
-        smtpUsername: variables.smtpUsername || null,
-        smtpPassword: null, // Never return password
-        smtpFromEmail: variables.smtpFromEmail || null,
-        smtpFromName: variables.smtpFromName || null,
-        smtpSecure: variables.smtpSecure ?? true,
-        smtpEnabled: variables.smtpEnabled ?? false,
-        isConfigured: true // Force true since we just saved
-      };
-      
-      // Update cache directly with optimistic data
-      queryClient.setQueryData([`/api/client/${clientId}/smtp-config`], optimisticData);
-      
-      // Also invalidate to trigger re-render
-      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
+    onSuccess: async (response: any) => {
+      console.log("📧 SMTP Save: Success response:", response);
       
       setIsConfigDialogOpen(false);
       toast({
         title: "SMTP Configuration Updated",
-        description: "Your email settings have been saved successfully.",
+        description: "Your email settings have been saved successfully. Page will refresh to show updates.",
+        duration: 2000,
       });
+      
+      // Force page refresh after short delay to ensure toast is visible
+      setTimeout(() => {
+        console.log("📧 SMTP Save: Refreshing page to update UI...");
+        window.location.reload();
+      }, 2500);
     },
     onError: (error: any) => {
+      console.error("📧 SMTP Save Error:", error);
       toast({
         title: "Configuration Failed",
         description: error.message || "Failed to update SMTP configuration",
