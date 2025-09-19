@@ -21,7 +21,14 @@ export class EmailService {
   async getEmailConfig(clientId: string): Promise<EmailConfig | null> {
     const config = await this.storage.getSmtpConfig(clientId);
     
-    if (!config || !config.smtpEnabled || !config.smtpHost || !config.smtpUsername || !config.smtpPassword) {
+    // Check configuration without password (since it's returned as null for security)
+    if (!config || !config.smtpEnabled || !config.smtpHost || !config.smtpUsername || !config.smtpFromEmail) {
+      return null;
+    }
+
+    // Get the actual password directly from storage for email sending
+    const client = await this.storage.getClient(clientId);
+    if (!client || !client.smtpPassword) {
       return null;
     }
 
@@ -29,7 +36,7 @@ export class EmailService {
       smtpHost: config.smtpHost,
       smtpPort: config.smtpPort || 587,
       smtpUsername: config.smtpUsername,
-      smtpPassword: config.smtpPassword,
+      smtpPassword: client.smtpPassword, // Get actual password from client data
       smtpFromEmail: config.smtpFromEmail || config.smtpUsername,
       smtpFromName: config.smtpFromName || 'Scheduled Platform',
       smtpSecure: config.smtpSecure !== false // default to true
