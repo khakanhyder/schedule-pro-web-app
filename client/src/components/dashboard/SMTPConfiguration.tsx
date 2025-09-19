@@ -94,8 +94,10 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     mutationFn: async (data: SMTPConfigFormData) => {
       return apiRequest(`/api/client/${clientId}/smtp-config`, "PUT", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
+    onSuccess: async () => {
+      // Force cache invalidation and refetch
+      await queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
+      await queryClient.refetchQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
       setIsConfigDialogOpen(false);
       toast({
         title: "SMTP Configuration Updated",

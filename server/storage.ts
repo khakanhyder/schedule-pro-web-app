@@ -1985,7 +1985,7 @@ class MemStorage implements IStorage {
     const client = this.clients.find(c => c.id === clientId);
     if (!client) throw new Error("Client not found");
     
-    const isConfigured = !!(client.smtpHost && client.smtpPort && client.smtpUsername && client.smtpFromEmail);
+    const isConfigured = !!(client.smtpHost && client.smtpPort && client.smtpUsername && client.smtpPassword && client.smtpFromEmail);
     
     return {
       smtpHost: client.smtpHost || null,
