@@ -226,7 +226,7 @@ This email was sent from the Scheduled business management platform.
           <h3 style="color: #333; margin-top: 0;">📅 Appointment Details</h3>
           <p style="margin: 8px 0;"><strong>Confirmation:</strong> #${appointmentDetails.id}</p>
           <p style="margin: 8px 0;"><strong>Service:</strong> ${appointmentDetails.serviceName}</p>
-          <p style="margin: 8px 0;"><strong>Date:</strong> ${appointmentDetails.appointmentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(appointmentDetails.appointmentDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           <p style="margin: 8px 0;"><strong>Time:</strong> ${appointmentDetails.startTime} - ${appointmentDetails.endTime}</p>
           <p style="margin: 8px 0;"><strong>Duration:</strong> ${appointmentDetails.serviceDuration} minutes</p>
           <p style="margin: 8px 0;"><strong>Price:</strong> $${appointmentDetails.servicePrice}</p>
@@ -262,7 +262,7 @@ Your appointment with ${appointmentDetails.businessName} has been booked success
 Appointment Details:
 - Confirmation: #${appointmentDetails.id}
 - Service: ${appointmentDetails.serviceName}
-- Date: ${appointmentDetails.appointmentDate.toLocaleDateString()}
+- Date: ${new Date(appointmentDetails.appointmentDate).toLocaleDateString()}
 - Time: ${appointmentDetails.startTime} - ${appointmentDetails.endTime}
 - Duration: ${appointmentDetails.serviceDuration} minutes
 - Price: $${appointmentDetails.servicePrice}
@@ -333,7 +333,7 @@ Email: ${appointmentDetails.businessEmail}
           <h3 style="color: #333; margin-top: 0;">📅 Appointment Details</h3>
           <p style="margin: 8px 0;"><strong>Confirmation:</strong> #${appointmentDetails.id}</p>
           <p style="margin: 8px 0;"><strong>Service:</strong> ${appointmentDetails.serviceName}</p>
-          <p style="margin: 8px 0;"><strong>Date:</strong> ${appointmentDetails.appointmentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(appointmentDetails.appointmentDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           <p style="margin: 8px 0;"><strong>Time:</strong> ${appointmentDetails.startTime} - ${appointmentDetails.endTime}</p>
           <p style="margin: 8px 0;"><strong>Price:</strong> $${appointmentDetails.servicePrice}</p>
         </div>
@@ -367,7 +367,7 @@ Your appointment with ${appointmentDetails.businessName} has been ${statusText}.
 Appointment Details:
 - Confirmation: #${appointmentDetails.id}
 - Service: ${appointmentDetails.serviceName}
-- Date: ${appointmentDetails.appointmentDate.toLocaleDateString()}
+- Date: ${new Date(appointmentDetails.appointmentDate).toLocaleDateString()}
 - Time: ${appointmentDetails.startTime} - ${appointmentDetails.endTime}
 - Price: $${appointmentDetails.servicePrice}
 
