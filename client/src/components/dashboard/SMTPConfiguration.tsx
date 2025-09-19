@@ -100,21 +100,46 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
       });
       return apiRequest(`/api/client/${clientId}/smtp-config`, "PUT", data);
     },
-    onSuccess: async (response: any) => {
-      console.log("📧 SMTP Save: Success response:", response);
-      
+    onSuccess: async (response: any, variables: SMTPConfigFormData) => {
+      // Close dialog first
       setIsConfigDialogOpen(false);
-      toast({
-        title: "SMTP Configuration Updated",
-        description: "Your email settings have been saved successfully. Page will refresh to show updates.",
-        duration: 2000,
+      
+      // Instead of relying on cache invalidation, manually update the query data
+      // Calculate isConfigured based on the saved data
+      const isConfigured = !!(variables.smtpHost && variables.smtpPort && variables.smtpUsername && variables.smtpPassword && variables.smtpFromEmail);
+      
+      // Manually set the query data to force UI update
+      queryClient.setQueryData([`/api/client/${clientId}/smtp-config`, refreshKey], {
+        smtpHost: variables.smtpHost,
+        smtpPort: variables.smtpPort,
+        smtpUsername: variables.smtpUsername,
+        smtpFromEmail: variables.smtpFromEmail,
+        smtpFromName: variables.smtpFromName,
+        smtpSecure: variables.smtpSecure,
+        smtpEnabled: variables.smtpEnabled,
+        isConfigured: isConfigured
       });
       
-      // Force page refresh after short delay to ensure toast is visible
-      setTimeout(() => {
-        console.log("📧 SMTP Save: Refreshing page to update UI...");
-        window.location.reload();
-      }, 2500);
+      // Also trigger a timestamp update to force re-render
+      const timestamp = Date.now();
+      setRefreshKey(timestamp);
+      
+      // Set the data for the new timestamp key as well
+      queryClient.setQueryData([`/api/client/${clientId}/smtp-config`, timestamp], {
+        smtpHost: variables.smtpHost,
+        smtpPort: variables.smtpPort,
+        smtpUsername: variables.smtpUsername,
+        smtpFromEmail: variables.smtpFromEmail,
+        smtpFromName: variables.smtpFromName,
+        smtpSecure: variables.smtpSecure,
+        smtpEnabled: variables.smtpEnabled,
+        isConfigured: isConfigured
+      });
+      
+      toast({
+        title: "SMTP Configuration Updated",
+        description: "Your email settings have been saved successfully.",
+      });
     },
     onError: (error: any) => {
       console.error("📧 SMTP Save Error:", error);

@@ -2162,7 +2162,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Send actual test email using EmailService
-      const emailService = new (require('./emailService').EmailService)(storage);
+      const { EmailService } = await import('./emailService');
+      const emailService = new EmailService(storage);
       const result = await emailService.sendTestEmail(clientId, testEmail);
       
       if (result.success) {
