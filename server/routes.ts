@@ -2125,6 +2125,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      console.log('SMTP config update data:', { smtpHost, smtpPort, smtpUsername, smtpPassword: '***', smtpFromEmail, smtpFromName, smtpSecure, smtpEnabled });
+      
       await storage.updateSmtpConfig(clientId, {
         smtpHost: smtpHost || undefined,
         smtpPort: smtpPort ? parseInt(smtpPort) : undefined,

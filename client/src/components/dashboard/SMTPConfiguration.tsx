@@ -94,10 +94,26 @@ export default function SMTPConfiguration({ clientId, hasPermission }: SMTPConfi
     mutationFn: async (data: SMTPConfigFormData) => {
       return apiRequest(`/api/client/${clientId}/smtp-config`, "PUT", data);
     },
-    onSuccess: async () => {
-      // Force cache invalidation and refetch
-      await queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
-      await queryClient.refetchQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
+    onSuccess: async (data: any, variables: SMTPConfigFormData) => {
+      // Create optimistic update data with isConfigured = true
+      const optimisticData = {
+        smtpHost: variables.smtpHost || null,
+        smtpPort: variables.smtpPort || null,
+        smtpUsername: variables.smtpUsername || null,
+        smtpPassword: null, // Never return password
+        smtpFromEmail: variables.smtpFromEmail || null,
+        smtpFromName: variables.smtpFromName || null,
+        smtpSecure: variables.smtpSecure ?? true,
+        smtpEnabled: variables.smtpEnabled ?? false,
+        isConfigured: true // Force true since we just saved
+      };
+      
+      // Update cache directly with optimistic data
+      queryClient.setQueryData([`/api/client/${clientId}/smtp-config`], optimisticData);
+      
+      // Also invalidate to trigger re-render
+      queryClient.invalidateQueries({ queryKey: [`/api/client/${clientId}/smtp-config`] });
+      
       setIsConfigDialogOpen(false);
       toast({
         title: "SMTP Configuration Updated",

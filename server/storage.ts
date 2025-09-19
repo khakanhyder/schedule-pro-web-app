@@ -1987,6 +1987,15 @@ class MemStorage implements IStorage {
     
     const isConfigured = !!(client.smtpHost && client.smtpPort && client.smtpUsername && client.smtpPassword && client.smtpFromEmail);
     
+    console.log('SMTP getConfig for', clientId, {
+      smtpHost: client.smtpHost,
+      smtpPort: client.smtpPort, 
+      smtpUsername: client.smtpUsername,
+      smtpPassword: '***',
+      smtpFromEmail: client.smtpFromEmail,
+      isConfigured
+    });
+    
     return {
       smtpHost: client.smtpHost || null,
       smtpPort: client.smtpPort || null,
