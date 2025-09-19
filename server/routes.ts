@@ -3,7 +3,6 @@ import { createServer, type Server } from "http";
 import Stripe from "stripe";
 import express from "express";
 import { storage } from "./storage";
-import { sendEmail } from "./sendgrid";
 import { 
   insertUserSchema,
   insertPlanSchema,
@@ -2218,6 +2217,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const appointmentData = insertAppointmentSchema.parse(dataWithClientId);
       console.log("Parsed appointment data:", appointmentData);
       const appointment = await storage.createAppointment(appointmentData);
+      
+      // Send confirmation email using SMTP
+      try {
+        const { EmailService } = await import('./emailService');
+        const emailService = new EmailService(storage);
+        const client = await storage.getClient(clientId);
+        const services = await storage.getClientServices(clientId);
+        const service = services.find(s => s.id === appointmentData.serviceId);
+        
+        if (client && service && appointmentData.customerEmail) {
+          const emailResult = await emailService.sendAppointmentConfirmation(
+            clientId,
+            appointmentData.customerEmail,
+            appointmentData.customerName,
+            {
+              id: appointment.id,
+              serviceName: service.name,
+              servicePrice: service.price,
+              serviceDuration: service.durationMinutes,
+              appointmentDate: new Date(appointment.appointmentDate), // Ensure Date object
+              startTime: appointment.startTime,
+              endTime: appointment.endTime,
+              notes: appointment.notes || '',
+              businessName: client.businessName,
+              businessPhone: client.phone || '',
+              businessEmail: client.email
+            }
+          );
+          console.log(`📧 Admin appointment confirmation: ${emailResult.success ? 'Success' : `Failed - ${emailResult.message}`}`);
+        }
+      } catch (error) {
+        console.error('❌ Failed to send admin appointment confirmation:', error);
+      }
+      
       res.json(appointment);
     } catch (error) {
       console.error("Failed to create appointment:", error);
@@ -2227,11 +2260,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/client/:clientId/appointments/:appointmentId", requirePermission('appointments.edit'), async (req, res) => {
     try {
-      const { appointmentId } = req.params;
+      const { appointmentId, clientId } = req.params;
       const updates = req.body;
+      
+      // Get the appointment before update to check for status changes
+      const originalAppointment = await storage.getAppointment(appointmentId);
+      if (!originalAppointment) {
+        return res.status(404).json({ error: "Appointment not found" });
+      }
+      
+      // Update the appointment
       const appointment = await storage.updateAppointment(appointmentId, updates);
+      
+      // Send email notification if status changed
+      if (updates.status && updates.status !== originalAppointment.status) {
+        try {
+          const client = await storage.getClient(clientId);
+          const services = await storage.getClientServices(clientId);
+          const service = services.find(s => s.id === appointment.serviceId);
+          
+          if (client && service && appointment.customerEmail) {
+            const { EmailService } = await import('./emailService');
+            const emailService = new EmailService(storage);
+            
+            const emailResult = await emailService.sendAppointmentStatusUpdate(
+              clientId,
+              appointment.customerEmail,
+              appointment.customerName,
+              {
+                id: appointment.id,
+                serviceName: service.name,
+                servicePrice: service.price,
+                appointmentDate: new Date(appointment.appointmentDate), // Ensure Date object
+                startTime: appointment.startTime,
+                endTime: appointment.endTime,
+                status: appointment.status,
+                businessName: client.businessName,
+                businessPhone: client.phone || '',
+                businessEmail: client.email
+              }
+            );
+            
+            console.log(`📧 Status update email: ${emailResult.success ? 'Success' : `Failed - ${emailResult.message}`}`);
+          }
+        } catch (emailError) {
+          console.error('❌ Failed to send status update email:', emailError);
+        }
+      }
+      
       res.json(appointment);
     } catch (error) {
+      console.error("Failed to update appointment:", error);
       res.status(500).json({ error: "Failed to update appointment" });
     }
   });
@@ -2893,74 +2972,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         interestedServices: [serviceId]
       });
       
-      // Send confirmation email      
-      if (client && selectedService) {
-        const confirmationEmailSent = await sendEmail({
-          to: customerEmail,
-          from: 'appointments@scheduledpros.com',
-          subject: `Appointment Confirmation - ${client.businessName}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #333; text-align: center;">Appointment Confirmation</h2>
-              
-              <p style="color: #666; font-size: 16px; line-height: 1.5;">
-                Hi ${customerName},
-              </p>
-              
-              <p style="color: #666; font-size: 16px; line-height: 1.5;">
-                Your appointment with <strong>${client.businessName}</strong> has been booked successfully!
-              </p>
-              
-              <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h3 style="color: #333; margin-top: 0;">Appointment Details:</h3>
-                <p><strong>Service:</strong> ${selectedService.name}</p>
-                <p><strong>Date:</strong> ${new Date(appointmentDate).toLocaleDateString()}</p>
-                <p><strong>Time:</strong> ${startTime} - ${endTime}</p>
-                <p><strong>Duration:</strong> ${selectedService.durationMinutes} minutes</p>
-                <p><strong>Price:</strong> $${selectedService.price}</p>
-                ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
-              </div>
-              
-              <p style="color: #666; font-size: 16px; line-height: 1.5;">
-                <strong>Status:</strong> Your appointment is currently pending approval. You will receive another email once it's confirmed.
-              </p>
-              
-              <p style="color: #666; font-size: 16px; line-height: 1.5;">
-                If you need to make any changes or cancel your appointment, please contact us directly.
-              </p>
-              
-              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-              <p style="color: #999; font-size: 14px; text-align: center;">
-                Thank you for choosing ${client.businessName}!<br>
-                ${client.phone ? `Phone: ${client.phone}` : ''}<br>
-                Email: ${client.email}
-              </p>
-            </div>
-          `,
-          text: `
-Hi ${customerName},
-
-Your appointment with ${client.businessName} has been booked successfully!
-
-Appointment Details:
-- Service: ${selectedService.name}
-- Date: ${new Date(appointmentDate).toLocaleDateString()}
-- Time: ${startTime} - ${endTime}
-- Duration: ${selectedService.durationMinutes} minutes
-- Price: $${selectedService.price}
-${notes ? `- Notes: ${notes}` : ''}
-
-Status: Your appointment is currently pending approval. You will receive another email once it's confirmed.
-
-If you need to make any changes or cancel your appointment, please contact us directly.
-
-Thank you for choosing ${client.businessName}!
-${client.phone ? `Phone: ${client.phone}` : ''}
-Email: ${client.email}
-          `
-        });
+      // Send confirmation email using SMTP
+      try {
+        const { EmailService } = await import('./emailService');
+        const emailService = new EmailService(storage);
         
-        console.log(`Email confirmation sent: ${confirmationEmailSent ? 'Success' : 'Failed'}`);
+        const emailResult = await emailService.sendAppointmentConfirmation(
+          clientId,
+          customerEmail,
+          customerName,
+          {
+            id: appointment.id,
+            serviceName: selectedService.name,
+            servicePrice: selectedService.price,
+            serviceDuration: selectedService.durationMinutes,
+            appointmentDate: new Date(appointmentDate),
+            startTime,
+            endTime,
+            notes,
+            businessName: client.businessName,
+            businessPhone: client.phone || '',
+            businessEmail: client.email
+          }
+        );
+        
+        console.log(`📧 Appointment confirmation email: ${emailResult.success ? 'Success' : `Failed - ${emailResult.message}`}`);
+      } catch (error) {
+        console.error('❌ Failed to send appointment confirmation email:', error);
       }
 
       res.json({ 

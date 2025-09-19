@@ -54,6 +54,9 @@ function App() {
           {/* Multi-Step Booking */}
           <Route path="/booking" component={MultiStepBooking} />
           
+          {/* Public Client Booking with Client ID */}
+          <Route path="/booking/:clientId" component={MultiStepBooking} />
+          
           {/* Public Client Websites */}
           <Route path="/client-website/:clientId" component={ClientWebsite} />
           

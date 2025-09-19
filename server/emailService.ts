@@ -39,7 +39,7 @@ export class EmailService {
       smtpPassword: client.smtpPassword, // Get actual password from client data
       smtpFromEmail: config.smtpFromEmail || config.smtpUsername,
       smtpFromName: config.smtpFromName || 'Scheduled Platform',
-      smtpSecure: config.smtpSecure !== false // default to true
+      smtpSecure: config.smtpPort === 465 ? true : (config.smtpSecure !== undefined && config.smtpSecure !== null ? config.smtpSecure : false) // 465 = SSL, others default to STARTTLS
     };
   }
 
@@ -188,5 +188,198 @@ This email was sent from the Scheduled business management platform.
         message: `Failed to send email: ${errorMessage}`
       };
     }
+  }
+
+  async sendAppointmentConfirmation(
+    clientId: string,
+    customerEmail: string,
+    customerName: string,
+    appointmentDetails: {
+      id: string;
+      serviceName: string;
+      servicePrice: number;
+      serviceDuration: number;
+      appointmentDate: Date;
+      startTime: string;
+      endTime: string;
+      notes?: string;
+      businessName: string;
+      businessPhone: string;
+      businessEmail: string;
+    }
+  ): Promise<{ success: boolean; message: string }> {
+    const subject = `Appointment Confirmation - ${appointmentDetails.businessName}`;
+    
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #333; text-align: center;">Appointment Confirmation</h2>
+        
+        <p style="color: #666; font-size: 16px; line-height: 1.5;">
+          Hi ${customerName},
+        </p>
+        
+        <p style="color: #666; font-size: 16px; line-height: 1.5;">
+          Your appointment with <strong>${appointmentDetails.businessName}</strong> has been booked successfully!
+        </p>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+          <h3 style="color: #333; margin-top: 0;">📅 Appointment Details</h3>
+          <p style="margin: 8px 0;"><strong>Confirmation:</strong> #${appointmentDetails.id}</p>
+          <p style="margin: 8px 0;"><strong>Service:</strong> ${appointmentDetails.serviceName}</p>
+          <p style="margin: 8px 0;"><strong>Date:</strong> ${appointmentDetails.appointmentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p style="margin: 8px 0;"><strong>Time:</strong> ${appointmentDetails.startTime} - ${appointmentDetails.endTime}</p>
+          <p style="margin: 8px 0;"><strong>Duration:</strong> ${appointmentDetails.serviceDuration} minutes</p>
+          <p style="margin: 8px 0;"><strong>Price:</strong> $${appointmentDetails.servicePrice}</p>
+          ${appointmentDetails.notes ? `<p style="margin: 8px 0;"><strong>Notes:</strong> ${appointmentDetails.notes}</p>` : ''}
+        </div>
+        
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+          <p style="color: #856404; margin: 0; font-weight: 500;">
+            ⏳ <strong>Status:</strong> Your appointment is currently pending approval. You will receive another email once it's confirmed by our team.
+          </p>
+        </div>
+        
+        <p style="color: #666; font-size: 16px; line-height: 1.5;">
+          If you need to make any changes or cancel your appointment, please contact us directly.
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+        <div style="text-align: center;">
+          <p style="color: #999; font-size: 14px; margin: 5px 0;">
+            Thank you for choosing <strong>${appointmentDetails.businessName}</strong>!
+          </p>
+          ${appointmentDetails.businessPhone ? `<p style="color: #999; font-size: 14px; margin: 5px 0;">📞 ${appointmentDetails.businessPhone}</p>` : ''}
+          <p style="color: #999; font-size: 14px; margin: 5px 0;">📧 ${appointmentDetails.businessEmail}</p>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+Hi ${customerName},
+
+Your appointment with ${appointmentDetails.businessName} has been booked successfully!
+
+Appointment Details:
+- Confirmation: #${appointmentDetails.id}
+- Service: ${appointmentDetails.serviceName}
+- Date: ${appointmentDetails.appointmentDate.toLocaleDateString()}
+- Time: ${appointmentDetails.startTime} - ${appointmentDetails.endTime}
+- Duration: ${appointmentDetails.serviceDuration} minutes
+- Price: $${appointmentDetails.servicePrice}
+${appointmentDetails.notes ? `- Notes: ${appointmentDetails.notes}` : ''}
+
+Status: Your appointment is currently pending approval. You will receive another email once it's confirmed by our team.
+
+If you need to make any changes or cancel your appointment, please contact us directly.
+
+Thank you for choosing ${appointmentDetails.businessName}!
+${appointmentDetails.businessPhone ? `Phone: ${appointmentDetails.businessPhone}` : ''}
+Email: ${appointmentDetails.businessEmail}
+    `;
+
+    return await this.sendEmail(clientId, customerEmail, subject, htmlContent, textContent);
+  }
+
+  async sendAppointmentStatusUpdate(
+    clientId: string,
+    customerEmail: string,
+    customerName: string,
+    appointmentDetails: {
+      id: string;
+      serviceName: string;
+      servicePrice: number;
+      appointmentDate: Date;
+      startTime: string;
+      endTime: string;
+      status: string;
+      businessName: string;
+      businessPhone: string;
+      businessEmail: string;
+    }
+  ): Promise<{ success: boolean; message: string }> {
+    let statusColor = '#6b7280';
+    let statusIcon = '📋';
+    let statusText = 'updated';
+    
+    if (appointmentDetails.status === 'APPROVED') {
+      statusColor = '#059669';
+      statusIcon = '✅';
+      statusText = 'approved and confirmed';
+    } else if (appointmentDetails.status === 'REJECTED') {
+      statusColor = '#dc2626';
+      statusIcon = '❌';
+      statusText = 'declined';
+    } else if (appointmentDetails.status === 'PENDING') {
+      statusColor = '#d97706';
+      statusIcon = '⏳';
+      statusText = 'marked as pending';
+    }
+
+    const subject = `Appointment ${statusText.charAt(0).toUpperCase() + statusText.slice(1)} - ${appointmentDetails.businessName}`;
+    
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #333; text-align: center;">Appointment Status Update</h2>
+        
+        <p style="color: #666; font-size: 16px; line-height: 1.5;">
+          Hi ${customerName},
+        </p>
+        
+        <p style="color: #666; font-size: 16px; line-height: 1.5;">
+          Your appointment with <strong>${appointmentDetails.businessName}</strong> has been ${statusText}.
+        </p>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+          <h3 style="color: #333; margin-top: 0;">📅 Appointment Details</h3>
+          <p style="margin: 8px 0;"><strong>Confirmation:</strong> #${appointmentDetails.id}</p>
+          <p style="margin: 8px 0;"><strong>Service:</strong> ${appointmentDetails.serviceName}</p>
+          <p style="margin: 8px 0;"><strong>Date:</strong> ${appointmentDetails.appointmentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p style="margin: 8px 0;"><strong>Time:</strong> ${appointmentDetails.startTime} - ${appointmentDetails.endTime}</p>
+          <p style="margin: 8px 0;"><strong>Price:</strong> $${appointmentDetails.servicePrice}</p>
+        </div>
+        
+        <div style="background: ${statusColor === '#dc2626' ? '#fef2f2' : statusColor === '#059669' ? '#f0fdf4' : '#fff3cd'}; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${statusColor};">
+          <p style="color: ${statusColor}; margin: 0; font-weight: 500;">
+            ${statusIcon} <strong>Status Update:</strong> Your appointment has been ${statusText}${appointmentDetails.status === 'APPROVED' ? '! We look forward to seeing you.' : appointmentDetails.status === 'REJECTED' ? '. Please contact us to reschedule.' : ' and is awaiting further review.'}
+          </p>
+        </div>
+        
+        <p style="color: #666; font-size: 16px; line-height: 1.5;">
+          If you have any questions or need to make changes, please don't hesitate to contact us.
+        </p>
+        
+        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+        <div style="text-align: center;">
+          <p style="color: #999; font-size: 14px; margin: 5px 0;">
+            Thank you for choosing <strong>${appointmentDetails.businessName}</strong>!
+          </p>
+          ${appointmentDetails.businessPhone ? `<p style="color: #999; font-size: 14px; margin: 5px 0;">📞 ${appointmentDetails.businessPhone}</p>` : ''}
+          <p style="color: #999; font-size: 14px; margin: 5px 0;">📧 ${appointmentDetails.businessEmail}</p>
+        </div>
+      </div>
+    `;
+
+    const textContent = `
+Hi ${customerName},
+
+Your appointment with ${appointmentDetails.businessName} has been ${statusText}.
+
+Appointment Details:
+- Confirmation: #${appointmentDetails.id}
+- Service: ${appointmentDetails.serviceName}
+- Date: ${appointmentDetails.appointmentDate.toLocaleDateString()}
+- Time: ${appointmentDetails.startTime} - ${appointmentDetails.endTime}
+- Price: $${appointmentDetails.servicePrice}
+
+Status Update: Your appointment has been ${statusText}${appointmentDetails.status === 'APPROVED' ? '! We look forward to seeing you.' : appointmentDetails.status === 'REJECTED' ? '. Please contact us to reschedule.' : ' and is awaiting further review.'}
+
+If you have any questions or need to make changes, please don't hesitate to contact us.
+
+Thank you for choosing ${appointmentDetails.businessName}!
+${appointmentDetails.businessPhone ? `Phone: ${appointmentDetails.businessPhone}` : ''}
+Email: ${appointmentDetails.businessEmail}
+    `;
+
+    return await this.sendEmail(clientId, customerEmail, subject, htmlContent, textContent);
   }
 }
