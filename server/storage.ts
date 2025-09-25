@@ -2155,12 +2155,12 @@ class PostgreSQLStorage implements IStorage {
   // Authentication & Users
   async getUser(id: string): Promise<User | undefined> {
     const result = await getDb().select().from(users).where(eq(users.id, id)).limit(1);
-    return result[0];
+    return result[0] || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const result = await getDb().select().from(users).where(eq(users.email, email)).limit(1);
-    return result[0];
+    return result[0] || undefined;
   }
 
   async createUser(user: InsertUser): Promise<User> {
@@ -2182,7 +2182,7 @@ class PostgreSQLStorage implements IStorage {
 
   async getPlan(id: string): Promise<Plan | undefined> {
     const result = await getDb().select().from(plans).where(eq(plans.id, id)).limit(1);
-    return result[0];
+    return result[0] || undefined;
   }
 
   async createPlan(plan: InsertPlan): Promise<Plan> {
@@ -2216,7 +2216,7 @@ class PostgreSQLStorage implements IStorage {
 
   async getContactMessage(id: string): Promise<ContactMessage | undefined> {
     const result = await getDb().select().from(contactMessages).where(eq(contactMessages.id, id)).limit(1);
-    return result[0];
+    return result[0] || undefined;
   }
 
   async createContactMessage(message: InsertContactMessage): Promise<ContactMessage> {
