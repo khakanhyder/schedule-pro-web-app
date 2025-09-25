@@ -2,11 +2,8 @@
   "version": 2,
   "builds": [
     {
-      "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "src": "dist/index.js",
+      "use": "@vercel/node"
     },
     {
       "src": "api/**/*.ts",
@@ -20,11 +17,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/client/dist/$1"
+      "dest": "/dist/index.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "DEPLOY_TARGET": "vercel"
-  }
+  ]
 }
