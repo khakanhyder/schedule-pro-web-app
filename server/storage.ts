@@ -2164,12 +2164,14 @@ class PostgreSQLStorage implements IStorage {
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const [newUser] = await getDb().insert(users).values({
+    const result = await getDb().insert(users).values({
       ...user,
       id: `user_${Date.now()}`,
       createdAt: new Date(),
       updatedAt: new Date()
     }).returning();
+    const newUser = result[0];
+    if (!newUser) throw new Error("Failed to create user");
     return newUser;
   }
 
@@ -2184,18 +2186,21 @@ class PostgreSQLStorage implements IStorage {
   }
 
   async createPlan(plan: InsertPlan): Promise<Plan> {
-    const [newPlan] = await getDb().insert(plans).values({
+    const result = await getDb().insert(plans).values({
       ...plan,
       id: `plan_${Date.now()}`
     }).returning();
+    const newPlan = result[0];
+    if (!newPlan) throw new Error("Failed to create plan");
     return newPlan;
   }
 
   async updatePlan(id: string, updates: Partial<InsertPlan>): Promise<Plan> {
-    const [updatedPlan] = await getDb().update(plans)
+    const result = await getDb().update(plans)
       .set(updates)
       .where(eq(plans.id, id))
       .returning();
+    const updatedPlan = result[0];
     if (!updatedPlan) throw new Error("Plan not found");
     return updatedPlan;
   }
@@ -2215,20 +2220,23 @@ class PostgreSQLStorage implements IStorage {
   }
 
   async createContactMessage(message: InsertContactMessage): Promise<ContactMessage> {
-    const [newMessage] = await getDb().insert(contactMessages).values({
+    const result = await getDb().insert(contactMessages).values({
       ...message,
       id: `contact_${Date.now()}`,
       createdAt: new Date(),
       updatedAt: new Date()
     }).returning();
+    const newMessage = result[0];
+    if (!newMessage) throw new Error("Failed to create contact message");
     return newMessage;
   }
 
   async updateContactMessage(id: string, updates: Partial<InsertContactMessage>): Promise<ContactMessage> {
-    const [updatedMessage] = await getDb().update(contactMessages)
+    const result = await getDb().update(contactMessages)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(contactMessages.id, id))
       .returning();
+    const updatedMessage = result[0];
     if (!updatedMessage) throw new Error("Contact message not found");
     return updatedMessage;
   }
