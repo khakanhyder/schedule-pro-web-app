@@ -10,7 +10,7 @@ app.get("/api/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "healthy" });
 });
 
-(async () => {
+const start = async () => {
   await registerRoutes(app);
 
   // Error handler
@@ -20,8 +20,7 @@ app.get("/api/health", (req: Request, res: Response) => {
     res.status(status).json({ message });
   });
 
-  // In a Vercel environment, the Express app itself is the serverless function.
-  // We don't need to listen on a port.
-})();
+  return app;
+};
 
-export default app;
+export default start();
